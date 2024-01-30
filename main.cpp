@@ -16,4 +16,13 @@ int main(){
   }
 
   std::cout << "\nE = " << test.E << "\n";
+
+  vec2d psi(N,vec1d(2));
+
+  test.update_psi(psi,Np);
+
+  for(int i=0;i<N;i++){
+    std::cout << psi[i][0] << "  " << psi[i][1] << "\n";
+  }
+
 }

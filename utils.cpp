@@ -22,7 +22,7 @@ namespace lattice_system{
     EngineType rng(dev());
     
     /*Define a re-shuffled vector with all positions on a 1D lattice*/
-    std::uniform_real_distribution<double> u(0,1);   
+    real_dist u(0,1);   
 
     vec1i all_positions(N);
 
@@ -90,6 +90,18 @@ namespace lattice_system{
       }
     }
     return energy/2;
+  }
+
+  int particles::update_psi(vec2d &psi, int Np){
+    /*
+     * Update the density vector
+     */
+
+    for(int i=0;i<Np;i++){
+      psi[state[i][0]][state[i][1]-1] += 1;
+    }
+    
+    return 0;
   }
 }
 

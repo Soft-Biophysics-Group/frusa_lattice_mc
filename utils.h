@@ -9,6 +9,9 @@
 #include <vector>
 
 typedef std::mt19937 EngineType;
+typedef std::uniform_int_distribution<int> int_dist;
+typedef std::uniform_real_distribution<double> real_dist;
+
 typedef std::vector<int> vec1i;
 typedef std::vector<double> vec1d;
 typedef std::vector<std::vector<int>> vec2i;
@@ -54,8 +57,8 @@ namespace lattice_system{
       /*Function to calculate the total energy of the system*/
       double get_energy(int, int);
 
-      /*Function to calculate the Fourier Transform of the state vector*/
-      int get_state_q();
+      /*Function to calculate the density vector*/
+      int update_psi(vec2d&, int);
 
   };
 } 

@@ -4,7 +4,7 @@
 #include "utils.h"
 
 namespace simulation{
-  class mc : public lattice_system::particles {
+  class mc {
     private:
       /*Define random number distributions*/
       std::random_device dev;

@@ -1,28 +1,19 @@
-#include "utils.h"
+#include "models.h"
 
 int main(){
 
-  int N=20;
-  int Np=5;
+  simulation::model_data model_data_1d;
 
-  double k11 = -1;
-  double k12 = 0;
-  double k21 = 0;
+  model_data_1d.N   = 20;
+  model_data_1d.Np  = 5;
 
-  lattice_system::particles test(N,Np,k11,k12,k21);
+  model_data_1d.k11 = -1;
+  model_data_1d.k12 = 0;
+  model_data_1d.k21 = 0;
 
-  for(int i=0;i<Np;i++){
-    std::cout << test.state[i][0] << ", " << test.state[i][1] << "\n";
-  }
+  simulation::particles test(model_data_1d);
 
-  std::cout << "\nE = " << test.E << "\n";
-
-  vec2d psi(N,vec1d(2));
-
-  test.update_psi(psi,Np);
-
-  for(int i=0;i<N;i++){
-    std::cout << psi[i][0] << "  " << psi[i][1] << "\n";
-  }
+  test.print_state();
+  test.print_energy();
 
 }

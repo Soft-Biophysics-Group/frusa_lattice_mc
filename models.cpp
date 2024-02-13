@@ -244,11 +244,44 @@ namespace simulation{
     }
   }
 
-  void particles::update_orientation(int index, double T){
+  void particles::update_orientation(int particle_index, double T){
     /* 
-     * Attempt to change the orientation of the selected particle (index) with
-     * Metropolis acceptance rate
+     * Attempt to change the orientation of the selected particle 
+     * (particle_index) with Metropolis acceptance rate
      */
+    
+    /*Determine the new proposed orientation*/
+    int orientation_old = orientations[particle_index];
+    int orientation_new;
+    if(orientation_old==1){
+      orientation_new=2;
+    }
+    else{
+      orientation_new=1;
+    }
+
+    /*Calculate the energy cost of changing the orientation*/
+    double dE = 0;
+
+    vec2i n = get_neighbours(positions[particle_index]);
+
+    for(int i=0; i<n.size();i++){
+      int k = n[i][0];
+      dE+= coupling_matrix[k][ orientation_new-1]\
+                             [ orientations[n[i][1]]-1];
+      dE-= coupling_matrix[k][ orientation_old-1]\
+                             [ orientations[n[i][1]]-1];
+    }
+
+    /*Accept the new position using Metropolis rule*/
+    if(dE<=0){
+      orientations[particle_index] = orientation_new;
+      energy+=dE;
+    }
+    else if(exp(-dE/T)>uniform_dist(rng)){
+      orientations[particle_index] = orientation_new;
+      energy+=dE;
+    }
 
 
   }

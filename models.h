@@ -50,7 +50,7 @@ namespace simulation{
       void initialize();
       
       /*Function to extract the states of neighbours of a given particle*/
-      vec1i get_neighbours(int);
+      vec2i get_neighbours(int);
 
       /*Function to calculate the total energy of the system*/
       double get_energy();

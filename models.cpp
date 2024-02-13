@@ -81,7 +81,7 @@ namespace simulation{
       int particle_index = particle_dist(rng);
       int update_type = binary_dist(rng);
       
-      if(update_type>-1){
+      if(update_type==0){
         update_position(particle_index,T);
       }
       else{
@@ -131,24 +131,24 @@ namespace simulation{
     }
   }
 
-  vec1i particles::get_neighbours(int r){
+  vec2i particles::get_neighbours(int r){
     
     /*
      * Extract the indices (location in the state vector) of the neighbours
      * of a specified particle at position r
      */
 
-    vec1i neighbours={-1,-1};
+    vec2i neighbours;
 
     int rm = (N+((r-1)%N))%N;
     int rp = (r+1)%N;
 
     for(int i=0;i<Np;i++){
       if(positions[i]==rm){
-        neighbours[0] = i;
+        neighbours.push_back({0,i});
       }
       else if(positions[i]==rp){
-        neighbours[1] = i;
+        neighbours.push_back({1,i});
       }
     }
 
@@ -164,13 +164,11 @@ namespace simulation{
 
     for(int i=0;i<Np;i++){
       
-      vec1i n = get_neighbours(positions[i]);
+      vec2i n = get_neighbours(positions[i]);
 
-      for(int j=0;j<2;j++){
-      
-        if(n[j]!=-1){
-          en+= coupling_matrix[j][ orientations[i]-1][ orientations[ n[j] ]-1];
-        }
+      for(int j=0;j<n.size();j++){
+        int k = n[j][0];
+        en+= coupling_matrix[k][ orientations[i]-1][ orientations[n[j][1]]-1];
       }
     }
     return en/2;
@@ -196,8 +194,8 @@ namespace simulation{
     int position_new = empty_sites[empty_index];
 
     /*Find the neighbours of the old and new positions*/
-    vec1i n_old = get_neighbours(position_old);
-    vec1i n_new = get_neighbours(position_new);
+    vec2i n_old = get_neighbours(position_old);
+    vec2i n_new = get_neighbours(position_new);
 
     /*Check if the old and new positions are first neighbours*/
     bool direct_neighbours[2];
@@ -221,15 +219,21 @@ namespace simulation{
     /*Calculate the energy difference resulting from the position change*/
     double dE = 0;
     
-    for(int i=0; i<2;i++){
+    for(int i=0; i<n_new.size();i++){
       if(not direct_neighbours[i]){
-        dE+= coupling_matrix[i][ orientations[particle_index]-1 ]\
-                               [ orientations[n_new[i]]-1 ];  
+        /*Exclude the possibility of interaction with itself*/
+        int k = n_new[i][0];
+        dE+= coupling_matrix[k][ orientations[particle_index]-1 ]\
+                               [ orientations[n_new[i][1]]-1 ];  
       }
-      dE-= coupling_matrix[i][ orientations[particle_index]-1 ]\
-                               [ orientations[n_old[i]]-1 ];
+    }
+    for(int i=0; i<n_old.size();i++){
+      int k = n_old[i][0];
+      dE-= coupling_matrix[k][ orientations[particle_index]-1 ]\
+                               [ orientations[n_old[i][1]]-1 ];
     }
 
+    /*Accept the new position using Metropolis rule*/
     if(dE<=0){
       positions[particle_index] = position_new;
       energy+=dE;
@@ -245,6 +249,8 @@ namespace simulation{
      * Attempt to change the orientation of the selected particle (index) with
      * Metropolis acceptance rate
      */
+
+
   }
 
   void particles::update_psi(vec2d &psi){

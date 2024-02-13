@@ -6,10 +6,6 @@
 namespace simulation{
   class particles {
     private:
-      
-      /*Help randomize the seed*/
-      std::random_device dev;
-      
       /*
        * Private variables
        */
@@ -23,15 +19,28 @@ namespace simulation{
       /*Interaction parameters*/
       double k11, k12, k21;
 
-      /*State vector containing the positions and orientations of the 
-        particles*/
-      vec2i state;
+      /*Vectors containing the positions and orientations of the particles*/
+      vec1i positions;
+      vec1i orientations;
 
       /*Coupling matrix*/
       vec3d coupling_matrix;
 
       /*Energy of the system*/
       double energy;
+  
+      /*
+       * Pseudorandom number generator definitions
+       */
+
+      /*Define random number engine to be used by the class*/  
+      EngineType rng;
+
+      /*Define random distributions used by the class*/
+      real_dist uniform_dist;
+      int_dist  particle_dist;
+      int_dist  empty_dist;
+      int_dist  binary_dist;
 
       /*
        * Private routines of the class
@@ -46,13 +55,19 @@ namespace simulation{
       /*Function to calculate the total energy of the system*/
       double get_energy();
 
+      /*Function to update the position of the chosen particle*/
+      void update_position(int,double);
+
+      /*Function to update the orientation of the chosen particle*/
+      void update_orientation(int,double);
+
       /*Function to calculate the density vector*/
       void update_psi(vec2d&);
     
     public:
 
       /*Class constructor*/
-      particles(const struct model_data &);
+      particles(const struct model_data &, const struct mc_data &);
  
       /*
        * Required public routines of the class
@@ -61,8 +76,20 @@ namespace simulation{
       /*Print the current state of the system*/
       void print_state();
 
+      /*Save the current state of the system to a file*/
+      void save_state(std::string, std::string);
+
       /*Print the current energy of the system*/
       void print_energy();
+
+      /*Update the state of the system*/
+      void update_state(double);
+
+      /*Update the selected simulation averages*/
+      void update_averages();
+
+      /*Save the selected simulation averages to a file*/
+      void save_averages();
        
   };
 } 

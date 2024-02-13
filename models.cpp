@@ -5,16 +5,26 @@ namespace simulation{
    * Definitions for the particle class
    */
   
-  particles::particles(const model_data &model_data_1d){
+  particles::particles(const model_data &model_data_1d,
+                       const mc_data &mc_data_1d) :
+    N(model_data_1d.N),
+    Np(model_data_1d.Np),
+    k11(model_data_1d.k11),
+    k12(model_data_1d.k12),
+    k21(model_data_1d.k21),
+    rng(model_data_1d.rng)
+    //T(mc_data_1d.T) 
+  {
     /*
      * Initialize the system of particles and calculate the initial energy
      */
 
-    N   = model_data_1d.N;
-    Np  = model_data_1d.Np;
-    k11 = model_data_1d.k11;
-    k12 = model_data_1d.k12;
-    k21 = model_data_1d.k21;
+
+    /*Initialize pseudorandom number distributions*/
+    uniform_dist  = real_dist(0,1);
+    particle_dist = int_dist(0,Np-1);
+    empty_dist    = int_dist(0,N-Np-1);
+    binary_dist   = int_dist(0,1);
 
     initialize();
     coupling_matrix = {{{k11,k21},{k12,k11}},
@@ -22,7 +32,7 @@ namespace simulation{
 
     energy = get_energy();
 
-  }
+}
 
   /*
    * Required public routines
@@ -32,11 +42,30 @@ namespace simulation{
     /*
      * Print the current state of the system
      */
+    std::cout << "\n";
     for(int i=0;i<Np;i++){
-      std::cout << state[i][0] << ", " << state[i][1] << "\n";
+      std::cout << positions[i] << " " << orientations[i] << "\n";
     }
+    std::cout << "\n";
   }
 
+  void particles::save_state(std::string file_name, std::string address){
+    /*
+     * Save the current state of the system to a file
+     */
+    std::ofstream state_f;
+    state_f.open(address+file_name);
+    if(!state_f){
+      std::cerr << "Could not open "+address+file_name << std::endl;
+      exit(1);
+    }
+
+    for(int i=0;i<Np;i++){
+      state_f << positions[i] << " " << orientations[i] << "\n";
+    }
+    state_f.close();
+  }
+  
   void particles::print_energy(){
     /*
      * Print the current energy of the system
@@ -44,6 +73,28 @@ namespace simulation{
     std::cout << energy << "\n";
   }
 
+  void particles::update_state(double T){
+    /*
+     * Update the state of the system using Metropolis algorithm
+     */
+    for(int i=0;i<Np;i++){
+      int particle_index = particle_dist(rng);
+      int update_type = binary_dist(rng);
+      
+      if(update_type>-1){
+        update_position(particle_index,T);
+      }
+      else{
+        update_orientation(particle_index,T);
+      }
+    } 
+  }
+
+  void particles::update_averages(){
+  }
+
+  void particles::save_averages(){
+  }
   /*
    * Class-specific routines
    */
@@ -53,30 +104,29 @@ namespace simulation{
      * Initialize a system of particles at random locations and with
      * random orientations 
      */
-    EngineType rng(dev());
     
     /*Define a re-shuffled vector with all positions on a 1D lattice*/
-    real_dist u(0,1);   
-
     vec1i all_positions(N);
 
     for(int i=0;i<N;i++){
-      
       all_positions[i] = i;
-    
     }
-
+    
     std::shuffle(std::begin(all_positions), std::end(all_positions), rng);
 
     /*Define and populate the state vector*/
 
     for(int i=0;i<Np;i++){
-       
-      if(u(rng)>0.5){
-        state.push_back({all_positions[i],1});
+      
+      positions.push_back(all_positions[i]);
+
+      int orientation_type = binary_dist(rng);
+
+      if(orientation_type==0){
+        orientations.push_back(1);
       }
-      else{
-        state.push_back({all_positions[i],2});
+      else if(orientation_type==1){
+        orientations.push_back(2);
       }
     }
   }
@@ -94,10 +144,10 @@ namespace simulation{
     int rp = (r+1)%N;
 
     for(int i=0;i<Np;i++){
-      if(state[i][0]==rm){
+      if(positions[i]==rm){
         neighbours[0] = i;
       }
-      else if(state[i][0]==rp){
+      else if(positions[i]==rp){
         neighbours[1] = i;
       }
     }
@@ -114,16 +164,87 @@ namespace simulation{
 
     for(int i=0;i<Np;i++){
       
-      vec1i n = get_neighbours(state[i][0]);
+      vec1i n = get_neighbours(positions[i]);
 
       for(int j=0;j<2;j++){
       
         if(n[j]!=-1){
-          en+= coupling_matrix[j][ state[i][1]-1][ state[ n[j] ][1]-1];
+          en+= coupling_matrix[j][ orientations[i]-1][ orientations[ n[j] ]-1];
         }
       }
     }
     return en/2;
+  }
+
+  void particles::update_position(int particle_index, double T){
+    /*
+     * Attempt to move the selected particle (particle_index) to a new position
+     *  with Metropolis acceptance rate
+     */
+    vec1i empty_sites;
+
+    for(int i=0;i<N;i++){
+      if(std::find(positions.begin(), positions.end(), i) == positions.end()){
+        /* Position vector doesn't contain i */
+        empty_sites.push_back(i);
+      }
+    }
+
+    int empty_index = empty_dist(rng);
+    
+    int position_old = positions[particle_index];
+    int position_new = empty_sites[empty_index];
+
+    /*Find the neighbours of the old and new positions*/
+    vec1i n_old = get_neighbours(position_old);
+    vec1i n_new = get_neighbours(position_new);
+
+    /*Check if the old and new positions are first neighbours*/
+    bool direct_neighbours[2];
+
+    int rp1 = (position_old+1)%N;
+    int rm1 = (N+((position_old-1)%N))%N;
+
+    if(position_new==rp1){
+     direct_neighbours[0] = false;
+     direct_neighbours[1] = true;
+    }
+    else if(position_new==rm1){
+      direct_neighbours[0] = true;
+      direct_neighbours[1] = false;
+    }
+    else{
+      direct_neighbours[0] = false;
+      direct_neighbours[1] = false;
+    }
+
+    /*Calculate the energy difference resulting from the position change*/
+    double dE = 0;
+    
+    for(int i=0; i<2;i++){
+      if(not direct_neighbours[i]){
+        dE+= coupling_matrix[i][ orientations[particle_index]-1 ]\
+                               [ orientations[n_new[i]]-1 ];  
+      }
+      dE-= coupling_matrix[i][ orientations[particle_index]-1 ]\
+                               [ orientations[n_old[i]]-1 ];
+    }
+
+    if(dE<=0){
+      positions[particle_index] = position_new;
+      energy+=dE;
+    }
+    else if(exp(-dE/T)>uniform_dist(rng)){
+      positions[particle_index] = position_new;
+      energy+=dE;
+    }
+  }
+
+  void particles::update_orientation(int index, double T){
+    /* 
+     * Attempt to change the orientation of the selected particle (index) with
+     * Metropolis acceptance rate
+     */
   }
 
   void particles::update_psi(vec2d &psi){
@@ -132,7 +253,7 @@ namespace simulation{
      */
 
     for(int i=0;i<Np;i++){
-      psi[state[i][0]][state[i][1]-1] += 1;
+      psi[positions[i]][orientations[i]-1] += 1;
     }
   }
 }

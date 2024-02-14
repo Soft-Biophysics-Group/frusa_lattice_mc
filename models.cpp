@@ -19,7 +19,6 @@ namespace simulation{
      * Initialize the system of particles and calculate the initial energy
      */
 
-
     /*Initialize pseudorandom number distributions*/
     uniform_dist  = real_dist(0,1);
     particle_dist = int_dist(0,Np-1);
@@ -89,8 +88,11 @@ namespace simulation{
       }
     } 
   }
+  
+  void particles::initialize_averages(){
+  }
 
-  void particles::update_averages(){
+  void particles::update_averages(double T){
   }
 
   void particles::save_averages(){
@@ -282,8 +284,6 @@ namespace simulation{
       orientations[particle_index] = orientation_new;
       energy+=dE;
     }
-
-
   }
 
   void particles::update_psi(vec2d &psi){

@@ -34,13 +34,19 @@ namespace simulation{
     EngineType rng;
   };
 
+  /*Options for the cooling schedule*/
+  enum cooling_option {exponential, linear};
+
   /*Monte Carlo parameters*/
   struct mc_data{
+    int mcs_eq;
+    int mcs_av;
     double Ti;
     double Tf;
     int Nt;
-    int mcs_eq;
-    int mcs_av;
+    cooling_option cooling_schedule;
+    bool checkpoint;
+    std::string checkpoint_address;
   };
      
 } 

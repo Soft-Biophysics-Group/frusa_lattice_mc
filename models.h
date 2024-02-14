@@ -85,10 +85,13 @@ namespace simulation{
       /*Update the state of the system*/
       void update_state(double);
 
-      /*Update the selected simulation averages*/
-      void update_averages();
+      /*Initialize the containers to store the selected averages*/
+      void initialize_averages();
 
-      /*Save the selected simulation averages to a file*/
+      /*Update the selected simulation averages*/
+      void update_averages(double);
+
+      /*Save the selected simulation averages to the corresponding files*/
       void save_averages();
        
   };

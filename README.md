@@ -2,12 +2,11 @@
 
 ## Future
 
+* Add interchange of fractional concentrations in the field model (priority)
+* Add entropic contributions to the field model (priority)
 * Implement useful averages (energy, heat capacity, correlation function,\
   cluster size) 
-* Separate `mc_routines.h` from the `models.h` (independent data structures)
-* Define model-specific data structure
 * Define functions for parameter input files
-* Write a `field_1d` class
 
 ## frusa_mc
 

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <vector>
 #include <time.h>
+#include <iomanip>
 
 typedef std::mt19937 EngineType;
 typedef std::uniform_int_distribution<int> int_dist;
@@ -19,9 +20,9 @@ typedef std::vector<std::vector<int>> vec2i;
 typedef std::vector<std::vector<double>> vec2d;
 typedef std::vector<std::vector<std::vector<double>>> vec3d;
 
-namespace simulation{
+namespace model_space{
   /*
-   * Data structures used to store the relevant simulation parameters
+   * Data structures used to store the relevant parameters
    */
   
   /*Model parameters*/
@@ -34,21 +35,16 @@ namespace simulation{
     EngineType rng;
   };
 
-  /*Options for the cooling schedule*/
-  enum cooling_option {exponential, linear};
+  /*
+   * Generic routines that can be used by different models
+   */
 
-  /*Monte Carlo parameters*/
-  struct mc_data{
-    int mcs_eq;
-    int mcs_av;
-    double Ti;
-    double Tf;
-    int Nt;
-    cooling_option cooling_schedule;
-    bool checkpoint;
-    std::string checkpoint_address;
-  };
-     
+  /*Update average moments of energy*/
+  void update_energy_moments(double,double,double);
+
+  /*Update correlation function*/
+  void update_correlation();
+
 } 
 
 #endif

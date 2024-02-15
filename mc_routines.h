@@ -2,9 +2,24 @@
 #define MC_HEADER_H
 
 #include "utils.h"
-#include "models.h"
 
-namespace simulation{
+namespace simulation_space{
+  
+  /*Options for the cooling schedule*/
+  enum cooling_option {exponential, linear};
+
+  /*Monte Carlo parameters*/
+  struct mc_data{
+    int mcs_eq;
+    int mcs_av;
+    double Ti;
+    double Tf;
+    int Nt;
+    cooling_option cooling_schedule;
+    bool checkpoint;
+    std::string checkpoint_address;
+  };
+     
   template <class model> 
   class mc {
     private:
@@ -44,7 +59,7 @@ namespace simulation{
     public:
 
       /*Class constructor*/
-      mc(model m, const struct mc_data &);
+      mc(model, const struct mc_data &);
 
       /*MC annealing*/
       void t_scan();
@@ -109,6 +124,8 @@ namespace simulation{
         lattice_system.save_state("structure_"+std::to_string(i)+".dat",\
                                   checkpoint_address);
       }
+      std::cout << "Energy at T = " << T << ":\n";
+      lattice_system.print_energy();
     }
   }
 

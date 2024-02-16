@@ -82,7 +82,7 @@ namespace model_space{
       int site_index = particle_dist(rng);
       int update_type = binary_dist(rng);
       
-      if(update_type>-1){
+      if(update_type==0){
         shift_local_density(site_index,T);
       }
       else{
@@ -113,7 +113,7 @@ namespace model_space{
 
     for(int i=0;i<N;i++){
       
-      double psi_1 = uniform_dist(rng)*psi_bar;
+      double psi_1 = psi_bar/2;//uniform_dist(rng)*psi_bar;
       double psi_2 = psi_bar-psi_1;
 
       concentrations.push_back({psi_1,psi_2});
@@ -166,8 +166,8 @@ namespace model_space{
 
   void fields::shift_local_density(int site_index, double T){
     /*
-     * Attempt to shift the local density from a selected site (site_index) 
-     * to a new site with Metropolis acceptance rate
+     * Attempt to shift the local density from the selected lattice site
+     * (site_index) to a new site with Metropolis acceptance rate
      */
     
     int donor_position = site_index;
@@ -296,57 +296,77 @@ namespace model_space{
     vec1d acceptor_concentration = {concentrations[acceptor_position][0],\
                                     concentrations[acceptor_position][1]};
 
-    /*Check if there is only a single species type on the acceptor site*/
-    if(acceptor_concentration[0]==0.0){
-      acceptor_type = 1; 
-    }
-    else if(acceptor_concentration[1]==0.0){
-      acceptor_type = 0; 
+    /*Check if the site is full*/
+    double acceptor_local_density = acceptor_concentration[0]+\
+                                    acceptor_concentration[1];
+    if(1.0-acceptor_local_density<1e-5){
+      acceptor_bound = 0.0; 
     }
     else{
       acceptor_type = binary_dist(rng); 
+      acceptor_bound = std::min(1-acceptor_concentration[acceptor_type],\
+                                1-acceptor_local_density);
     }
-    acceptor_bound = 1-acceptor_concentration[acceptor_type];
   }
 
-  void fields::update_local_concentrations(int particle_index, double T){
+  void fields::update_local_concentrations(int site_index, double T){
     /* 
-     * Attempt to change the orientation of the selected particle 
-     * (particle_index) with Metropolis acceptance rate
+     * Attempt to re-distribute the fractional concentrations on the selected
+     * lattice site (site_index) with Metropolis acceptance rate
      */
     
-    /*Determine the new proposed orientation*/
-    /*int orientation_old = orientations[particle_index];
-    int orientation_new;
-    if(orientation_old==1){
-      orientation_new=2;
+    /*Determine which fractional concentration is reduced and which one is 
+      increased*/
+    int donor_position=site_index;
+    double donor_bound, drho;
+    int donor_type, acceptor_type;
+
+    get_donor_bound(donor_position,donor_bound,donor_type);
+    
+    while(donor_bound==0.0){
+      donor_position = (donor_position+1)%N;
+      get_donor_bound(donor_position,donor_bound,donor_type);
+    }
+
+    acceptor_type = 1-donor_type;
+
+    /*Amount of concentration to convert*/
+    if(donor_bound<1e-5){
+      /*No need to shift tiny amounts of density (below threshold 1e-5), 
+       *simply convert all concentration to the other type*/
+      drho = donor_bound;
     }
     else{
-      orientation_new=1;
-    }*/
+      drho = uniform_dist(rng)*donor_bound;
+    }
 
-    /*Calculate the energy cost of changing the orientation*/
-    /*double dE = 0;
+    /*Find the neighbours of the selected site*/
+    vec2i n = get_neighbours(donor_position);
 
-    vec2i n = get_neighbours(positions[particle_index]);
-
-    for(int i=0; i<n.size();i++){
-      int k = n[i][0];
-      dE+= coupling_matrix[k][ orientation_new-1]\
-                             [ orientations[n[i][1]]-1];
-      dE-= coupling_matrix[k][ orientation_old-1]\
-                             [ orientations[n[i][1]]-1];
-    }*/
+    /*Calculate the energy difference resulting from the position change*/
+    double dE = 0;
+    
+    for(int j=0;j<2;j++){
+      vec1d c_j = {concentrations[n[j][1]][0],\
+                   concentrations[n[j][1]][1]};
+ 
+      for(int k=0;k<2;k++){
+        dE+= coupling_matrix[j][acceptor_type][k]*drho*c_j[k];
+        dE-= coupling_matrix[j][donor_type][k]*drho*c_j[k];
+      }
+    }
 
     /*Accept the new position using Metropolis rule*/
-    /*if(dE<=0){
-      orientations[particle_index] = orientation_new;
+    if(dE<=0){
+      concentrations[donor_position][donor_type]-= drho;
+      concentrations[donor_position][acceptor_type]+= drho;
       energy+=dE;
     }
     else if(exp(-dE/T)>uniform_dist(rng)){
-      orientations[particle_index] = orientation_new;
+      concentrations[donor_position][donor_type]-= drho;
+      concentrations[donor_position][acceptor_type]+= drho;
       energy+=dE;
-    }*/
+    }
   }
 
   void fields::update_psi(vec2d &psi){

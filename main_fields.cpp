@@ -6,7 +6,7 @@ int main(){
   model_space::model_data model_data_1d;
 
   model_data_1d.N   = 20;
-  model_data_1d.Np  = 5;
+  model_data_1d.Np  = 19;
 
   model_data_1d.k11 = -1;
   model_data_1d.k12 = 0;
@@ -14,10 +14,10 @@ int main(){
 
   simulation_space::mc_data mc_data_1d;
 
-  mc_data_1d.mcs_eq = 1000;
+  mc_data_1d.mcs_eq = 10000;
   mc_data_1d.mcs_av = 1;
   mc_data_1d.Ti = 1;
-  mc_data_1d.Tf = 0.01;
+  mc_data_1d.Tf = 0.001;
   mc_data_1d.Nt = 10;
   mc_data_1d.cooling_schedule = simulation_space::linear;
   mc_data_1d.checkpoint = true;

@@ -32,6 +32,7 @@ namespace model_space{
     double k11;
     double k12;
     double k21;
+    double T_model;
     EngineType rng;
   };
 

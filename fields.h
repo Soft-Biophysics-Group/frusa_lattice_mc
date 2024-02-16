@@ -22,6 +22,9 @@ namespace model_space{
       /*Interaction parameters*/
       double k11, k12, k21;
 
+      /*Mean-field temperature (not annealing temperature!)*/
+      double T_model;
+
       /*Vector containing the relative concentrations*/
       vec2d concentrations;
 
@@ -30,6 +33,9 @@ namespace model_space{
 
       /*Energy of the system*/
       double energy;
+
+      /*Threshold for smallest possible local density*/
+      double eps=1e-8;
   
       /*
        * Pseudorandom number generator definitions
@@ -53,18 +59,19 @@ namespace model_space{
       /*Function to extract the states of neighbours of a given site*/
       vec2i get_neighbours(int);
 
-      /*Function to calculate the total energy of the system*/
-      double get_energy();
-
       /*Function to shift density from lattice site to another*/
       void shift_local_density(int,double);
 
       /*Calculate bounds for local density transfer*/
-      void get_donor_bound(int, double &, int &);
-      void get_acceptor_bound(int, double &, int &);
+      void get_donor_bound(int, vec1d &, double &, int &);
+      void get_acceptor_bound(int, vec1d &, double &, int &);
 
       /*Function to update the fractional concentrations on a given site*/
-      void update_local_concentrations(int,double);
+      void convert_concentrations(int,double);
+
+      /*Calculate the change in the entropic contribution*/
+      double get_entropy_shift(vec1d, int, double);
+      double get_entropy_convert(vec1d, int, double);
 
       /*Function to calculate the density vector*/
       void update_psi(vec2d&);
@@ -74,6 +81,9 @@ namespace model_space{
       /*Class constructor*/
       fields(const struct model_data &);
  
+      /*Function to calculate the total energy of the system*/
+      double get_energy();
+
       /*
        * Required public routines of the class
        */

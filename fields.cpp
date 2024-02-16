@@ -11,6 +11,7 @@ namespace model_space{
     k11(model_data_1d.k11),
     k12(model_data_1d.k12),
     k21(model_data_1d.k21),
+    T_model(model_data_1d.T_model),
     rng(model_data_1d.rng)
     {
     /*
@@ -86,7 +87,7 @@ namespace model_space{
         shift_local_density(site_index,T);
       }
       else{
-        update_local_concentrations(site_index,T);
+        convert_concentrations(site_index,T);
       }
     } 
   }
@@ -159,6 +160,14 @@ namespace model_space{
             en+= coupling_matrix[k][a][b]*c_i[a]*c_j[b];
           }
         }
+        if(c_i[j]>=eps){
+          en+=2*T_model*c_i[j]*log(c_i[j]);
+        }
+      }
+      double rho = c_i[0]+c_i[1];
+
+      if(1-rho>=eps){
+        en+=2*T_model*(1-rho)*log(1-rho);
       }
     }
     return en/2;
@@ -171,14 +180,16 @@ namespace model_space{
      */
     
     int donor_position = site_index;
+    vec1d donor_concentration, acceptor_concentration;
     double donor_bound, acceptor_bound, bound_total, drho;
     int donor_type, acceptor_type;
 
-    get_donor_bound(donor_position,donor_bound,donor_type);
+    get_donor_bound(donor_position,donor_concentration,donor_bound,donor_type);
 
     while(donor_bound==0.0){
       donor_position = (donor_position+1)%N;
-      get_donor_bound(donor_position,donor_bound,donor_type);
+      get_donor_bound(donor_position,donor_concentration,donor_bound,\
+                      donor_type);
     }
 
     /*Choose the lattice site where the density is transferred*/
@@ -188,22 +199,24 @@ namespace model_space{
       acceptor_position = (acceptor_position+1)%N;
     }
 
-    get_acceptor_bound(acceptor_position,acceptor_bound,acceptor_type);
+    get_acceptor_bound(acceptor_position,acceptor_concentration,acceptor_bound,\
+                       acceptor_type);
 
     while(acceptor_bound==0.0){
       acceptor_position = (acceptor_position+1)%N;
       if(acceptor_position==donor_position){
         acceptor_position = (acceptor_position+1)%N;
       }
-      get_acceptor_bound(acceptor_position,acceptor_bound,acceptor_type);
+      get_acceptor_bound(acceptor_position,acceptor_concentration,\
+                         acceptor_bound,acceptor_type);
     }
 
     /*Total bound on local density transfer*/
     bound_total = std::min(donor_bound,acceptor_bound);
 
     /*Amount of density to transfer*/
-    if(bound_total<1e-5){
-      /*No need to shift tiny amounts of density (below threshold 1e-5), 
+    if(bound_total<eps){
+      /*No need to shift tiny amounts of density (below threshold eps), 
        *simply transfer all density from the site*/
       drho = bound_total;
     }
@@ -233,7 +246,7 @@ namespace model_space{
 
     /*Calculate the energy difference resulting from the position change*/
     double dE = 0;
-    
+
     for(int j=0;j<2;j++){
       vec1d c_j_acceptor = {concentrations[n_a[j][1]][0],\
                             concentrations[n_a[j][1]][1]};
@@ -251,6 +264,9 @@ namespace model_space{
         are nearest neighbours*/
       dE-= coupling_matrix[dr][donor_type][acceptor_type]*drho*drho;
     }
+    
+    dE += get_entropy_shift(donor_concentration,donor_type,-drho);
+    dE += get_entropy_shift(acceptor_concentration,acceptor_type,drho);
 
     /*Accept the new position using Metropolis rule*/
     if(dE<=0){
@@ -265,14 +281,14 @@ namespace model_space{
     }
   }
 
-  void fields::get_donor_bound(int donor_position, double &donor_bound,\
-      int &donor_type){
+  void fields::get_donor_bound(int donor_position, vec1d &donor_concentration,\
+      double &donor_bound, int &donor_type){
     /*
      * Calculate the amount of local density that the donor site can transfer
      */
 
-    vec1d donor_concentration = {concentrations[donor_position][0],\
-                                 concentrations[donor_position][1]};
+    donor_concentration = {concentrations[donor_position][0],\
+                           concentrations[donor_position][1]};
 
     /*Check if there is a single species type on the donor site*/
     if(donor_concentration[0]==0.0){
@@ -288,18 +304,19 @@ namespace model_space{
   }
 
   void fields::get_acceptor_bound(int acceptor_position,\
-      double &acceptor_bound, int &acceptor_type){
+      vec1d &acceptor_concentration, double &acceptor_bound,\
+      int &acceptor_type){
     /*
      * Calculate the amount of local density that the acceptor site can take
      */
 
-    vec1d acceptor_concentration = {concentrations[acceptor_position][0],\
+    acceptor_concentration = {concentrations[acceptor_position][0],\
                                     concentrations[acceptor_position][1]};
 
     /*Check if the site is full*/
     double acceptor_local_density = acceptor_concentration[0]+\
                                     acceptor_concentration[1];
-    if(1.0-acceptor_local_density<1e-5){
+    if(1.0-acceptor_local_density<eps){
       acceptor_bound = 0.0; 
     }
     else{
@@ -309,7 +326,7 @@ namespace model_space{
     }
   }
 
-  void fields::update_local_concentrations(int site_index, double T){
+  void fields::convert_concentrations(int site_index, double T){
     /* 
      * Attempt to re-distribute the fractional concentrations on the selected
      * lattice site (site_index) with Metropolis acceptance rate
@@ -318,21 +335,23 @@ namespace model_space{
     /*Determine which fractional concentration is reduced and which one is 
       increased*/
     int donor_position=site_index;
+    vec1d donor_concentration;
     double donor_bound, drho;
     int donor_type, acceptor_type;
 
-    get_donor_bound(donor_position,donor_bound,donor_type);
+    get_donor_bound(donor_position,donor_concentration,donor_bound,donor_type);
     
     while(donor_bound==0.0){
       donor_position = (donor_position+1)%N;
-      get_donor_bound(donor_position,donor_bound,donor_type);
+      get_donor_bound(donor_position,donor_concentration,donor_bound,\
+                      donor_type);
     }
 
     acceptor_type = 1-donor_type;
 
     /*Amount of concentration to convert*/
-    if(donor_bound<1e-5){
-      /*No need to shift tiny amounts of density (below threshold 1e-5), 
+    if(donor_bound<eps){
+      /*No need to shift tiny amounts of density (below threshold eps), 
        *simply convert all concentration to the other type*/
       drho = donor_bound;
     }
@@ -356,6 +375,8 @@ namespace model_space{
       }
     }
 
+    dE += get_entropy_convert(donor_concentration,donor_type,drho);
+
     /*Accept the new position using Metropolis rule*/
     if(dE<=0){
       concentrations[donor_position][donor_type]-= drho;
@@ -367,6 +388,94 @@ namespace model_space{
       concentrations[donor_position][acceptor_type]+= drho;
       energy+=dE;
     }
+  }
+
+  double fields::get_entropy_shift(vec1d concentration_old, int type, 
+                                 double drho){
+    /*
+     * Calculate the change in mixing entropy on a selected site as a result of
+     * local density shift
+     */
+    
+    double dS;
+
+    /*Define the concentration components before and after the shift*/
+    double c_old = concentration_old[type];
+    double c_new = c_old + drho;
+
+    /*Calculate the local density before and after the shift*/
+    double rho_old = concentration_old[0]+concentration_old[1];
+    double rho_new = rho_old + drho;
+
+    if(drho<0){
+      /*Calculate entropy change for the donor site*/
+      dS = T_model*drho*log(c_old/(1-rho_old));
+      
+      if(c_new>=eps){
+        dS+= T_model*c_new*log(c_new/c_old);
+      }
+
+      if(1-rho_new>=eps){
+        dS+= T_model*(1-rho_new)*log((1-rho_new)/(1-rho_old));
+      }
+    }
+        
+    if(drho>0){
+      /*Calculate entropy change for the acceptor site*/
+      dS = T_model*drho*log(c_new/(1-rho_new));
+      
+      if(c_old>=eps){
+        dS+= T_model*c_old*log(c_new/c_old);
+      }
+
+      if(1-rho_old>=eps){
+        dS+= T_model*(1-rho_old)*log((1-rho_new)/(1-rho_old));
+      }
+    }
+    return dS;
+  }
+
+  double fields::get_entropy_convert(vec1d concentration_old, int type, 
+                                   double drho){
+    /*
+     * Calculate the change in mixing entropy on a selected site as a result of
+     * local re-distribution of fractional concentrations
+     */
+    
+    double dS;
+
+    /*Define the donor concentration before and after the conversion*/
+    double c_d_old = concentration_old[type];
+    double c_d_new = c_d_old-drho;
+
+    /*Define the donor concentration before and after the conversion*/
+    double c_a_old = concentration_old[1-type];
+    double c_a_new = c_a_old+drho;
+
+    if(c_a_old>=eps and c_d_new>=eps){
+      /*Generic concentration transfer*/
+      dS = 0.5*T_model*drho*log(c_a_old*c_a_new/c_d_old/c_d_new); 
+      dS+= 0.5*T_model*(c_a_old+c_a_new)*log(c_a_new/c_a_old);
+      dS+= 0.5*T_model*(c_d_old+c_d_new)*log(c_d_new/c_d_old);
+    }
+    
+    else if(c_a_old<eps and c_d_new>=eps){
+      /*Transfer part of concentration from donor to empty acceptor*/
+      dS = T_model*drho*log(c_a_new/c_d_new); 
+      dS+= T_model*c_d_old*log(c_d_new/c_d_old);
+    }
+    
+    else if(c_a_old>=eps and c_d_new<eps){
+      /*Transfer everything from donor to non-empty acceptor*/
+      dS = T_model*drho*log(c_a_old/c_d_old); 
+      dS+= T_model*c_a_new*log(c_a_new/c_a_old);
+    }
+
+    else if(c_a_old<eps and c_d_new<eps){ 
+      /*Transfer everything from donor to empty acceptor*/
+      dS = 0;
+    }
+    return dS;
   }
 
   void fields::update_psi(vec2d &psi){

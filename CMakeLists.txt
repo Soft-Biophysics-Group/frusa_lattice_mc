@@ -2,6 +2,10 @@
 # $ cmake --version
 cmake_minimum_required(VERSION 3.22.1)
 
+# Set required compiler to 2011 standard
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Set the name of the project
 project(fusa_mc VERSION 1.0.0
   DESCRIPTION 
@@ -22,3 +26,4 @@ add_executable(frusa_mc ${SOURCES})
 target_include_directories(frusa_mc PRIVATE 
   ${PROJECT_SOURCE_DIR}/include
 )
+

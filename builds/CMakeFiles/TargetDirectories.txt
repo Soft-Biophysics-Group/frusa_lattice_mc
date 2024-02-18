@@ -1,0 +1,3 @@
+/home/azelenskiy/Documents/frusa_mc/builds/CMakeFiles/frusa_mc.dir
+/home/azelenskiy/Documents/frusa_mc/builds/CMakeFiles/edit_cache.dir
+/home/azelenskiy/Documents/frusa_mc/builds/CMakeFiles/rebuild_cache.dir

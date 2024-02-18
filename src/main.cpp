@@ -15,14 +15,14 @@ int main(){
 
   simulation_space::mc_data mc_data_1d;
 
-  mc_data_1d.mcs_eq = 100000;
+  mc_data_1d.mcs_eq = 100;
   mc_data_1d.mcs_av = 1;
   mc_data_1d.Ti = 0;
   mc_data_1d.Tf = -5;
   mc_data_1d.Nt = 10;
   mc_data_1d.cooling_schedule = simulation_space::exponential;
-  mc_data_1d.checkpoint = true;
-  mc_data_1d.checkpoint_address = "../Results/test/checkpoints/";
+  mc_data_1d.checkpoint = false;
+  //mc_data_1d.checkpoint_address = "../Results/test/checkpoints/";
 
   static std::random_device dev;
   model_data_1d.rng = EngineType(dev());

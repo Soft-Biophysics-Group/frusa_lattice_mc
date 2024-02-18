@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/frusa_mc.dir/src/fields.cpp.o CMakeFiles/frusa_mc.dir/src/particles.cpp.o CMakeFiles/frusa_mc.dir/src/main.cpp.o -o frusa_mc 

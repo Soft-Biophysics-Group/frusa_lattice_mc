@@ -1,10 +1,9 @@
 {
   "mcs_eq": 100,
   "mcs_av": 1,
+  "cooling_schedule": "exponential",
   "Ti": 0,
   "Tf": -5,
   "Nt": 10,
-  "cooling_schedule": "exponential",
   "checkpoint_option": false
 }
-  

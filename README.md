@@ -2,9 +2,13 @@
 
 ## Future
 
+* Define separate model libraries with cmake selection option (replace\
+  template `mc_routines` by a class with `model` argument)
+* Implement 2D square field model
+* Implement 2D hexagonal field model
+* Set PATH variables at compile time
 * Implement useful averages (energy, heat capacity, correlation function,\
   cluster size) 
-* Define functions for parameter input files (priority)
 
 ## `frusa_mc`
 

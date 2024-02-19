@@ -10,6 +10,10 @@
 #include <time.h>
 #include <iomanip>
 
+#include <json.hpp>
+
+using json = nlohmann::json;
+
 typedef std::mt19937 EngineType;
 typedef std::uniform_int_distribution<int> int_dist;
 typedef std::uniform_real_distribution<double> real_dist;
@@ -26,13 +30,11 @@ namespace model_space{
    */
   
   /*Model parameters*/
-  struct model_data{
+  struct model_params{
+    model_params();
     int N;
     int Np;
-    double k11;
-    double k12;
-    double k21;
-    double T_model;
+    vec1d parameters;
     EngineType rng;
   };
 

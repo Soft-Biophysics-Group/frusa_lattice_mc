@@ -19,6 +19,9 @@ namespace model_space{
       /*Total density of particles*/
       double psi_bar;
 
+      /*Model parameter vector*/
+      vec1d parameters;
+      
       /*Interaction parameters*/
       double k11, k12, k21;
 
@@ -79,7 +82,7 @@ namespace model_space{
     public:
 
       /*Class constructor*/
-      fields(const struct model_data &);
+      fields(const struct model_params &);
  
       /*Function to calculate the total energy of the system*/
       double get_energy();

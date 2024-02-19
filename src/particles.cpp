@@ -5,13 +5,11 @@ namespace model_space{
    * Definitions for the particle class
    */
   
-  particles::particles(const model_data &model_data_1d) :
-    N(model_data_1d.N),
-    Np(model_data_1d.Np),
-    k11(model_data_1d.k11),
-    k12(model_data_1d.k12),
-    k21(model_data_1d.k21),
-    rng(model_data_1d.rng)
+  particles::particles(const model_params &model_params_1d) :
+    N(model_params_1d.N),
+    Np(model_params_1d.Np),
+    parameters(model_params_1d.parameters),
+    rng(model_params_1d.rng)
   {
     /*
      * Initialize the system of particles and calculate the initial energy
@@ -24,6 +22,11 @@ namespace model_space{
     binary_dist   = int_dist(0,1);
 
     initialize();
+    
+    k11 = parameters[0];
+    k12 = parameters[1];
+    k21 = parameters[2];
+    
     coupling_matrix = {{{k11,k21},{k12,k11}},
                        {{k11,k12},{k21,k11}}};
 

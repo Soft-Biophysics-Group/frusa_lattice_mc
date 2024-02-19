@@ -16,6 +16,9 @@ namespace model_space{
       /*Number of particles*/
       int Np;
 
+      /*Model parameter vector*/
+      vec1d parameters;
+      
       /*Interaction parameters*/
       double k11, k12, k21;
 
@@ -67,7 +70,7 @@ namespace model_space{
     public:
 
       /*Class constructor*/
-      particles(const struct model_data &);
+      particles(const struct model_params &);
  
       /*
        * Required public routines of the class

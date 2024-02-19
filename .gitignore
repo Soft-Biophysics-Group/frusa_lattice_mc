@@ -2,3 +2,5 @@
 *.o
 *.swp
 /build*/
+/test*/
+/input*/

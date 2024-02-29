@@ -174,6 +174,7 @@ namespace simulation_space{
       std::cout << "Energy at T = " << T << ":\n";
       lattice_system.print_energy();
     }
+    lattice_system.save_state("final_structure.dat","./");
   }
 
   template <class model>

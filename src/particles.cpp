@@ -238,12 +238,10 @@ namespace model_space{
 
     /*Accept the new position using Metropolis rule*/
     if(dE<=0){
-      std::cout << dE << "\n";
       positions[particle_index] = position_new;
       energy+=dE;
     }
     else if(exp(-dE/T)>uniform_dist(rng)){
-      std::cout << dE << "\n";
       positions[particle_index] = position_new;
       energy+=dE;
     }

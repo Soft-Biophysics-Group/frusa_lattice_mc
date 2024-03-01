@@ -1,35 +1,68 @@
-# To find the cmake version use 
-# $ cmake --version
+### CMake Version ##############################################################
+
 cmake_minimum_required(VERSION 3.16...3.22)
 
-# Set required compiler to 2011 standard
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+################################################################################
 
-# Set the name of the project
-project(fusa_mc VERSION 1.0.0
-  DESCRIPTION 
-  "Monte Carlo simulation package for models of frustrated self-assembly"
-  LANGUAGES CXX)
 
-# Add the model library
-add_subdirectory(src/models)
 
-# Set directory with the input files
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input/model_params.json
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+### Meta information ###########################################################
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input/mc_params.json
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+set(META_PROJECT_NAME  "frusa_mc")
+set(META_DESCRIPTION   "Monte-Carlo framework for models of frustrated self-assembly")
+set(META_AUTHOR        "Andrey Zelenskiy")
+set(META_AUTHOR_EMAIL  "andrey.zelenskiy@universite-paris-saclay.fr")
+set(META_VERSION_MAJOR "1")
+set(META_VERSION_MINOR "0")
+set(META_VERSION_PATCH "0")
+set(META_VERSION       "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}")
 
-# Add an executable with the above sources
-add_executable(frusa_mc app/main.cpp)
+################################################################################
 
-# Link the model library to the executable
-target_link_libraries(frusa_mc PUBLIC model)
 
-# Set the directory with the header files
-target_include_directories(frusa_mc PRIVATE 
-  ${PROJECT_SOURCE_DIR}/include
-)
 
+### Create frusa_mc project ####################################################
+
+message( STATUS ">> Building ${META_PROJECT_NAME} executable v${META_VERSION}")
+
+project(${META_PROJECT_NAME} 
+        VERSION ${META_VERSION}
+        DESCRIPTION ${META_DESCRIPTION}
+        LANGUAGES CXX)
+
+################################################################################
+
+
+
+### Compiler options ###########################################################
+
+add_library(compiler_flags INTERFACE)
+target_compile_features(compiler_flags INTERFACE cxx_std_11)
+
+################################################################################
+
+
+
+### Gather headers and sources #################################################
+
+### Header groups
+set(HEADER_FRUSA_ROOT)
+set(HEADER_FRUSA_ENGINE)
+set(HEADER_FRUSA_MODELS)
+set(HEADER_FRUSA_UTILITY)
+
+### Source groups
+set(SOURCE_FRUSA_ROOT)
+set(SOURCE_FRUSA_ENGINE)
+set(SOURCE_FRUSA_MODELS)
+set(SOURCE_FRUSA_UTILITY)
+
+### App group
+set(APP_FRUSA)
+
+### Add subdirectories
+#add_subdirectory(include)
+#add_subdirectory(src)
+add_subdirectory(app)
+
+###############################################################################

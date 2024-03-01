@@ -29,14 +29,6 @@ namespace model_space{
    * Data structures used to store the relevant parameters
    */
   
-  /*Model parameters*/
-  struct model_params{
-    model_params();
-    int N;
-    int Np;
-    vec1d parameters;
-    EngineType rng;
-  };
 
   /*
    * Generic routines that can be used by different models

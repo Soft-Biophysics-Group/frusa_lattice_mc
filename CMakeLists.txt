@@ -45,24 +45,18 @@ target_compile_features(compiler_flags INTERFACE cxx_std_11)
 
 ### Gather headers and sources #################################################
 
-### Header groups
-set(HEADER_FRUSA_ROOT)
-set(HEADER_FRUSA_ENGINE)
-set(HEADER_FRUSA_MODELS)
-set(HEADER_FRUSA_UTILITY)
+### Add header subdirectories
+#add_subdirectory(include/engine)
+#add_subdirectory(include/models)
+#add_subdirectory(include/thirdparty)
+#add_subdirectory(include/utilities)
 
-### Source groups
-set(SOURCE_FRUSA_ROOT)
-set(SOURCE_FRUSA_ENGINE)
-set(SOURCE_FRUSA_MODELS)
-set(SOURCE_FRUSA_UTILITY)
+### Add source subdirectories
+#add_subdirectory(src/engine)
+add_subdirectory(src/models)
+#add_subdirectory(src/utilities)
 
-### App group
-set(APP_FRUSA)
-
-### Add subdirectories
-#add_subdirectory(include)
-#add_subdirectory(src)
+### Add application subdirectory
 add_subdirectory(app)
 
 ###############################################################################

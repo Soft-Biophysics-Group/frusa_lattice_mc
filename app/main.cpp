@@ -1,4 +1,4 @@
-//#include "model.h"
+#include "model.h"
 //#include "mc_routines.h"
 #include <iostream>
 
@@ -6,7 +6,6 @@ int main(){
 
 
   std::cout << "Program runs!\n";
-  //model_space::model new_model = model_space::initialize_model();
   
   //simulation_space::mc_params mc_params_1d;
   

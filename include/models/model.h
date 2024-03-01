@@ -1,7 +1,24 @@
 #ifndef MODEL_HEADER_H
 #define MODEL_HEADER_H
 
-#include "utils.h"
+#include <iostream>
+#include <fstream>
+
+#include <random>
+typedef std::mt19937 EngineType;
+typedef std::uniform_int_distribution<int> int_dist;
+typedef std::uniform_real_distribution<double> real_dist;
+
+#include <vector>
+typedef std::vector<int> vec1i;
+typedef std::vector<double> vec1d;
+typedef std::vector<std::vector<int>> vec2i;
+typedef std::vector<std::vector<double>> vec2d;
+typedef std::vector<std::vector<std::vector<double>>> vec3d;
+
+#include <json.hpp>
+using json = nlohmann::json;
+
 
 namespace model_space{
   /*Definition of model class*/
@@ -14,11 +31,14 @@ namespace model_space{
       /*Dimensions of the lattice*/
       int Lx, Ly, Lz;
 
+      /*Total number of lattice sites*/
+      int N;
+
       /*Number of particles*/
       int Np;
 
       /*Vector describing the state of the system*/
-      state_vector state;
+      //state_vector state;
 
       /*Model parameter vector*/
       vec1d couplings;

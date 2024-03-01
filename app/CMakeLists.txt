@@ -3,7 +3,7 @@ add_executable(${META_PROJECT_NAME} main.cpp)
 
 ### Link the libraries to the executable
 target_link_libraries(${META_PROJECT_NAME} PUBLIC compiler_flags)
-#target_link_libraries(${META_PROJECT_NAME} PUBLIC model)
+target_link_libraries(${META_PROJECT_NAME} PUBLIC model)
 #target_link_libraries(${META_PROJECT_NAME} PUBLIC mc_engine)
 
 

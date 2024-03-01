@@ -1,11 +1,11 @@
-#include "1d_particles.h" 
+#include "particles.h" 
 
 namespace model_space{
   /*
    * Definitions for the particle class
    */
   
-  model::model(const model_params &model_params_1d) :
+  particles::particles(const model_params &model_params_1d) :
     N(model_params_1d.N),
     Np(model_params_1d.Np),
     parameters(model_params_1d.parameters),
@@ -38,7 +38,7 @@ namespace model_space{
    * Required public routines
    */
 
-  void model::print_state(){
+  void particles::print_state(){
     /*
      * Print the current state of the system
      */
@@ -49,7 +49,7 @@ namespace model_space{
     std::cout << "\n";
   }
 
-  void model::save_state(std::string file_name, std::string address){
+  void particles::save_state(std::string file_name, std::string address){
     /*
      * Save the current state of the system to a file
      */
@@ -66,14 +66,14 @@ namespace model_space{
     state_f.close();
   }
   
-  void model::print_energy(){
+  void particles::print_energy(){
     /*
      * Print the current energy of the system
      */
     std::cout << "energy = " << energy << "\n\n";
   }
 
-  void model::update_state(double T){
+  void particles::update_state(double T){
     /*
      * Update the state of the system using Metropolis algorithm
      */
@@ -90,19 +90,19 @@ namespace model_space{
     } 
   }
   
-  void model::initialize_averages(){
+  void particles::initialize_averages(){
   }
 
-  void model::update_averages(double T){
+  void particles::update_averages(double T){
   }
 
-  void model::save_averages(){
+  void particles::save_averages(){
   }
   /*
    * Class-specific routines
    */
 
-  void model::initialize(){
+  void particles::initialize(){
     /*
      * Initialize a system of particles at random locations and with
      * random orientations 
@@ -134,7 +134,7 @@ namespace model_space{
     }
   }
 
-  vec2i model::get_neighbours(int r){
+  vec2i particles::get_neighbours(int r){
     
     /*
      * Extract the indices (location in the state vector) of the neighbours
@@ -158,7 +158,7 @@ namespace model_space{
     return neighbours;
   }
 
-  double model::get_energy(){
+  double particles::get_energy(){
     /*
      * Calculate total energy of the system
      */
@@ -177,7 +177,7 @@ namespace model_space{
     return en/2;
   }
 
-  void model::update_position(int particle_index, double T){
+  void particles::update_position(int particle_index, double T){
     /*
      * Attempt to move the selected particle (particle_index) to a new position
      *  with Metropolis acceptance rate
@@ -247,7 +247,7 @@ namespace model_space{
     }
   }
 
-  void model::update_orientation(int particle_index, double T){
+  void particles::update_orientation(int particle_index, double T){
     /* 
      * Attempt to change the orientation of the selected particle 
      * (particle_index) with Metropolis acceptance rate
@@ -287,7 +287,7 @@ namespace model_space{
     }
   }
 
-  void model::update_psi(vec2d &psi){
+  void particles::update_psi(vec2d &psi){
     /*
      * Update the density vector
      */

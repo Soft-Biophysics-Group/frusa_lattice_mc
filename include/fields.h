@@ -1,11 +1,10 @@
-#ifndef FIELDS_1D_HEADER_H
-#define FIELDS_1D_HEADER_H
+#ifndef FIELDS_HEADER_H
+#define FIELDS_HEADER_H
 
 #include "utils.h"
 
 namespace model_space{
-  /*Definition of model class*/
-  class model {
+  class fields {
     private:
       /*
        * Private variables
@@ -83,7 +82,7 @@ namespace model_space{
     public:
 
       /*Class constructor*/
-      model(const struct model_params &);
+      fields(const struct model_params &);
  
       /*Function to calculate the total energy of the system*/
       double get_energy();

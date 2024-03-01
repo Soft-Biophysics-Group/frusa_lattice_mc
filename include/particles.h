@@ -1,11 +1,10 @@
-#ifndef PARTICLES_1D_HEADER_H
-#define PARTICLES_1D_HEADER_H
+#ifndef MODELS_HEADER_H
+#define MODELS_HEADER_H
 
 #include "utils.h"
 
 namespace model_space{
-  /*Definition of model class*/
-  class model {
+  class particles {
     private:
       /*
        * Private variables
@@ -71,7 +70,7 @@ namespace model_space{
     public:
 
       /*Class constructor*/
-      model(const struct model_params &);
+      particles(const struct model_params &);
  
       /*
        * Required public routines of the class

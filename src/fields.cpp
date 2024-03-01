@@ -1,11 +1,11 @@
-#include "1d_fields.h" 
+#include "fields.h" 
 
 namespace model_space{
   /*
    * Definitions for the fields class
    */
   
-  model::model(const model_params &model_params_1d) :
+  fields::fields(const model_params &model_params_1d) :
     N(model_params_1d.N),
     Np(model_params_1d.Np),
     parameters(model_params_1d.parameters),
@@ -21,7 +21,7 @@ namespace model_space{
     
     /*Initialize pseudorandom number distributions*/
     uniform_dist  = real_dist(0,1);
-    site_dist = int_dist(0,N-1);
+    particle_dist = int_dist(0,N-1);
     binary_dist   = int_dist(0,1);
 
     initialize();
@@ -42,7 +42,7 @@ namespace model_space{
    * Required public routines
    */
 
-  void model::print_state(){
+  void fields::print_state(){
     /*
      * Print the current state of the system
      */
@@ -53,7 +53,7 @@ namespace model_space{
     std::cout << "\n";
   }
 
-  void model::save_state(std::string file_name, std::string address){
+  void fields::save_state(std::string file_name, std::string address){
     /*
      * Save the current state of the system to a file
      */
@@ -71,19 +71,19 @@ namespace model_space{
     state_f.close();
   }
   
-  void model::print_energy(){
+  void fields::print_energy(){
     /*
      * Print the current energy of the system
      */
     std::cout << "energy = " << energy << "\n\n";
   }
 
-  void model::update_state(double T){
+  void fields::update_state(double T){
     /*
      * Update the state of the system using Metropolis algorithm
      */
     for(int i=0;i<N;i++){
-      int site_index = site_dist(rng);
+      int site_index = particle_dist(rng);
       int update_type = binary_dist(rng);
       
       if(update_type==0){
@@ -95,19 +95,19 @@ namespace model_space{
     } 
   }
   
-  void model::initialize_averages(){
+  void fields::initialize_averages(){
   }
 
-  void model::update_averages(double T){
+  void fields::update_averages(double T){
   }
 
-  void model::save_averages(){
+  void fields::save_averages(){
   }
   /*
    * Class-specific routines
    */
 
-  void model::initialize(){
+  void fields::initialize(){
     /*
      * Initialize a system of concentration fields on the lattice with 
      * uniform local density and random fractional concentrations 
@@ -124,10 +124,11 @@ namespace model_space{
     }
   }
 
-  vec2i model::get_neighbours(int r){
+  vec2i fields::get_neighbours(int r){
     
     /*
-     * Extract the positions of the neighbours of a specified lattice site r
+     * Extract the positions of the neighbours of a specified particle at 
+     * position r
      */
 
     vec2i neighbours;
@@ -141,7 +142,7 @@ namespace model_space{
     return neighbours;
   }
 
-  double model::get_energy(){
+  double fields::get_energy(){
     /*
      * Calculate total energy of the system
      */
@@ -175,7 +176,7 @@ namespace model_space{
     return en/2;
   }
 
-  void model::shift_local_density(int site_index, double T){
+  void fields::shift_local_density(int site_index, double T){
     /*
      * Attempt to shift the local density from the selected lattice site
      * (site_index) to a new site with Metropolis acceptance rate
@@ -195,7 +196,7 @@ namespace model_space{
     }
 
     /*Choose the lattice site where the density is transferred*/
-    int acceptor_position = site_dist(rng);
+    int acceptor_position = particle_dist(rng);
 
     if(acceptor_position==donor_position){
       acceptor_position = (acceptor_position+1)%N;
@@ -283,7 +284,7 @@ namespace model_space{
     }
   }
 
-  void model::get_donor_bound(int donor_position, vec1d &donor_concentration,\
+  void fields::get_donor_bound(int donor_position, vec1d &donor_concentration,\
       double &donor_bound, int &donor_type){
     /*
      * Calculate the amount of local density that the donor site can transfer
@@ -305,7 +306,7 @@ namespace model_space{
     donor_bound = donor_concentration[donor_type];
   }
 
-  void model::get_acceptor_bound(int acceptor_position,\
+  void fields::get_acceptor_bound(int acceptor_position,\
       vec1d &acceptor_concentration, double &acceptor_bound,\
       int &acceptor_type){
     /*
@@ -328,7 +329,7 @@ namespace model_space{
     }
   }
 
-  void model::convert_concentrations(int site_index, double T){
+  void fields::convert_concentrations(int site_index, double T){
     /* 
      * Attempt to re-distribute the fractional concentrations on the selected
      * lattice site (site_index) with Metropolis acceptance rate
@@ -392,7 +393,7 @@ namespace model_space{
     }
   }
 
-  double model::get_entropy_shift(vec1d concentration_old, int type, 
+  double fields::get_entropy_shift(vec1d concentration_old, int type, 
                                  double drho){
     /*
      * Calculate the change in mixing entropy on a selected site as a result of
@@ -437,7 +438,7 @@ namespace model_space{
     return dS;
   }
 
-  double model::get_entropy_convert(vec1d concentration_old, int type, 
+  double fields::get_entropy_convert(vec1d concentration_old, int type, 
                                    double drho){
     /*
      * Calculate the change in mixing entropy on a selected site as a result of
@@ -480,7 +481,7 @@ namespace model_space{
     return dS;
   }
 
-  void model::update_psi(vec2d &psi){
+  void fields::update_psi(vec2d &psi){
     /*
      * Update the density vector
      */

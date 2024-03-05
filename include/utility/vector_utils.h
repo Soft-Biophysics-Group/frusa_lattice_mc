@@ -7,12 +7,18 @@ typedef std::vector<std::vector<double>> vec2d;
 typedef std::vector<std::vector<std::vector<double>>> vec3d;
 
 namespace array_space{
+  /*
+   * Routines to assist with manipulation of flattened arrays.
+   * Flattened arrays are preferred over nested vector because during the 
+   * MC updates we only have to generate a single random index, instead of 3.
+   */
 
-  enum array_data_type = {integer_array,double_array};
+  // Calculates the flat array index (r) given the 3D coordinates (i,j,k) and
+  // the dimensions of the system (Lx,Ly,Lz)
+  void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz);
+  
+  // Calculates the 3D coordinates (i,j,k) given the flat array inde (r) and
+  // the dimensions of the system
+  void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly, int Lz);
 
-  class state_array{
-    public:
-      state_array(array_data_type, int);
-      state_array(array_data_type, int, int, int, int);
-  };
 }

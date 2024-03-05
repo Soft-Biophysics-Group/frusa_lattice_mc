@@ -6,7 +6,7 @@ namespace fields_space{
    * Definitions required for the public routines of the model class
    */
   void initialize_state(state_struct &state,
-                        model_parameters_struct parameters){
+                        model_parameters_struct &parameters){
     
     state.ns = parameters.ns;
     state.Lx = parameters.Lx;
@@ -15,7 +15,7 @@ namespace fields_space{
     
     // Set the total number of lattice sites and particle density
     state.N = state.Lx*state.Ly*state.Lz;
-    state.rho_bar = parameters.Np/state.N;
+    state.rho_bar = (1.0*parameters.Np)/state.N;
 
     std::string option = parameters.initialize_option;
 
@@ -27,7 +27,7 @@ namespace fields_space{
         initialize_state_random(state,parameters);
       }
       else if(option=="uniform"){
-        initialize_state_uniform(state,parameters);
+        initialize_state_uniform(state);
       }
       else{
         throw option;
@@ -39,7 +39,7 @@ namespace fields_space{
     }
   }
 
-  void print_state(state_struct state, model_parameters_struct parameters){
+  void print_state(state_struct &state, model_parameters_struct &parameters){
     std::cout << "\n---------------------------------------------\n";
     std::cout << "Current structural properties of the system\n";
     std::cout << "---------------------------------------------\n\n";
@@ -51,9 +51,8 @@ namespace fields_space{
     std::cout << " and local densities:\n";
     for(int r=0;r<state.N;r++){
 
-      //TODO define get_indices in utils
       int i,j,k;
-      r_to_indices(r,i,j,k);
+      array_space::r_to_ijk(r,i,j,k,state.Lx,state.Ly,state.Lz);
 
       std::cout << "i = " << i << " ";
       std::cout << "j = " << j << " ";
@@ -71,20 +70,20 @@ namespace fields_space{
     std::cout << "\n\n";
   }
 
-  void save_state(state_struct state, model_parameters_struct parameters){
+  void save_state(state_struct &state, model_parameters_struct &parameters){
     
-    std::string output_address = parameters.output_address;
+    std::string state_output = parameters.state_output;
 
     std::ofstream state_f;
-    state_f.open(output_address);
+    state_f.open(state_output);
     if(!state_f){
-      std::cerr << "Could not open "+output_address << std::endl;
+      std::cerr << "Could not open "+state_output << std::endl;
       exit(1);
     }
     
     for(int r=0;r<state.N;r++){
       for(int s=0;s<state.ns;s++){
-        state_f << std::setprecision(8) << concentrations[r][s] << " ";
+        state_f << std::setprecision(8) << state.concentration[r][s] << " ";
       }
       state_f << "\n";
     }
@@ -98,32 +97,52 @@ namespace fields_space{
    * Library-specific definitions
    */
   void initialize_state_from_file(state_struct &state, 
-                                  model_parameters_struct parameters){
+                                  model_parameters_struct &parameters){
+    std::ifstream input_file;
+    input_file.open(parameters.state_input);
 
+    if(!input_file){
+      std::cerr << "Unable to open file "+parameters.state_input;
+      exit(1);
+    }
+
+    for(int r=0;r<state.N;r++){
+      vec1d c_r;
+      double rho_r = 0;
+      for(int s=0;s<state.ns;s++){
+        double c_r_s;
+        input_file  >> c_r_s;
+        c_r.push_back(c_r_s);
+        rho_r+= c_r_s;
+      }
+      state.concentration.push_back(c_r);
+      state.local_density.push_back(rho_r);
+    }
   }
 
   void initialize_state_random(state_struct &state, 
-                               model_parameters_struct parameters){
+                               model_parameters_struct &parameters){
     
-    uniform_dist  = real_dist(0,1);
-    rng = parameters.rng;
+    real_dist uniform_dist(0,1);
 
     for(int r=0;r<state.N;r++){
       
       vec1d c_r;
-      double rho_r;
+      double rho_r=0;
       
       for(int s=0;s<state.ns-1;s++){
         
-        double c_r_s = uniform_dist(rng)*rho_bar;
+        double c_r_s = uniform_dist(parameters.rng)*(state.rho_bar-rho_r);
         
         c_r.push_back(c_r_s);
         rho_r+= c_r_s;
       }
 
       c_r.push_back(state.rho_bar-rho_r);
+      
+      std::shuffle(std::begin(c_r), std::end(c_r), parameters.rng);
 
-      state.concentrations.push_back(c_r);
+      state.concentration.push_back(c_r);
       state.local_density.push_back(state.rho_bar);
     }
   }
@@ -138,12 +157,49 @@ namespace fields_space{
         c_r.push_back(state.rho_bar/state.ns);
       }
 
-      state.concentrations.push_back(c_r);
+      state.concentration.push_back(c_r);
       state.local_density.push_back(state.rho_bar);
     }
   }
+  
+  model_parameters_struct::model_parameters_struct(){
+    /*
+     * Populate the struct using the input JSON file
+     */
+  
+    std::ifstream model_input_f;
+    model_input_f.open("./input/model_params.json");
+    if(!model_input_f){
+      std::cerr << "Could not open JSON model parameters file" << std::endl;
+      exit(1);
+    }
 
-  vec1i get_neighbours(int r, state_struct state){
+    json json_model_params = json::parse(model_input_f);
+  
+    ns         = json_model_params["ns"].template get<int>();
+    Lx         = json_model_params["Lx"].template get<int>();
+    Ly         = json_model_params["Ly"].template get<int>();
+    Lz         = json_model_params["Lz"].template get<int>();
+    Np         = json_model_params["Np"].template get<int>();
+    couplings         = json_model_params["couplings"].template get<vec1d>();
+    initialize_option = \
+      json_model_params["initialize_option"].template get<std::string>();
+    
+    if(initialize_option=="from_file"){
+      state_input = \
+      json_model_params["state_input"].template get<std::string>();
+    }
+    
+    state_output = \
+      json_model_params["state_output"].template get<std::string>();
+
+    std::random_device dev;
+    EngineType engine(dev());
+
+    rng = engine;
+  }
+
+  /*vec1i get_neighbours(int r, state_struct state){
     //TODO redefine for general Lx Ly Lz
 
     vec1i neighbours;
@@ -155,7 +211,7 @@ namespace fields_space{
     neighbours.push_back({1,rp});
 
     return neighbours;
-  }
+  }*/
 }
 
 

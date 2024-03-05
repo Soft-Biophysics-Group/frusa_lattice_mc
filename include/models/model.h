@@ -4,27 +4,16 @@
 #include <iostream>
 #include <fstream>
 
-#include <random>
-typedef std::mt19937 EngineType;
-typedef std::uniform_int_distribution<int> int_dist;
-typedef std::uniform_real_distribution<double> real_dist;
-
-#include <vector>
-typedef std::vector<int> vec1i;
-typedef std::vector<double> vec1d;
-typedef std::vector<std::vector<int>> vec2i;
-typedef std::vector<std::vector<double>> vec2d;
-typedef std::vector<std::vector<std::vector<double>>> vec3d;
-
 #include <json.hpp>
 using json = nlohmann::json;
 
 /*Select the model library*/
-#if defined FIELDS_1D_OPTION
-#include "fields_1d.h"
-#else
-#include "default_model.h"
-#endif
+//#if defined FIELDS_1D_OPTION
+#include "fields_state.h"
+using namespace fields_space;
+//#else
+//#include "default_model.h"
+//#endif
 
 namespace model_space{
   /*Definition of model class*/
@@ -34,29 +23,11 @@ namespace model_space{
        * Private variables
        */
 
-      /*Dimensions of the lattice*/
-      int Lx, Ly, Lz;
-
-      /*Total number of lattice sites*/
-      int N;
-
-      /*Number of particles*/
-      int Np;
+      /*Parameters from the input file*/
+      model_parameters_struct parameters;
 
       /*Vector describing the state of the system*/
-      state_vector system;
-
-      /*Model parameter vector*/
-      vec1d couplings;
-      
-      /*Coupling matrix*/
-      vec3d coupling_matrix;
-
-      /*Energy of the system*/
-      double energy;
-
-      /*Random number engine to be used by the class*/  
-      EngineType rng;
+      state_struct state;
 
       /*
        * Private routines of the class
@@ -68,45 +39,33 @@ namespace model_space{
     public:
 
       /*Class constructor*/
-      model(const struct model_params &);
+      model();
  
       /*
        * Required public routines of the class
        */
 
       /*Print the current state of the system*/
-      void print_state();
+      void print_model_state();
 
       /*Save the current state of the system to a file*/
-      void save_state(std::string, std::string);
+      void save_model_state();
 
       /*Print the current energy of the system*/
-      void print_energy();
+      void print_model_energy();
 
       /*Update the state of the system*/
-      void update_state(double);
+      void update_model_state(double);
 
       /*Initialize the containers to store the selected averages*/
-      void initialize_averages();
+      void initialize_model_averages();
 
       /*Update the selected simulation averages*/
-      void update_averages(double);
+      void update_model_averages(double);
 
       /*Save the selected simulation averages to the corresponding files*/
-      void save_averages();
+      void save_model_averages();
        
   };
- 
-  struct model_params{
-  /*Structure containing model parameters*/
-    model_params();
-    int Lx;
-    int Ly;
-    int Lz;
-    int Np;
-    vec1d couplings;
-    EngineType rng;
-  };
-
 }
 #endif

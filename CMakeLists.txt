@@ -47,5 +47,7 @@ target_compile_features(compiler_flags INTERFACE cxx_std_11)
 
 add_subdirectory(app)
 add_subdirectory(src/models)
+add_subdirectory(src/models/fields)
+add_subdirectory(src/utility)
 
 ###############################################################################

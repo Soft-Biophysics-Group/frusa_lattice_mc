@@ -1,12 +1,42 @@
 #ifndef FIELDS_STATE_HEADER_H
 #define FIELDS_STATE_HEADER_H
 
-#include "utils.h"
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <random>
+
+#include <json.hpp>
+
+#include "vector_utils.h"
+
+typedef std::mt19937 EngineType;
+typedef std::uniform_int_distribution<int> int_dist;
+typedef std::uniform_real_distribution<double> real_dist;
+
+using json = nlohmann::json;
 
 namespace fields_space{
   /*
    * Definitions required for the public routines of the model class
    */
+
+  //TODO remove this block
+  struct model_parameters_struct{
+  /*Structure containing model parameters*/
+    model_parameters_struct();
+    int ns;
+    int Lx;
+    int Ly;
+    int Lz;
+    int Np;
+    vec1d couplings;
+    EngineType rng;
+    std::string initialize_option;
+    std::string state_input;
+    std::string state_output;
+  };
+  
 
   // Structure containing the fractional and total site concentrations:
   // ns            - number of orientation species
@@ -24,19 +54,18 @@ namespace fields_space{
     double rho_bar;
     vec2d concentration;
     vec1d local_density;
-  }
+  };
 
   // Initialize the structural properties of the system, depending on the type 
   // of parameters.initialize_option
   void initialize_state(state_struct &state, 
-                        model_parameters_struct parameters);
+                        model_parameters_struct &parameters);
 
- 
   // Print the current values of the structural properties of the system
-  void print_state(state_struct state, model_parameters_struct parameters);
+  void print_state(state_struct &state, model_parameters_struct &parameters);
 
   // Save the fractional concentrations to a file 
-  void save_state(state_struct state, model_parameters_struct parameters);
+  void save_state(state_struct &state, model_parameters_struct &parameters);
   
   /*
    * End of the required definitions for the model class
@@ -48,13 +77,15 @@ namespace fields_space{
 
   // Various methods for state initialization
   void initialize_state_from_file(state_struct &state, 
-                                  model_parameters_struct parameters);
+                                  model_parameters_struct &parameters);
 
   void initialize_state_random(state_struct &state, 
-                               model_parameters_struct parameters);
+                               model_parameters_struct &parameters);
 
   void initialize_state_uniform(state_struct &state);
 
   // Returns a vector with the positions of the neighbours of a specified site
-  vec1i get_neighbours(int r, state_struct state);
+  //vec1i get_neighbours(int r, state_struct state);
 }
+
+#endif

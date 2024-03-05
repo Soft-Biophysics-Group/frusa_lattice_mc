@@ -19,6 +19,12 @@ typedef std::vector<std::vector<std::vector<double>>> vec3d;
 #include <json.hpp>
 using json = nlohmann::json;
 
+/*Select the model library*/
+#if defined FIELDS_1D_OPTION
+#include "fields_1d.h"
+#else
+#include "default_model.h"
+#endif
 
 namespace model_space{
   /*Definition of model class*/
@@ -38,7 +44,7 @@ namespace model_space{
       int Np;
 
       /*Vector describing the state of the system*/
-      //state_vector state;
+      state_vector system;
 
       /*Model parameter vector*/
       vec1d couplings;
@@ -94,7 +100,9 @@ namespace model_space{
   struct model_params{
   /*Structure containing model parameters*/
     model_params();
-    int N;
+    int Lx;
+    int Ly;
+    int Lz;
     int Np;
     vec1d couplings;
     EngineType rng;

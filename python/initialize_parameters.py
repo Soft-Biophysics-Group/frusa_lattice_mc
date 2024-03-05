@@ -12,8 +12,10 @@ def make_json_file(data,address):
 
 model_params = {}
 
-#Number of lattice sites
-model_params["N"] = 100
+#Lattice dimensions
+model_params["Lx"] = 100
+model_params["Ly"] = 1
+model_params["Lz"] = 1
 
 #Number of particles
 model_params["Np"] = 20
@@ -23,7 +25,7 @@ k11 = -1
 k12 = 0
 k21 = 0
 T_model = 0.1
-model_params["parameters"] = [k11,k12,k21,T_model]
+model_params["couplings"] = [k11,k12,k21,T_model]
 
 make_json_file(model_params,"../input/model_params.json")
 

@@ -1,7 +1,9 @@
 {
-  "N": 100,
+  "Lx": 100,
+  "Ly": 1,
+  "Lz": 1,
   "Np": 20,
-  "parameters": [
+  "couplings": [
     -1,
     0,
     0,

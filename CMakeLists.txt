@@ -45,18 +45,7 @@ target_compile_features(compiler_flags INTERFACE cxx_std_11)
 
 ### Gather headers and sources #################################################
 
-### Add header subdirectories
-#add_subdirectory(include/engine)
-#add_subdirectory(include/models)
-#add_subdirectory(include/thirdparty)
-#add_subdirectory(include/utilities)
-
-### Add source subdirectories
-#add_subdirectory(src/engine)
-add_subdirectory(src/models)
-#add_subdirectory(src/utilities)
-
-### Add application subdirectory
 add_subdirectory(app)
+add_subdirectory(src/models)
 
 ###############################################################################

@@ -7,8 +7,14 @@ int main(){
 
   std::cout << "Program runs!\n";
   
-  //simulation_space::mc_params mc_params_1d;
+  model_space::model_params parameters;
+
+  std::cout << parameters.Lx << "\n";
+  std::cout << parameters.Ly << "\n";
+  std::cout << parameters.Lz << "\n";
+  std::cout << parameters.Np << "\n";
   
+  //simulation_space::mc_params parameters;
   //new_model.print_state();
   //new_model.print_energy();
 

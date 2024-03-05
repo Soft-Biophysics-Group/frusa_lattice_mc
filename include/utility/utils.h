@@ -11,12 +11,6 @@
 #include <iomanip>
 
 
-typedef std::vector<int> vec1i;
-typedef std::vector<double> vec1d;
-typedef std::vector<std::vector<int>> vec2i;
-typedef std::vector<std::vector<double>> vec2d;
-typedef std::vector<std::vector<std::vector<double>>> vec3d;
-
 namespace model_space{
   
 

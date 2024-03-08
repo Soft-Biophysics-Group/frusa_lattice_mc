@@ -14,7 +14,7 @@ target_compile_definitions(model_library PRIVATE "MODEL_TYPE")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fields)
 
 target_include_directories(model_library PUBLIC 
-                           ${PROJECT_SOURCE_DIR}/include/models
+                           ${INCLUDE_FRUSA_MODELS} 
                            ${PROJECT_SOURCE_DIR}/include/models/fields)
 
 target_link_libraries(model_library PUBLIC compiler_flags)

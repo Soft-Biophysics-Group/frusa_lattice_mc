@@ -51,7 +51,13 @@ set(HEADER_FRUSA_MODELS)
 set(HEADER_FRUSA_UTILITY)
 set(HEADER_FRUSA_THIRDPARTY)
 
-### Organize project subdirectories
+### Header directories
+set(INCLUDE_FRUSA_ENGINE ${PROJECT_SOURCE_DIR}/include/engine)
+set(INCLUDE_FRUSA_MODELS ${PROJECT_SOURCE_DIR}/include/models)
+set(INCLUDE_FRUSA_UTILITY ${PROJECT_SOURCE_DIR}/include/utility)
+set(INCLUDE_FRUSA_THIRDPARTY ${PROJECT_SOURCE_DIR}/include/thirdparty)
+
+### Propagate variables to project subdirectories
 add_subdirectory(${PROJECT_SOURCE_DIR}/app)
 add_subdirectory(${PROJECT_SOURCE_DIR}/include)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/models)

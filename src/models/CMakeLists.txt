@@ -25,7 +25,5 @@ if("${MODEL_TYPE}" STREQUAL "fields_chain" OR
   target_include_directories(model_library PUBLIC 
                              ${PROJECT_SOURCE_DIR}/include/models/fields)
 
-  target_compile_definitions(model_library PRIVATE "FIELDS_CHAIN")
-
   target_link_libraries(model_library PUBLIC fields_library)
-
+endif()

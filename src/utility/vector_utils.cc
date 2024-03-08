@@ -11,4 +11,8 @@ namespace array_space{
     j = (r-Lx*Ly*k)/Lx;
     i = r-Lx*j-Lx*Ly*k;
   }
+
+  int mod(int a, int b){ 
+    return (a % b + b) % b; 
+  }
 }

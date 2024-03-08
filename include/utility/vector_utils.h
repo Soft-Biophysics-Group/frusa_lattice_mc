@@ -21,4 +21,7 @@ namespace array_space{
   // the dimensions of the system
   void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly, int Lz);
 
+  // Calculates modulo of an integer a (positive or negative) with respect to
+  // another positive integer b
+  int mod(int a, int b);
 }

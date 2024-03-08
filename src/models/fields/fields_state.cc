@@ -12,6 +12,7 @@ namespace fields_space{
     state.Lx = parameters.Lx;
     state.Ly = parameters.Ly;
     state.Lz = parameters.Lz;
+    state.Np = parameters.Np;
     
     // Set the total number of lattice sites and particle density
     state.N = state.Lx*state.Ly*state.Lz;
@@ -39,12 +40,19 @@ namespace fields_space{
     }
   }
 
-  void print_state(state_struct &state, model_parameters_struct &parameters){
+  void print_state(state_struct &state){
     std::cout << "\n---------------------------------------------\n";
     std::cout << "Current structural properties of the system\n";
     std::cout << "---------------------------------------------\n\n";
-    
-    std::cout << "The total density of particles in the system is:";
+   
+    std::cout << "Lattice size dimensions:\n\n";
+    std::cout << "Lx = " << state.Lx << "\n";
+    std::cout << "Ly = " << state.Ly << "\n";
+    std::cout << "Lz = " << state.Lz << "\n\n";
+
+    std::cout << "Number of particles Np = " << state.Np << "\n\n";
+
+    std::cout << "The total density of particles in the system is: ";
     std::cout << state.rho_bar << "\n\n";
 
     std::cout << "Current values of the fractional concentrations";

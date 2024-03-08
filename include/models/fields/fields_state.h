@@ -42,6 +42,7 @@ namespace fields_space{
   // ns            - number of orientation species
   // Lx, Ly, Lz    - dimensions of the lattice 
   // N             - number of lattice sites
+  // Np            - number of particles
   // rho_bar       - total particle density
   // concentration - fractional local concentrations of different orientations
   // local_density - local particle density
@@ -51,6 +52,7 @@ namespace fields_space{
     int Ly;
     int Lz;
     int N;
+    int Np;
     double rho_bar;
     vec2d concentration;
     vec1d local_density;
@@ -62,7 +64,7 @@ namespace fields_space{
                         model_parameters_struct &parameters);
 
   // Print the current values of the structural properties of the system
-  void print_state(state_struct &state, model_parameters_struct &parameters);
+  void print_state(state_struct &state);
 
   // Save the fractional concentrations to a file 
   void save_state(state_struct &state, model_parameters_struct &parameters);

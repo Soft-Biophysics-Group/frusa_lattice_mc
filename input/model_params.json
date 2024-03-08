@@ -8,5 +8,7 @@
     0,
     0,
     0.1
-  ]
+  ],
+  "initialize_option":"random",
+  "state_output":" "
 }

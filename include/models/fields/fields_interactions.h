@@ -1,8 +1,11 @@
 #ifndef FIELDS_INTERACTIONS_HEADER_H
 #define FIELDS_INTERACTIONS_HEADER_H
 
+#include "fields_state.h"
+#include "fields_chain.h"
+
 #include <iostream>
-#include <fstream>
+#include <cmath>
 
 #include "vector_utils.h"
 
@@ -22,8 +25,8 @@ namespace fields_space{
     double T_model;
     double energy;
     double entropy;
-    double free_energy
-  }
+    double free_energy;
+  };
 
   // Calculate interactions characteristics of the current state of the system 
   void initialize_interactions(state_struct &state, 
@@ -31,7 +34,8 @@ namespace fields_space{
                                model_parameters_struct &parameters);
 
   // Print the summary of the interactions characteristics
-  void print_interactions(interactions_struct $interactions);
+  void print_interactions(state_struct &state,
+                          interactions_struct &interactions);
   
   /*
    * End of the required definitions for the model class
@@ -42,8 +46,9 @@ namespace fields_space{
    */
   
   // Calculate mean-field energy and entropy of the system
-  void get_energy(state_struct &state, interactions_struct &interactions);
-  void get_entropy(state_struct &state, interactions_struct &interactions);
+  // eps=1e-8 is used to determine threshold for calculating logs
+  double get_energy(state_struct &state, vec3d coupling_matrix);
+  double get_entropy(state_struct &state, double T_model, double eps=1e-8);
   
   // Calculate the difference in energy and entropy after local updates
   void get_energy_diff();

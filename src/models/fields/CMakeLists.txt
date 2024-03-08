@@ -1,4 +1,4 @@
-add_library(fields_library fields_state.cc)
+add_library(fields_library fields_state.cc fields_interactions.cc fields_chain.cc)
 
 target_include_directories(fields_library PUBLIC
                            "${PROJECT_SOURCE_DIR}/include/models/fields"

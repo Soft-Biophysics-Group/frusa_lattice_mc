@@ -8,17 +8,20 @@ namespace model_space{
 
     initialize_state(state,parameters);
     
-    //initialize_coupling_matrix(coupling_matrix);
+    initialize_interactions(state,interactions,parameters);
     
-    //get_energy(energy);
-
   }
 
   void model::print_model_state(){
-    print_state(state, parameters);
+    print_state(state);
   }
 
   void model::save_model_state(){
     save_state(state, parameters);
   }
+  
+  void model::print_model_interactions(){
+    print_interactions(state,interactions);
+  }
+
 }

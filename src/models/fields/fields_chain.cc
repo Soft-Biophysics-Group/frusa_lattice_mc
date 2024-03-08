@@ -16,8 +16,8 @@ namespace fields_space{
 
   vec1i get_neighbours(int r, state_struct &state){
     
-    int rm = (state.Lx+((r-1)%state.Lx))%state.Lx;
-    int rp = (r+1)%state.Lx;
+    int rm = array_space::mod(r-1,state.Lx);
+    int rp = array_space::mod(r+1,state.Lx);
 
     vec1i neighbours = {rp,rm};
 

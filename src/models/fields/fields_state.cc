@@ -206,20 +206,6 @@ namespace fields_space{
 
     rng = engine;
   }
-
-  /*vec1i get_neighbours(int r, state_struct state){
-    //TODO redefine for general Lx Ly Lz
-
-    vec1i neighbours;
-
-    int rm = (N+((r-1)%N))%N;
-    int rp = (r+1)%N;
-
-    neighbours.push_back({0,rm});
-    neighbours.push_back({1,rp});
-
-    return neighbours;
-  }*/
 }
 
 

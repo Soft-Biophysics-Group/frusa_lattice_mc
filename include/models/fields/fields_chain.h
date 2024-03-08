@@ -2,6 +2,9 @@
 #define FIELDS_CHAIN_HEADER_H
 
 #include "fields_state.h"
+#include "fields_interactions.h"
+#include "fields_update.h"
+
 #include "vector_utils.h"
 
 namespace fields_space{

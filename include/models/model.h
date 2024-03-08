@@ -26,7 +26,7 @@ namespace model_space{
       /*Parameters from the input file*/
       model_parameters_struct parameters;
 
-      /*Vector describing the state of the system*/
+      /*Structure with characteristics of the state of the system*/
       state_struct state;
 
       /*

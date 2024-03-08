@@ -38,7 +38,7 @@ namespace fields_space{
   };
   
 
-  // Structure containing the fractional and total site concentrations:
+  // Structure containing the characteristics of the state of the system:
   // ns            - number of orientation species
   // Lx, Ly, Lz    - dimensions of the lattice 
   // N             - number of lattice sites

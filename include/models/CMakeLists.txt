@@ -1,1 +1,4 @@
-add_library(model model.cpp ${HEADER})
+set(HEADER_FRUSA_MODELS 
+    ${HEADER_FRUSA_MODELS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/model.h
+    PARENT_SCOPE)

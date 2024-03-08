@@ -4,13 +4,9 @@
 #include <iostream>
 #include <fstream>
 
-#include <json.hpp>
-using json = nlohmann::json;
-
 /*Select the model library*/
 //#if defined FIELDS_1D_OPTION
-#include "fields_state.h"
-#include "fields_interactions.h"
+#include "fields_chain.h"
 using namespace fields_space;
 //#else
 //#include "default_model.h"

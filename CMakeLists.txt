@@ -45,9 +45,16 @@ target_compile_features(compiler_flags INTERFACE cxx_std_11)
 
 ### Gather headers and sources #################################################
 
-add_subdirectory(app)
-add_subdirectory(src/models)
-add_subdirectory(src/models/fields)
-add_subdirectory(src/utility)
+### Header Groups
+set(HEADER_FRUSA_ENGINE)
+set(HEADER_FRUSA_MODELS)
+set(HEADER_FRUSA_UTILITY)
+set(HEADER_FRUSA_THIRDPARTY)
+
+### Organize project subdirectories
+add_subdirectory(${PROJECT_SOURCE_DIR}/app)
+add_subdirectory(${PROJECT_SOURCE_DIR}/include)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/models)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/utility)
 
 ###############################################################################

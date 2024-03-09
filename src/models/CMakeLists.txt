@@ -21,6 +21,7 @@ if("${MODEL_TYPE}" STREQUAL "fields_chain" OR
    "${MODEL_TYPE}" STREQUAL "fields_hexagonal") 
 
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fields)
+  #add_subdirectory(${INCLUDE_FRUSA_MODELS}/fields)
 
   target_include_directories(model_library PUBLIC 
                              ${PROJECT_SOURCE_DIR}/include/models/fields)

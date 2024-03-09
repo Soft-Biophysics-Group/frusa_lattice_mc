@@ -5,12 +5,18 @@
 #include <fstream>
 
 /*Select the model library*/
-//#if defined FIELDS_1D_OPTION
+#if defined FIELDS_CHAIN
 #include "fields_chain.h"
+using namespace fields_space;
+#elif defined FIELDS_SQUARE
+#include "fields_square.h"
+using namespace fields_space;
+#elif defined FIELDS_HEXAGONAL
+#include "fields_hexagonal.h"
 using namespace fields_space;
 //#else
 //#include "default_model.h"
-//#endif
+#endif
 
 namespace model_space{
   /*Definition of model class*/

@@ -43,6 +43,16 @@ target_compile_features(compiler_flags INTERFACE cxx_std_11)
 
 
 
+################################################################################
+
+set(MODEL_TYPE 
+    "default" CACHE STRING
+    "User-defined option for model library")
+
+################################################################################
+
+
+
 ### Gather headers and sources #################################################
 
 ### Header Groups

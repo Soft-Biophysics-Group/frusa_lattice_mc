@@ -1,20 +1,17 @@
 #ifndef FIELDS_CHAIN_HEADER_H
 #define FIELDS_CHAIN_HEADER_H
 
-#include "fields_state.h"
-#include "fields_interactions.h"
-#include "fields_update.h"
-
 #include "vector_utils.h"
 
 namespace fields_space{
-  /*
-   * Routines used to initialize the couplings for a 1d system of particles
-   * with 2 orientations
-   */
-  vec3d get_coupling_matrix(vec1d couplings);
+  // Initializes the couplings for a system of fields on a 1d lattice 
+  vec3d get_coupling_matrix_chain(vec1d couplings);
 
-  vec1i get_neighbours(int r, state_struct &state);
+  // Calculates the positions of the nearest neighbours of site r
+  vec1i get_neighbours_chain(int r, int Lx);
+
+  // Calculates the direction index of the bond between r1 and r2
+  int get_bond_direction_chain(int r1, int r2, int Lx);
 }
 
 #endif

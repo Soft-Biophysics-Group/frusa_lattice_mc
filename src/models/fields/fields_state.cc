@@ -38,6 +38,15 @@ namespace fields_space{
       std::cout << "Incorrect initialization option: ''" << option << "''\n";
       exit(1);
     }
+
+    for(int r=0;r<state.N;r++){
+      if(state.local_density[r]>0){
+        state.donor_list.push_back(r);
+      }
+      if(state.local_density[r]<1){
+        state.acceptor_list.push_back(r);
+      }
+    }
   }
 
   void print_state(state_struct &state){
@@ -45,7 +54,7 @@ namespace fields_space{
     std::cout << "Current structural properties of the system\n";
     std::cout << "---------------------------------------------\n\n";
    
-    std::cout << "Lattice size dimensions:\n\n";
+    std::cout << "Lattice dimensions:\n\n";
     std::cout << "Lx = " << state.Lx << "\n";
     std::cout << "Ly = " << state.Ly << "\n";
     std::cout << "Lz = " << state.Lz << "\n\n";

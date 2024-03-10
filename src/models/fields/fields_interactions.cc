@@ -59,7 +59,7 @@ namespace fields_space{
 
       vec1d c_r1 = state.concentration[r1];
       
-      vec1i n = get_neighbours(r1,state);
+      vec1i n = get_neighbours(r1,state.Lx,state.Ly,state.Lz);
 
       for(int k=0;k<n.size();k++){
         int r2 = n[k];

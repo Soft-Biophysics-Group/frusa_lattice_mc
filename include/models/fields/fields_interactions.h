@@ -2,7 +2,7 @@
 #define FIELDS_INTERACTIONS_HEADER_H
 
 #include "fields_state.h"
-#include "fields_chain.h"
+#include "fields_geometry.h"
 
 #include <iostream>
 #include <cmath>

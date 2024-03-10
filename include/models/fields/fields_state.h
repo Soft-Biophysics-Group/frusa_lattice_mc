@@ -56,6 +56,8 @@ namespace fields_space{
     double rho_bar;
     vec2d concentration;
     vec1d local_density;
+    vec1i donor_list;
+    vec1i acceptor_list;
   };
 
   // Initialize the structural properties of the system, depending on the type 

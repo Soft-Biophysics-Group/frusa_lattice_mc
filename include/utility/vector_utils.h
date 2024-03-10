@@ -13,6 +13,14 @@ namespace array_space{
    * MC updates we only have to generate a single random index, instead of 3.
    */
 
+  // Calculates the flat array index (r) given the 2D coordinates (i,j) and
+  // the dimensions of the system (Lx,Ly)
+  void ij_to_r(int &r, int i, int j, int Lx, int Ly);
+  
+  // Calculates the 2D coordinates (i,j) given the flat array inde (r) and
+  // the dimensions of the system
+  void r_to_ij(int r, int &i, int &j, int Lx, int Ly);
+
   // Calculates the flat array index (r) given the 3D coordinates (i,j,k) and
   // the dimensions of the system (Lx,Ly,Lz)
   void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz);

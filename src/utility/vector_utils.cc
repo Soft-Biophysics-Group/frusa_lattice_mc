@@ -2,6 +2,15 @@
 
 namespace array_space{
   
+  void ij_to_r(int &r, int i, int j, int Lx, int Ly){
+    r = i + Lx*j;
+  }
+
+  void r_to_ij(int r, int &i, int &j, int Lx, int Ly){
+    j = r/Lx;
+    i = r-Lx*j;
+  }
+  
   void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz){
     r = i + Lx*j + Lx*Ly*k;
   }

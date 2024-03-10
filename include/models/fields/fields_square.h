@@ -1,20 +1,17 @@
 #ifndef FIELDS_SQUARE_HEADER_H
 #define FIELDS_SQUARE_HEADER_H
 
-#include "fields_state.h"
-#include "fields_interactions.h"
-#include "fields_update.h"
-
 #include "vector_utils.h"
 
 namespace fields_space{
-  /*
-   * Routines used to initialize the couplings for a system of particles
-   * with 4 orientations on a 2d square lattice
-   */
-  vec3d get_coupling_matrix(vec1d couplings);
+  // Initializes the couplings for a system of fields on a 2d square lattice 
+  vec3d get_coupling_matrix_square(vec1d couplings);
 
-  vec1i get_neighbours(int r, state_struct &state);
+  // Calculates the positions of the nearest neighbours of site r
+  vec1i get_neighbours_square(int r, int Lx, int Ly);
+
+  // Calculates the direction index of the bond between r1 and r2
+  int get_bond_direction_square(int r1, int r2, int Lx, int Ly);
 }
 
 #endif

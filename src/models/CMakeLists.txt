@@ -11,20 +11,16 @@ target_link_libraries(model_library PUBLIC compiler_flags)
 
 ### Create a compile option to select model library
 
-set(MODEL_TYPE
-    "fields_chain" CACHE STRING
-    "Defines the type of model library to compile"
-    PARENT_SCOPE)
-
 if("${MODEL_TYPE}" STREQUAL "fields_chain" OR 
    "${MODEL_TYPE}" STREQUAL "fields_square" OR
    "${MODEL_TYPE}" STREQUAL "fields_hexagonal") 
 
+ target_compile_definitions(model_library PUBLIC "FIELDS")
+
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/fields)
-  #add_subdirectory(${INCLUDE_FRUSA_MODELS}/fields)
 
   target_include_directories(model_library PUBLIC 
-                             ${PROJECT_SOURCE_DIR}/include/models/fields)
+                             ${INCLUDE_FRUSA_MODELS}/fields)
 
   target_link_libraries(model_library PUBLIC fields_library)
 endif()

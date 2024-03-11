@@ -102,6 +102,61 @@ namespace fields_space{
                               interactions_struct &interactions,
                               model_parameters_struct &parameters,
                               double T, double eps){
+
+    real_dist uniform_dist(0,1);
+
+    int_dist donor_dist(0,state.donor_list.size()-1);
+
+    int list_ind = donor_dist(parameters.rng);
+
+    int r = state.donor_list[list_ind];
+   
+    int index_d = select_element(r,0,state,parameters);
+    int index_a = select_element(r,1,state,parameters);
+
+    while(index_d==index_a){
+      index_a = select_element(r,1,state,parameters);
+    }
+
+    double c_d = state.concentration[r][index_d];
+    double c_a = state.concentration[r][index_a];
+    
+    double bound_d = c_d;
+    
+    double dc;
+
+    if(bound_d<eps){
+      // No need to shift tiny amounts of density (below threshold eps), 
+      // simply convert all concentration to the other type
+      dc = bound_d;
+    }
+    else{
+      dc = uniform_dist(parameters.rng)*bound_d;
+    }
+    
+    double dE = get_energy_change(r,r,index_d,index_a,dc,
+                                  state,interactions);
+
+    double dS = 0;
+    dS += get_entropy_change_convert(r,index_d,index_a,dc,state,interactions);
+
+    double dF = dE+dS;
+
+    // Accept the new position using Metropolis rule
+    if(dF<=0){
+
+      update_state(r,index_d,list_ind,-dc,state);
+      update_state(r,index_a,list_ind, dc,state);
+
+      update_interactions(dE,dS,dF,interactions);
+    }
+    else if(exp(-dF/T)>uniform_dist(parameters.rng)){
+
+      update_state(r,index_d,list_ind,-dc,state);
+      update_state(r,index_a,list_ind, dc,state);
+
+      update_interactions(dE,dS,dF,interactions);
+    }
   }
 
   int select_element(int r, double bound,

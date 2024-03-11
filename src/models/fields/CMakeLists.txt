@@ -1,12 +1,15 @@
 set(HEADER_FIELDS
     ${INCLUDE_FRUSA_MODELS}/fields/fields_state.h
     ${INCLUDE_FRUSA_MODELS}/fields/fields_geometry.h
-    ${INCLUDE_FRUSA_MODELS}/fields/fields_interactions.h)
+    ${INCLUDE_FRUSA_MODELS}/fields/fields_interactions.h
+    ${INCLUDE_FRUSA_MODELS}/fields/fields_update.h
+    ${INCLUDE_FRUSA_THIRDPARTY}/json.hpp)
 
 set(SOURCE_FIELDS 
     fields_state.cc
     fields_geometry.cc
-    fields_interactions.cc)
+    fields_interactions.cc
+    fields_update.cc)
 
 add_library(fields_library 
             ${SOURCE_FIELDS}
@@ -36,7 +39,7 @@ target_include_directories(user_library PUBLIC
                            ${INCLUDE_FRUSA_MODELS}/fields
                            ${INCLUDE_FRUSA_UTILITY})
 
-target_link_libraries(user_library PUBLIC compiler_flags)
+target_link_libraries(user_library PRIVATE compiler_flags)
 target_link_libraries(user_library PRIVATE vector_utils)
 
 target_link_libraries(fields_library PRIVATE user_library) 
@@ -46,6 +49,6 @@ target_include_directories(fields_library PUBLIC
                            ${INCLUDE_FRUSA_UTILITY}
                            ${INCLUDE_FRUSA_THIRDPARTY})
 
-target_link_libraries(fields_library PUBLIC compiler_flags)
+target_link_libraries(fields_library PRIVATE compiler_flags)
 target_link_libraries(fields_library PRIVATE vector_utils)
 

@@ -9,6 +9,7 @@
 #include "fields_state.h"
 #include "fields_geometry.h"
 #include "fields_interactions.h"
+#include "fields_update.h"
 using namespace fields_space;
 #endif
 
@@ -31,13 +32,6 @@ namespace model_space{
       // current state of the system
       interactions_struct interactions;
 
-      /*
-       * Private routines of the class
-       */
-
-      // Function to initialize the system of anisotropic particles
-      void initialize();
-    
     public:
 
       /*Class constructor*/
@@ -57,8 +51,8 @@ namespace model_space{
       // system
       void print_model_interactions();
 
-      // Update the state of the system
-      void update_model_state(double);
+      // Update the state of the system at annealing temperature T
+      void update_model_system(double T);
 
       // Initialize the containers to store the selected averages
       void initialize_model_averages();

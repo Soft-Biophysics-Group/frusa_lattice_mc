@@ -93,4 +93,149 @@ namespace fields_space{
     }
     return entropy;
   }
+
+  double get_energy_change(int r_d, int r_a, int index_d, int index_a,
+                           double dc,
+                           state_struct &state, 
+                           interactions_struct &interactions){
+    
+    vec1i n_d = get_neighbours(r_d,state.Lx,state.Ly,state.Lz);
+    vec1i n_a;
+
+    bool nearest_neighbours = false;
+
+    if(r_d==r_a){
+      n_a = n_d;
+    }
+    else{
+      n_a = get_neighbours(r_a,state.Lx,state.Ly,state.Lz);
+      for(int i=0;i<n_d.size();i++){
+        if(r_a==n_d[i]){
+          nearest_neighbours = true;
+        }
+      }
+    }
+
+    double dE = 0;
+
+    for(int j=0;j<n_d.size();j++){
+
+      int r_d_j = n_d[j];
+      int r_a_j = n_a[j];
+
+      vec1d c_d_j = state.concentration[r_d_j];
+      vec1d c_a_j = state.concentration[r_a_j];
+
+      for(int b=0;b<interactions.coupling_matrix[j].size();b++){
+        dE-= interactions.coupling_matrix[j][index_d][b]*dc*c_d_j[b];
+        dE+= interactions.coupling_matrix[j][index_a][b]*dc*c_a_j[b];
+      }
+    }
+    if(nearest_neighbours){
+      int dr = get_bond_direction(r_d,r_a,state.Lx,state.Ly,state.Lz);
+      dE-= interactions.coupling_matrix[dr][index_d][index_a]*dc*dc;
+    }
+
+    return dE;
+  }
+
+  double get_entropy_change_shift(int r, int index, double dc,
+                                  state_struct &state,
+                                  interactions_struct &interactions,
+                                  double eps){
+    /*
+     * Calculate the change in mixing entropy on a selected site as a result of
+     * local density shift
+     */
+
+    double dS;
+
+    // Define the concentration components before and after the shift
+    double c_old = state.concentration[r][index];
+    double c_new = c_old + dc;
+
+    // Calculate the local density before and after the shift
+    double rho_old = state.local_density[r];
+    double rho_new = rho_old + dc;
+
+    if(dc<0){
+      // Calculate entropy change for the donor site
+      dS = interactions.T_model*dc*log(c_old/(1-rho_old));
+
+      if(c_new>=eps){
+        dS+= interactions.T_model*c_new*log(c_new/c_old);
+      }
+
+      if(1-rho_new>=eps){
+        dS+= interactions.T_model*(1-rho_new)*log((1-rho_new)/(1-rho_old));
+      }
+    }
+
+    if(dc>0){
+      // Calculate entropy change for the acceptor site
+      dS = interactions.T_model*dc*log(c_new/(1-rho_new));
+
+      if(c_old>=eps){
+        dS+= interactions.T_model*c_old*log(c_new/c_old);
+      }
+
+      if(1-rho_old>=eps){
+        dS+= interactions.T_model*(1-rho_old)*log((1-rho_new)/(1-rho_old));
+      }
+    }
+    return dS;
+  }
+
+  double get_entropy_change_convert(int r, int index_d, int index_a, double dc,
+                                  state_struct &state,
+                                  interactions_struct &interactions,
+                                  double eps){
+    /*
+     * Calculate the change in mixing entropy on a selected site as a result of
+     * local re-distribution of fractional concentrations
+     */
+
+    double dS;
+
+    // Define the donor concentration before and after the conversion
+    double c_d_old = state.concentration[r][index_d];
+    double c_d_new = c_d_old-dc;
+
+    // Define the acceptor concentration before and after the conversion
+    double c_a_old = state.concentration[r][index_a];
+    double c_a_new = c_a_old+dc;
+
+    if(c_a_old>=eps and c_d_new>=eps){
+      // Generic concentration transfer
+      dS = 0.5*interactions.T_model*dc*log(c_a_old*c_a_new/c_d_old/c_d_new); 
+      dS+= 0.5*interactions.T_model*(c_a_old+c_a_new)*log(c_a_new/c_a_old);
+      dS+= 0.5*interactions.T_model*(c_d_old+c_d_new)*log(c_d_new/c_d_old);
+    }
+
+    else if(c_a_old<eps and c_d_new>=eps){
+      // Transfer part of concentration from donor to empty acceptor
+      dS = interactions.T_model*dc*log(c_a_new/c_d_new); 
+      dS+= interactions.T_model*c_d_old*log(c_d_new/c_d_old);
+    }
+
+    else if(c_a_old>=eps and c_d_new<eps){
+      // Transfer everything from donor to non-empty acceptor
+      dS = interactions.T_model*dc*log(c_a_old/c_d_old); 
+      dS+= interactions.T_model*c_a_new*log(c_a_new/c_a_old);
+    }
+
+    else if(c_a_old<eps and c_d_new<eps){ 
+      // Transfer everything from donor to empty acceptor
+      dS = 0;
+    }
+    return dS;
+  }
+
+  void update_interactions(double dE, double dS, double dF, 
+                           interactions_struct &interactions){
+  
+    interactions.energy += dE;
+    interactions.entropy += dS;
+    interactions.free_energy += dF;
+  }
 }

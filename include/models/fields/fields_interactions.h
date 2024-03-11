@@ -15,7 +15,7 @@ namespace fields_space{
    */
 
   // Structure containing the characteristics of the model interactions:
-  // coupling_matrix - interaction map between different particles
+  // coupling_matrix - interaction map between different fields
   // T_model         - strength of the mean-field entropic interactions
   // energy          - current energy of the system
   // entropy         - current mean-field entropy of the system
@@ -45,15 +45,50 @@ namespace fields_space{
    * Library-specific definitions
    */
   
-  // Calculate mean-field energy and entropy of the system
+  // Functions to calculate mean-field energy and entropy of the system
   // eps=1e-8 is used to determine threshold for calculating logs
   double get_energy(state_struct &state, vec3d coupling_matrix);
   double get_entropy(state_struct &state, double T_model, double eps=1e-8);
   
-  // Calculate the difference in energy and entropy after local updates
-  void get_energy_diff();
-  void get_entropy_diff();
+  // Function to update energy after concentration transfer from donor to the 
+  // acceptor
+  // field.
+  // r_d             - lattice position of the donor
+  // r_a             - lattice position of the acceptor
+  // index_d         - donor field component
+  // index_a         - acceptor field component
+  // dc              - amount of concentration transferred
+  double get_energy_change(int r_d, int r_a, int index_d, int index_a, 
+                           double dc,
+                           state_struct &state,
+                           interactions_struct &interactions);
+  
+  // Function to update entropy after concentration is increased or decreased 
+  // on a single site (local density not conserved)
+  // r             - lattice position of the updated concentration field
+  // index         - updated field component
+  // dc            - amound of concentration gained or lost
+  // eps           - threshold for log calculation
+  double get_entropy_change_shift(int r, int index, double dc, 
+                                  state_struct &state, 
+                                  interactions_struct &interactions,
+                                  double eps=1e-8);
+   
+  // Function to update entropy after concentration is transferred between 
+  // components of the field on a single site (local density conserved)
+  // See arguments for get_entropy_change_shift and
+  // index_d - component of the donor field
+  // index_a - component of the acceptor field
+  double get_entropy_change_convert(int r, int index_d, int index_a, double dc, 
+                                    state_struct &state, 
+                                    interactions_struct &interactions,
+                                    double eps=1e-8);
 
-
+  // Function to update mean-field interaction properties
+  // dE - change in energy
+  // dS - change in entropy
+  // dF - change in free energy
+  void update_interactions(double dE, double dS, double dF,
+                           interactions_struct &interactions);
 }
 #endif

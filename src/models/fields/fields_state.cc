@@ -178,6 +178,20 @@ namespace fields_space{
       state.local_density.push_back(state.rho_bar);
     }
   }
+
+  void update_state(int r, int index, int list_ind, double dc, 
+                    state_struct &state){
+
+    state.concentration[r][index] += dc;
+    state.local_density[r] += dc;
+
+    if(dc<0 and state.local_density[r]==0){
+      state.donor_list.erase(state.donor_list.begin()+list_ind); 
+    }
+    else if(dc>0 and state.local_density[r]==1){
+      state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
+    }
+  }
   
   model_parameters_struct::model_parameters_struct(){
     /*

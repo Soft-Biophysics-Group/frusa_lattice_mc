@@ -1,9 +1,28 @@
+#include "fields_update.h"
+
 namespace fields_space{
   
   /*
    * Definitions required for the public routines of the model class
    */
- void update_state(); 
+  void update_system(state_struct &state, 
+                     interactions_struct &interactions,
+                     model_parameters_struct &parameters,
+                     double T){
+    
+    int_dist binary_dist(0,1);
+
+    for(int r=0;r<state.N;r++){
+      int update_type = binary_dist(parameters.rng);
+
+      if(update_type==0){
+        shift_local_density(state,interactions,parameters,T);
+      }
+      else{
+        convert_concentrations(state,interactions,parameters,T);
+      }
+    } 
+  }
   /* 
    * End of the required definitions for the model class
    */
@@ -14,7 +33,7 @@ namespace fields_space{
   void shift_local_density(state_struct &state, 
                            interactions_struct &interactions,
                            model_parameters_struct &parameters,
-                           double T){
+                           double T, double eps){
     
     real_dist uniform_dist(0,1);
 
@@ -38,103 +57,56 @@ namespace fields_space{
     double c_a = state.concentration[r_a][index_a];
     
     double bound_d = c_d;
-    double bound_a = std::min(1-c_a;1-state.local_density[r_a]);
+    double bound_a = std::min(1-c_a,1-state.local_density[r_a]);
 
-    bound_total = std::min(bound_d,bound_a);
+    double bound_total = std::min(bound_d,bound_a);
+
+    double dc;
 
     if(bound_total<eps){
       // No need to shift tiny amounts of density (below threshold eps), 
       // simply transfer all density from the site
-      drho = bound_total;
+      dc = bound_total;
     }
     else{
-      drho = uniform_dist(parameters.rng)*bound_total;
+      dc = uniform_dist(parameters.rng)*bound_total;
     }
 
-    vec1i n_d = get_neighbours(r_d);
-    vec1i n_a = get_neighbours(r_a);
+    double dE = get_energy_change(r_d,r_a,index_d,index_a,dc,
+                                  state,interactions);
 
-    // Check if the donor and the acceptor are nearest-neighbours
-    bool nearest_neighbours;
-
-    for(int i=0;i<n_d.size();i++){
-      if(r_a==n_d[i]){
-        nearest_neighbours = true;
-      }
-    }
-
-    double dE = 0;
     double dS = 0;
-
-    for(int j=0;j<n_d.size();j++){
-      
-      int r_d_j = n_d[j];
-      int r_a_j = n_a[j];
-      
-      vec1d c_d_j = state.concentration[r_d_j];
-      vec1d c_a_j = state.concentration[r_a_j];
-
-      for(int b=0;b<state.ns;b++){
-        dE+= interactions.coupling_matrix[j][index_a][b]*drho*c_a_j[k];
-        dE-= interactions.coupling_matrix[j][index_d][b]*drho*c_d_j[k];
-      }
-    }
-    if(nearest_neighbours){
-      dr = get_bond_direction(r_d,r_a);
-      dE-= interactions.coupling_matrix[dr][index_d][index_a]*drho*drho;
-    }
-
-    dS += get_entropy_shift(c_d,index_d,-drho);
-    dS += get_entropy_shift(c_a,index_a, drho);
+    dS += get_entropy_change_shift(r_d,index_d,-dc,state,interactions);
+    dS += get_entropy_change_shift(r_a,index_a, dc,state,interactions);
 
     double dF = dE+dS;
 
-    /*Accept the new position using Metropolis rule*/
+    // Accept the new position using Metropolis rule
     if(dF<=0){
 
-      state.concentration[r_d][index_d] -= drho;
-      state.concentration[r_a][index_a] += drho;
-      
-      state.local_density[r_d] -= drho;
-      state.local_density[r_a] += drho;
+      update_state(r_d,index_d,d_list_ind,-dc,state);
+      update_state(r_a,index_a,a_list_ind, dc,state);
 
-      if(state.local_density[r_d]==0){
-        state.donor_list.erase(d_list_ind);
-      }
-      if(state.local_density[r_a]==1){
-        state.acceptor_list.erase(a_list_ind);
-      }
-      
-      interactions.energy      += dE;
-      interactions.entropy     += dS;
-      interactions.free_energy += dF;
-    
+      update_interactions(dE,dS,dF,interactions);
     }
     else if(exp(-dF/T)>uniform_dist(parameters.rng)){
 
-      state.concentration[r_d][index_d] -= drho;
-      state.concentration[r_a][index_a] += drho;
-      
-      state.local_density[r_d] -= drho;
-      state.local_density[r_a] += drho;
+      update_state(r_d,index_d,d_list_ind,-dc,state);
+      update_state(r_a,index_a,a_list_ind, dc,state);
 
-      if(state.local_density[r_d]==0){
-        state.donor_list.erase(d_list_ind);
-      }
-      if(state.local_density[r_a]==1){
-        state.acceptor_list.erase(a_list_ind);
-      }
-      
-      interactions.energy      += dE;
-      interactions.entropy     += dS;
-      interactions.free_energy += dF;
-    
+      update_interactions(dE,dS,dF,interactions);
     }
+  }
+  
+  void convert_concentrations(state_struct &state, 
+                              interactions_struct &interactions,
+                              model_parameters_struct &parameters,
+                              double T, double eps){
   }
 
   int select_element(int r, double bound,
-                        state_struct &state, 
-                        model_parameters_struct &parameters){
+                     state_struct &state, 
+                     model_parameters_struct &parameters){
     
     vec1d c = state.concentration[r];
     vec1i c_ind;
@@ -147,6 +119,6 @@ namespace fields_space{
    
     int_dist c_dist(0,c.size()-1);
     
-    return c_ind[c_dist(params.rng)];
+    return c_ind[c_dist(parameters.rng)];
   }
 }

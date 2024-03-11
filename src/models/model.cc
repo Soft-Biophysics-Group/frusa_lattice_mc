@@ -24,4 +24,7 @@ namespace model_space{
     print_interactions(state,interactions);
   }
 
+  void model::update_model_system(double T){
+    update_system(state,interactions,parameters,T);
+  }
 }

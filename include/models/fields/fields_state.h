@@ -88,8 +88,15 @@ namespace fields_space{
 
   void initialize_state_uniform(state_struct &state);
 
-  // Returns a vector with the positions of the neighbours of a specified site
-  //vec1i get_neighbours(int r, state_struct state);
+  // Updates concentrations, local densities, and donor/acceptor lists
+  // after a local update of a concentration field
+  // r        - lattice position of the updated field
+  // index    - component of the updated field
+  // list_ind - index of the updated field in either the donor or acceptor list
+  // dc       - amount by which the value of the field is changed
+  // state    - state of the system before update
+  void update_state(int r, int index, int list_ind, double dc, 
+                    state_struct &state);
 }
 
 #endif

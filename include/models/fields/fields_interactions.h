@@ -1,6 +1,7 @@
 #ifndef FIELDS_INTERACTIONS_HEADER_H
 #define FIELDS_INTERACTIONS_HEADER_H
 
+#include "fields_parameters.h"
 #include "fields_state.h"
 #include "fields_geometry.h"
 

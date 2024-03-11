@@ -1,4 +1,5 @@
 set(HEADER_FIELDS
+    ${INCLUDE_FRUSA_MODELS}/fields/fields_parameters.h
     ${INCLUDE_FRUSA_MODELS}/fields/fields_state.h
     ${INCLUDE_FRUSA_MODELS}/fields/fields_geometry.h
     ${INCLUDE_FRUSA_MODELS}/fields/fields_interactions.h
@@ -6,6 +7,7 @@ set(HEADER_FIELDS
     ${INCLUDE_FRUSA_THIRDPARTY}/json.hpp)
 
 set(SOURCE_FIELDS 
+    fields_parameters.cc
     fields_state.cc
     fields_geometry.cc
     fields_interactions.cc

@@ -1,7 +1,11 @@
 #ifndef MC_HEADER_H
 #define MC_HEADER_H
 
-#include "utils.h"
+#include <iostream>
+#include <cmath>
+
+#include "vector_utils.h"
+#include "model.h"
 
 namespace simulation_space{
   

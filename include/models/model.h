@@ -6,6 +6,7 @@
 
 /*Select the model library*/
 #if defined FIELDS
+#include "fields_parameters.h"
 #include "fields_state.h"
 #include "fields_geometry.h"
 #include "fields_interactions.h"

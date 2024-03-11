@@ -27,9 +27,6 @@ namespace fields_space{
       json_model_params["state_input"].template get<std::string>();
     }
     
-    state_output = \
-      json_model_params["state_output"].template get<std::string>();
-
     std::random_device dev;
     EngineType engine(dev());
 

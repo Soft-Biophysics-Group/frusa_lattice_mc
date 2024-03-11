@@ -87,10 +87,8 @@ namespace fields_space{
     std::cout << "\n\n";
   }
 
-  void save_state(state_struct &state, model_parameters_struct &parameters){
+  void save_state(state_struct &state, std::string state_output){
     
-    std::string state_output = parameters.state_output;
-
     std::ofstream state_f;
     state_f.open(state_output);
     if(!state_f){
@@ -179,17 +177,24 @@ namespace fields_space{
     }
   }
 
-  void update_state(int r, int index, int list_ind, double dc, 
-                    state_struct &state){
+  void update_state(int r, int index, int list_ind, double dc,
+                    state_struct &state, double eps){
 
     state.concentration[r][index] += dc;
     state.local_density[r] += dc;
 
-    if(dc<0 and state.local_density[r]==0){
+    if(state.local_density[r]<eps){
       state.donor_list.erase(state.donor_list.begin()+list_ind); 
     }
-    else if(dc>0 and state.local_density[r]==1){
+    else{
+      state.donor_list.push_back(r); 
+    }
+
+    if(1-state.local_density[r]<eps){
       state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
+    }
+    else{
+      state.acceptor_list.push_back(r); 
     }
   }
 }

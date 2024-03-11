@@ -1,5 +1,5 @@
 #include "model.h"
-//#include "mc_routines.h"
+#include "mc_routines.h"
 #include <iostream>
 
 int main(){
@@ -11,16 +11,14 @@ int main(){
   new_model.print_model_state();
   new_model.print_model_interactions();
 
-  new_model.update_model_system(0.01);
-
-  //new_model.print_model_state();
-  new_model.print_model_interactions();
+  simulation_space::mc annealing;
+  annealing.print_mc_parameters();
+ 
+  annealing.mc_simulate(new_model,0.01);
+  //annealing.t_scan(new_model);
   
-
-  //simulation_space::mc<model_space::model> annealing(new_model, mc_params_1d);
-  //
-
-  //annealing.t_scan();
+  new_model.print_model_state();
+  new_model.print_model_interactions();
 
   return 0;
 }

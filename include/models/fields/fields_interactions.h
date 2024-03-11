@@ -37,7 +37,9 @@ namespace fields_space{
   // Print the summary of the interactions characteristics
   void print_interactions(state_struct &state,
                           interactions_struct &interactions);
-  
+
+  void print_energy(state_struct &state,
+                    interactions_struct &interactions);
   /*
    * End of the required definitions for the model class
    */

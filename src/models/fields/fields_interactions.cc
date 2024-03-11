@@ -44,6 +44,12 @@ namespace fields_space{
     std::cout << "free energy = " << interactions.free_energy/state.Np << "\n";
     std::cout << "\n";
   }
+
+  void print_energy(state_struct &state, interactions_struct &interactions){
+    std::cout << "energy = " << interactions.energy/state.Np << "\n";
+    std::cout << "entropy = " << interactions.entropy/state.Np << "\n";
+    std::cout << "free energy = " << interactions.free_energy/state.Np << "\n";
+  }
   /* 
    * End of the required definitions for the model class
    */
@@ -99,6 +105,7 @@ namespace fields_space{
                            state_struct &state, 
                            interactions_struct &interactions){
     
+    //std::cout << "Started get_energy_change\n";
     vec1i n_d = get_neighbours(r_d,state.Lx,state.Ly,state.Lz);
     vec1i n_a;
 
@@ -118,24 +125,31 @@ namespace fields_space{
 
     double dE = 0;
 
+    //std::cout << "Calculated neighbours\n";
     for(int j=0;j<n_d.size();j++){
 
       int r_d_j = n_d[j];
       int r_a_j = n_a[j];
 
+      //std::cout << "r_d_j = " << r_d_j << "\n";
+      //std::cout << "r_a_j = " << r_a_j << "\n";
+
       vec1d c_d_j = state.concentration[r_d_j];
       vec1d c_a_j = state.concentration[r_a_j];
 
       for(int b=0;b<interactions.coupling_matrix[j].size();b++){
+        //std::cout << "b = " << b << "\n";
         dE-= interactions.coupling_matrix[j][index_d][b]*dc*c_d_j[b];
         dE+= interactions.coupling_matrix[j][index_a][b]*dc*c_a_j[b];
       }
     }
+    //std::cout << "Starting nn correction\n";
     if(nearest_neighbours){
       int dr = get_bond_direction(r_d,r_a,state.Lx,state.Ly,state.Lz);
       dE-= interactions.coupling_matrix[dr][index_d][index_a]*dc*dc;
     }
 
+    //std::cout << "Finished get_energy_change\n";
     return dE;
   }
 

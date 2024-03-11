@@ -16,15 +16,28 @@ namespace model_space{
     print_state(state);
   }
 
-  void model::save_model_state(){
-    save_state(state, parameters);
+  void model::save_model_state(std::string state_output){
+    save_state(state, state_output);
   }
   
   void model::print_model_interactions(){
     print_interactions(state,interactions);
   }
 
+  void model::print_model_energy(){
+    print_energy(state,interactions);
+  }
+
   void model::update_model_system(double T){
     update_system(state,interactions,parameters,T);
+  }
+
+  void model::initialize_model_averages(){
+  }
+
+  void model::update_model_averages(double T){
+  }
+
+  void model::save_model_averages(double T){
   }
 }

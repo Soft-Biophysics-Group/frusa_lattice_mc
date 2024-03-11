@@ -29,8 +29,6 @@ namespace fields_space{
   //                     current options are "from_file", "random", "uniform"
   // state_input       - if initialize_option is set to "from_file", this 
   //                     string contains the location of the input structure
-  // state_output      - location where the state configurations should be 
-  //                     saved to
   struct model_parameters_struct{
     model_parameters_struct();
     int ns;
@@ -42,7 +40,6 @@ namespace fields_space{
     EngineType rng;
     std::string initialize_option;
     std::string state_input;
-    std::string state_output;
   };
 }  
 #endif

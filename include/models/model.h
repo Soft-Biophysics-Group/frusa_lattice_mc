@@ -45,12 +45,14 @@ namespace model_space{
       // Print the information about the current state of the system
       void print_model_state();
 
-      // Save the current state of the system to a file
-      void save_model_state();
+      // Save the current state of the system to a file "state_output"
+      void save_model_state(std::string state_output);
 
       // Print the information about interactions in the current state of the 
       // system
       void print_model_interactions();
+
+      void print_model_energy();
 
       // Update the state of the system at annealing temperature T
       void update_model_system(double T);
@@ -59,10 +61,10 @@ namespace model_space{
       void initialize_model_averages();
 
       // Update the selected simulation averages
-      void update_model_averages(double);
+      void update_model_averages(double T);
 
       // Save the selected simulation averages to the corresponding files
-      void save_model_averages();
+      void save_model_averages(double T);
        
   };
 }

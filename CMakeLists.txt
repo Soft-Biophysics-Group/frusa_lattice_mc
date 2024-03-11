@@ -70,6 +70,7 @@ set(INCLUDE_FRUSA_THIRDPARTY ${PROJECT_SOURCE_DIR}/include/thirdparty)
 ### Propagate variables to project subdirectories
 add_subdirectory(${PROJECT_SOURCE_DIR}/app)
 add_subdirectory(${PROJECT_SOURCE_DIR}/include)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/engine)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/models)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/utility)
 

@@ -2,9 +2,9 @@
 
 ## Future
 
-* Clean up CMake files (remove unnecessary definitions)
-* Write `fields_update` module 
-* Replace template `mc_routines` by a class with `model` argument)
+* Currently, donor and acceptor lists are updated incorrectly. There is no 
+  feature to check if site is already in the list and, as a result, the 
+  simulation gives Segmentation fault
 * Set PATH variables at compile time
 * Implement useful averages (energy, heat capacity, correlation function,\
   cluster size) 

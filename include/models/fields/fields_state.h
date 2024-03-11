@@ -49,8 +49,8 @@ namespace fields_space{
   // Print the current values of the structural properties of the system
   void print_state(state_struct &state);
 
-  // Save the fractional concentrations to a file 
-  void save_state(state_struct &state, model_parameters_struct &parameters);
+  // Save the fractional concentrations to a file "state_output"
+  void save_state(state_struct &state, std::string state_output);
   
   /*
    * End of the required definitions for the model class
@@ -76,8 +76,8 @@ namespace fields_space{
   // list_ind - index of the updated field in either the donor or acceptor list
   // dc       - amount by which the value of the field is changed
   // state    - state of the system before update
-  void update_state(int r, int index, int list_ind, double dc, 
-                    state_struct &state);
+  void update_state(int r, int index, int list_ind, double dc,
+                    state_struct &state, double eps=1e-8);
 }
 
 #endif

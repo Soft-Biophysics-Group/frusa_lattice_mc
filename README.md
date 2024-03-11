@@ -2,9 +2,7 @@
 
 ## Future
 
-* Currently, donor and acceptor lists are updated incorrectly. There is no 
-  feature to check if site is already in the list and, as a result, the 
-  simulation gives Segmentation fault
+* Write an interface for running jobs(priority)
 * Set PATH variables at compile time
 * Implement useful averages (energy, heat capacity, correlation function,\
   cluster size) 

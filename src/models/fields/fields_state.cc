@@ -183,18 +183,31 @@ namespace fields_space{
     state.concentration[r][index] += dc;
     state.local_density[r] += dc;
 
-    if(state.local_density[r]<eps){
-      state.donor_list.erase(state.donor_list.begin()+list_ind); 
+    if(std::find(state.donor_list.begin(),\
+                 state.donor_list.end(),r)!=state.donor_list.end()){
+
+      if(state.local_density[r]<eps){
+        state.donor_list.erase(state.donor_list.begin()+list_ind);
+      }
     }
     else{
-      state.donor_list.push_back(r); 
+      if(state.local_density[r]>eps){
+        state.donor_list.push_back(r); 
+      }
     }
 
-    if(1-state.local_density[r]<eps){
-      state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
+
+    if(std::find(state.acceptor_list.begin(),\
+                 state.acceptor_list.end(),r)!=state.acceptor_list.end()){
+
+      if(state.local_density[r]>1-eps){
+        state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
+      }
     }
     else{
-      state.acceptor_list.push_back(r); 
+      if(state.local_density[r]<1-eps){
+        state.acceptor_list.push_back(r); 
+      }
     }
   }
 }

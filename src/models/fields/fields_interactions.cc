@@ -48,7 +48,7 @@ namespace fields_space{
   void print_energy(state_struct &state, interactions_struct &interactions){
     std::cout << "energy = " << interactions.energy/state.Np << "\n";
     std::cout << "entropy = " << interactions.entropy/state.Np << "\n";
-    std::cout << "free energy = " << interactions.free_energy/state.Np << "\n";
+    std::cout << "free energy = " << interactions.free_energy/state.Np << "\n\n";
   }
   /* 
    * End of the required definitions for the model class

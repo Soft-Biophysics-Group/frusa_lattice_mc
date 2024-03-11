@@ -15,7 +15,7 @@ namespace fields_space{
     for(int r=0;r<state.N;r++){
       int update_type = binary_dist(parameters.rng);
 
-      if(update_type>-1){
+      if(update_type==0){
         shift_local_density(state,interactions,parameters,T);
       }
       else{
@@ -37,8 +37,8 @@ namespace fields_space{
     
     real_dist uniform_dist(0,1);
 
-    std::cout << "donor_array size = " << state.donor_list.size() << "\n";
-    std::cout << "acceptor_array size = " << state.acceptor_list.size() << "\n";
+    //std::cout << "donor_array size = " << state.donor_list.size() << "\n";
+    //std::cout << "acceptor_array size = " << state.acceptor_list.size() << "\n";
 
     int_dist donor_dist(0,state.donor_list.size()-1);
     int_dist acceptor_dist(0,state.acceptor_list.size()-1);
@@ -46,11 +46,11 @@ namespace fields_space{
     int d_list_ind = donor_dist(parameters.rng);
     int a_list_ind = acceptor_dist(parameters.rng);
 
-    std::cout << "d_list_size = " << state.donor_list.size() << "\n";
-    std::cout << "a_list_size = " << state.acceptor_list.size() << "\n";
+    //std::cout << "d_list_size = " << state.donor_list.size() << "\n";
+    //std::cout << "a_list_size = " << state.acceptor_list.size() << "\n";
 
-    std::cout << "d_list_ind = " << d_list_ind << "\n";
-    std::cout << "a_list_ind = " << a_list_ind << "\n";
+    //std::cout << "d_list_ind = " << d_list_ind << "\n";
+    //std::cout << "a_list_ind = " << a_list_ind << "\n";
 
     int r_d = state.donor_list[d_list_ind];
     int r_a = state.acceptor_list[a_list_ind];
@@ -59,12 +59,12 @@ namespace fields_space{
       a_list_ind = acceptor_dist(parameters.rng);
       r_a = state.acceptor_list[a_list_ind];
     }
-    std::cout << "rd = " << r_d << " r_a = " << r_a << "\n"; 
+    //std::cout << "rd = " << r_d << " r_a = " << r_a << "\n"; 
     
     int index_d = select_element(r_d,0,state,parameters);
     int index_a = select_element(r_a,1,state,parameters);
     
-    std::cout << "id = " << index_d << " ia = " << index_a << "\n"; 
+    //std::cout << "id = " << index_d << " ia = " << index_a << "\n"; 
 
     double c_d = state.concentration[r_d][index_d];
     double c_a = state.concentration[r_a][index_a];
@@ -74,9 +74,9 @@ namespace fields_space{
 
     double bound_total = std::min(bound_d,bound_a);
 
-    std::cout << "bound_d = " << bound_d << "\n";
-    std::cout << "bound_a = " << bound_a << "\n";
-    std::cout << "bound_total = " << bound_total << "\n";
+    //std::cout << "bound_d = " << bound_d << "\n";
+    //std::cout << "bound_a = " << bound_a << "\n";
+    //std::cout << "bound_total = " << bound_total << "\n";
     double dc;
 
     if(bound_total<eps){
@@ -88,16 +88,16 @@ namespace fields_space{
       dc = uniform_dist(parameters.rng)*bound_total;
     }
 
-    std::cout << "dc = " << dc << "\n";
+    //std::cout << "dc = " << dc << "\n";
 
     double dE = 0;
     dE += get_energy_change(r_d,r_a,index_d,index_a,dc,
                             state,interactions);
-    std::cout << "dE = " << dE << "\n";
+    //std::cout << "dE = " << dE << "\n";
 
     double dS = 0;
-    //dS += get_entropy_change_shift(r_d,index_d,-dc,state,interactions);
-    //dS += get_entropy_change_shift(r_a,index_a, dc,state,interactions);
+    dS += get_entropy_change_shift(r_d,index_d,-dc,state,interactions);
+    dS += get_entropy_change_shift(r_a,index_a, dc,state,interactions);
     //std::cout << "dS = " << dS << "\n";
 
     double dF = dE+dS;
@@ -106,23 +106,23 @@ namespace fields_space{
     // Accept the new position using Metropolis rule
     if(dF<=0){
 
-      std::cout << "Starting to record data\n";
+      //std::cout << "Starting to record data\n";
       update_state(r_d,index_d,d_list_ind,-dc,state);
       update_state(r_a,index_a,a_list_ind, dc,state);
-      std::cout << "Recorded state data\n";
+      //std::cout << "Recorded state data\n";
 
       update_interactions(dE,dS,dF,interactions);
-      std::cout << "Recorded interactions data\n";
+      //std::cout << "Recorded interactions data\n";
     }
     else if(exp(-dF/T)>uniform_dist(parameters.rng)){
 
-      std::cout << "Starting to record data\n";
+      //std::cout << "Starting to record data\n";
       update_state(r_d,index_d,d_list_ind,-dc,state);
       update_state(r_a,index_a,a_list_ind, dc,state);
-      std::cout << "Recorded state data\n";
+      //std::cout << "Recorded state data\n";
 
       update_interactions(dE,dS,dF,interactions);
-      std::cout << "Recorded interactions data\n";
+      //std::cout << "Recorded interactions data\n";
     }
   }
   

@@ -10,4 +10,16 @@ The parameters of the model are
 
 * $N$ - number of particles
 * $\Delta$ - energy gap
-* $T$ - temperature of the system
+* $T$ - temperature
+
+The model is exactly solvable with partition function equal to
+
+$$Z = 2^N\cosh^N\left(\frac{\beta\Delta}{2}\right).$$
+
+From this, we can calculate the free energy
+
+$$-\frac{1}{N}\beta F = \ln{2} +\ln\left[\cosh\left(\frac{\beta\Delta}{2}\right)\right],
+
+average energy
+
+$$U = \frac{Delta}{2}\tanh\left(\frac{\beta\Delta}{2}\right)$$

@@ -14,11 +14,7 @@ int main(){
   simulation_space::mc annealing;
   annealing.print_mc_parameters();
  
-  //annealing.mc_simulate(new_model,0.01);
   annealing.t_scan(new_model);
-  
-  new_model.print_model_state();
-  new_model.print_model_interactions();
 
   return 0;
 }

@@ -5,7 +5,13 @@
 #include <fstream>
 
 /*Select the model library*/
-#if defined FIELDS
+#if defined DEFAULT
+#include "default_parameters.h"
+#include "default_state.h"
+#include "default_interactions.h"
+#include "default_update.h"
+using namespace default_space;
+#elif defined FIELDS
 #include "fields_parameters.h"
 #include "fields_state.h"
 #include "fields_geometry.h"

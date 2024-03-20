@@ -8,16 +8,10 @@ target_link_libraries(${META_PROJECT_NAME} PUBLIC compiler_flags)
 target_link_libraries(${META_PROJECT_NAME} PUBLIC model_library)
 target_link_libraries(${META_PROJECT_NAME} PUBLIC mc_library)
 
-#target_include_directories(${META_PROJECT_NAME} PUBLIC 
-#  "${PROJECT_SOURCE_DIR}/include/models/fields")
+### Setup directories
+# Copy python directory
+file(COPY ${PROJECT_SOURCE_DIR}/python/
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python)
 
-# Add the model library
-#add_subdirectory(src/models)
-
-# Set directory with the input files
-file(COPY ${PROJECT_SOURCE_DIR}/input/model_params.json
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/input)
-
-file(COPY ${PROJECT_SOURCE_DIR}/input/mc_params.json
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/input)
-
+# Set directory for the input files
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/input)

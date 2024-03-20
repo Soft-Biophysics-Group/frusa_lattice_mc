@@ -1,9 +1,9 @@
-## Default model library -- two state system 
+# Default model library -- two state system 
 
 This library is used as a default option in case no `<MODEL_TYPE>` flag is\
 provided.
 
-### Description of the system
+## Description of the system
 The system consists of $N$ particles, which may be in one of two states with\
 corresponding energies $\pm\Delta/2$.
 The parameters of the model are
@@ -22,4 +22,24 @@ $$-\frac{1}{N}\beta F = \ln{2} +\ln\left[\cosh\left(\frac{\beta\Delta}{2}\right)
 
 average energy
 
-$$U = \frac{Delta}{2}\tanh\left(\frac{\beta\Delta}{2}\right)$$
+$$U = -\frac{\Delta}{2}\tanh\left(\frac{\beta\Delta}{2}\right),$$
+
+and heat capacity
+
+$$C_v = \frac{\beta^2\Delta^2}{4}\sech^2\left(\frac{\beta\Delta}{2}\right).$$
+
+## File structure
+The core of the default (as well as any other user-defined) model library\
+consists of five basic function groups: 
+
+### `[default]_parameters`
+
+This function defines a structure to store all user-specified,\
+__model-specific__ parameters.
+
+### `[default]_state`
+
+Here, we store generic functions that create and manipulate the state
+structure\ - an object that contains all configurational information about\
+the system. 
+In the case of the `default` library, the 

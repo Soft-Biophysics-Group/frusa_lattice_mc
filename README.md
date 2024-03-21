@@ -6,7 +6,7 @@
 
 * Documentation (priority)
 * Write an interface for running jobs
-* Implement calculations of average energy, heat capacity, and correlation\
+* Implement calculations of average energy, heat capacity, and correlation 
   functios in `averages_utils`
 
 ### `default` model (`default_model_dev` branch)
@@ -27,7 +27,7 @@
 
 ### JSON
 
-The relevant header for `nlohmann::json` c++ library is located\
+The relevant header for `nlohmann::json` c++ library is located 
 in `include/thirdparty/`. 
 The python `json` library is a built-in module. 
 

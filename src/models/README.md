@@ -77,6 +77,7 @@ model ):
 ```
 Here, `<library_headers>` are all of the relevant headers for the user-defined 
 library.
+
 __NOTE:__ This is not an optimal method since this space will grow fast with 
 more user-defined models.
 The goal in the future is to generate a single header which is included in the 

@@ -21,7 +21,7 @@ namespace default_space{
 
   // Structure containing the characteristics of the state of the system:
   // N                  - number of particles
-  // average_occupation - average occupation number 
+  // average_occupation - average occupation number of the current state 
   // occupation         - array of state occupations
   struct state_struct{
     int N;

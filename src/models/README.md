@@ -74,6 +74,8 @@ model ):
 #elif defined <OPTION_NAME>
 #include <library_headers>
 ...
+using namespace <library_space>
+...
 ```
 Here, `<library_headers>` are all of the relevant headers for the user-defined 
 library.
@@ -83,3 +85,7 @@ more user-defined models.
 The goal in the future is to generate a single header which is included in the 
 `model` header.
 
+Typically, the functions in the user-defined library are contained in a 
+namespace `<library_space>`.
+In c++ `using namespace ...` is not the best practice, so this may be changed 
+in the future.

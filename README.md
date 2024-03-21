@@ -32,7 +32,7 @@ in `include/thirdparty/`.
 The python `json` library is a built-in module. 
 
 
-## Building using `cmake`
+## Building using cmake
 
 To build `frusa_mc` executable, simply use
 

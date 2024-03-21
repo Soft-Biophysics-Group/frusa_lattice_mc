@@ -11,7 +11,7 @@ target_include_directories(model_library PUBLIC
 
 target_link_libraries(model_library PRIVATE compiler_flags)
 
-### Create a compile option to select model library
+### Create a compile option to select user-defined model library
 
 if("${MODEL_TYPE}" STREQUAL "default")
   target_compile_definitions(model_library PUBLIC "DEFAULT")

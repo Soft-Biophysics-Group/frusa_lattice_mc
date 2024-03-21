@@ -2,19 +2,37 @@
 
 ## Future
 
-* Debug Segmentation fault error in the fields library (priority, WIP on branch `fields_dev`)
-* Write a test model ising (priority, WIP on branch `ising_dev`)
+### General
+
 * Documentation (priority)
 * Write an interface for running jobs
+* Implement calculations of average energy, heat capacity, and correlation\
+  functios in `averages_utils`
 
-## `frusa_mc`
+### `default` model (`default_model_dev` branch)
 
-### Dependencies
+* Write the `default_averages` functions to collect average occupation numbers
 
-* __JSON__ - the relevant header for `nlohmann::json` c++ library is located\
-int `include/thirdparty/`.
+### Tutorial and `ising` model (`ising_dev` branch)
 
-### Building using `cmake`
+* Write a tutorial on ising model (priority)
+
+### `fields` model on branch `fields_dev`
+
+* Debug Segmentation fault error in the fields library (priority)
+
+# `frusa_mc`
+
+## Dependencies
+
+### JSON
+
+The relevant header for `nlohmann::json` c++ library is located\
+in `include/thirdparty/`. 
+The python `json` library is a built-in module. 
+
+
+## Building using `cmake`
 
 To build `frusa_mc` executable, simply use
 
@@ -22,16 +40,19 @@ To build `frusa_mc` executable, simply use
 cmake <PATH_TO_PROJECT> -DMODEL_TYPE=<MODEL_NAME>
 cmake --build .
 ```
+If `-DMODEL_TYPE` flag is omitted, the `default` library is used.
 
 ### Existing `model` classes
 
 Currently, the available `<MODEL_NAME>` options are:
 
+* `default` - two-state system (__stable__)
 * `fields_chain` - concentration fields on a 1D lattice
 * `fields_square` - concentration fields on a 2d square lattice 
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
 
-__WIP:__ currently, simulations of the fields models produce occasional\
-Segmentation fault error. The debugging is done on branch `fields_dev`.
-
 ### Creating a custom `model` class
+
+* [Tutorial: writing your own model]
+* [Default model README](src/models/default/README.md)
+* [How to connect your library to the `model` class](src/models/README.md)

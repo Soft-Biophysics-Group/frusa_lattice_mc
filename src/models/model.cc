@@ -7,9 +7,9 @@ namespace model_space{
      */
 
     initialize_state(state,parameters);
-    
+
     initialize_interactions(state,interactions,parameters);
-    
+
   }
 
   void model::print_model_state(){
@@ -19,7 +19,7 @@ namespace model_space{
   void model::save_model_state(std::string state_output){
     save_state(state, state_output);
   }
-  
+
   void model::print_model_interactions(){
     print_interactions(state,interactions);
   }

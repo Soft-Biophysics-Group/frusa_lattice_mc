@@ -25,7 +25,7 @@ set(META_VERSION       "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSI
 
 message( STATUS ">> Building ${META_PROJECT_NAME} executable v${META_VERSION}")
 
-project(${META_PROJECT_NAME} 
+project(${META_PROJECT_NAME}
         VERSION ${META_VERSION}
         DESCRIPTION ${META_DESCRIPTION}
         LANGUAGES CXX)
@@ -45,7 +45,7 @@ target_compile_features(compiler_flags INTERFACE cxx_std_11)
 
 ################################################################################
 
-set(MODEL_TYPE 
+set(MODEL_TYPE
     "default" CACHE STRING
     "User-defined option for model library")
 

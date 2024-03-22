@@ -1,7 +1,7 @@
-#ifndef DEFAULT_STATE_HEADER_H
-#define DEFAULT_STATE_HEADER_H
+#ifndef LATTICEPARTICLES_STATE_HEADER_H
+#define LATTICEPARTICLES_STATE_HEADER_H
 
-#include "default_parameters.h"
+#include "lattice_particles_parameters.h"
 
 #include <iostream>
 #include <random>
@@ -13,7 +13,7 @@ typedef std::mt19937 EngineType;
 typedef std::uniform_int_distribution<int> int_dist;
 typedef std::uniform_real_distribution<double> real_dist;
 
-namespace default_space{
+namespace lattice_particles_space{
   /*
    * Definitions required for the public routines of the model class
    */

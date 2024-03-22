@@ -14,6 +14,9 @@
 #include "fields_interactions.h"
 #include "fields_update.h"
 using namespace fields_space;
+#elif defined LATTICEPARTICLES
+#include "lattice_particles_include.h"
+using namespace lattice_particles_space;
 #endif
 
 namespace model_space{
@@ -31,7 +34,7 @@ namespace model_space{
       // of the system
       state_struct state;
 
-      // Structure containing the information about the interactions in the 
+      // Structure containing the information about the interactions in the
       // current state of the system
       interactions_struct interactions;
 
@@ -42,7 +45,7 @@ namespace model_space{
 
       /*Class constructor*/
       model();
- 
+
       /*
        * Required public routines of the class
        */
@@ -53,7 +56,7 @@ namespace model_space{
       // Save the current state of the system to a file "state_output"
       void save_model_state(std::string state_output);
 
-      // Print the information about interactions in the current state of the 
+      // Print the information about interactions in the current state of the
       // system
       void print_model_interactions();
 
@@ -70,7 +73,7 @@ namespace model_space{
 
       // Save the selected simulation averages to the corresponding files
       void save_model_averages(double T, int mcs_av);
-       
+
   };
 }
 #endif

@@ -6,8 +6,8 @@
 
 * Documentation (priority)
 * Write an interface for running jobs
-* Implement calculations of average energy, heat capacity, and correlation 
-  functios in `averages_utils`
+* Implement calculations of average energy, heat capacity, and correlation
+  functions in `averages_utils`
 
 ### `default` model (`default_model_dev` branch)
 
@@ -27,9 +27,9 @@
 
 ### JSON
 
-The relevant header for `nlohmann::json` c++ library is located 
-in `include/thirdparty/`. 
-The python `json` library is a built-in module. 
+The relevant header for `nlohmann::json` c++ library is located
+in `include/thirdparty/`.
+The python `json` library is a built-in module.
 
 
 ## Building using cmake
@@ -48,7 +48,7 @@ Currently, the available `<MODEL_NAME>` options are:
 
 * `default` - two-state system (__stable__)
 * `fields_chain` - concentration fields on a 1D lattice
-* `fields_square` - concentration fields on a 2d square lattice 
+* `fields_square` - concentration fields on a 2d square lattice
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
 
 ### Creating a custom `model` class

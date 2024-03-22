@@ -1,15 +1,15 @@
-#ifndef DEFAULT_INTERACTIONS_HEADER_H
-#define DEFAULT_INTERACTIONS_HEADER_H
+#ifndef LATTICEPARTICLES_INTERACTIONS_HEADER_H
+#define LATTICEPARTICLES_INTERACTIONS_HEADER_H
 
-#include "default_parameters.h"
-#include "default_state.h"
+#include "lattice_particles_parameters.h"
+#include "lattice_particles_state.h"
 
 #include <iostream>
 #include <cmath>
 
 #include "vector_utils.h"
 
-namespace default_space{
+namespace lattice_particles_space{
   /*
    * Definitions required for the public routines of the model class
    */

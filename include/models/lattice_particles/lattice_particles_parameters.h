@@ -1,5 +1,5 @@
-#ifndef DEFAULT_PARAMETERS_HEADER_H
-#define DEFAULT_PARAMETERS_HEADER_H
+#ifndef LATTICEPARTICLES_PARAMETERS_HEADER_H
+#define LATTICEPARTICLES_PARAMETERS_HEADER_H
 
 #include <iostream>
 #include <fstream>
@@ -13,8 +13,7 @@ typedef std::mt19937 EngineType;
 
 using json = nlohmann::json;
 
-namespace default_space{
-
+namespace lattice_particles_space{
   /*
    * Definitions required for the public routines of the model class
    */

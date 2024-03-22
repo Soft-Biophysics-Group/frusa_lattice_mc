@@ -54,18 +54,7 @@ namespace default_space{
   }
 
   void save_state(state_struct &state, std::string state_output){
-    
-    std::ofstream state_f;
-    state_f.open(state_output);
-    if(!state_f){
-      std::cerr << "Could not open "+state_output << std::endl;
-      exit(1);
-    }
-    
-    for(int r=0;r<state.N;r++){
-      state_f << state.occupation[r] << "\n";
-    }
-    state_f.close();
+    io_space::save_vector(state.occupation,state.N,state_output);  
   }
   /* 
    * End of the required definitions for the model class
@@ -76,22 +65,11 @@ namespace default_space{
    */
   void initialize_state_from_file(state_struct &state, 
                                   model_parameters_struct &parameters){
-    std::ifstream input_file;
-    input_file.open(parameters.state_input);
-
-    if(!input_file){
-      std::cerr << "Unable to open file "+parameters.state_input;
-      exit(1);
-    }
-
+    io_space::read_vector(state.occupation,state.N,parameters.state_input);
+    
     double n_av = 0;
     for(int r=0;r<state.N;r++){
-      double n_r = 0;
-      input_file >> n_r;
-      
-      state.occupation.push_back(n_r);
-
-      n_av+= n_r;  
+      n_av+= state.occupation[r];  
     }
     
     state.average_occupation = n_av/state.N;

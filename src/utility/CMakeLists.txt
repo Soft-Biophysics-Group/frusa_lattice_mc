@@ -1,4 +1,5 @@
 add_library(vector_utils 
+            io_utils.cc
             vector_utils.cc
             ${HEADER_FRUSA_UTILITY})
 

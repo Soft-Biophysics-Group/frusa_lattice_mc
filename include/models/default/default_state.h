@@ -4,10 +4,9 @@
 #include "default_parameters.h"
 
 #include <iostream>
-#include <fstream>
-#include <iomanip>
 #include <random>
 
+#include "io_utils.h"
 #include "vector_utils.h"
 
 typedef std::mt19937 EngineType;

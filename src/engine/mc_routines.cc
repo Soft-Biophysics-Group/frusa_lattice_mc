@@ -138,6 +138,6 @@ namespace simulation_space{
     }
 
     /*Save averages to the files*/
-    simulation_model.save_model_averages(T);
+    simulation_model.save_model_averages(T,parameters.mcs_av);
   }
 }

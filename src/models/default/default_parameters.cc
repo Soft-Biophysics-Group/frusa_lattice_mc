@@ -22,7 +22,20 @@ namespace default_space{
       state_input = \
       json_model_params["state_input"].template get<std::string>();
     }
-    
+
+    state_av_option = \
+      json_model_params["state_av_option"].template get<bool>();
+    e_av_option     = json_model_params["e_av_option"].template get<bool>();
+     
+    if(state_av_option==true){
+      state_av_output = \
+      json_model_params["state_av_output"].template get<std::string>();
+    }
+    if(e_av_option==true){
+      e_av_output = \
+      json_model_params["e_av_output"].template get<std::string>();
+    }
+
     std::random_device dev;
     EngineType engine(dev());
 

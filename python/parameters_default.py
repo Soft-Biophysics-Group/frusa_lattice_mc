@@ -1,5 +1,19 @@
 import numpy as np
+import os
 from json_dump import * 
+
+def make_dir(name):
+    """
+    Creates a new directory if it doesn't already exist at the 
+    specified address/name.
+    
+    Arguments:
+    
+    name - (str) name and location of the new directory.
+    """
+    
+    if not os.path.exists(name):
+        os.makedirs(name)
 
 ### Define model parameters
 
@@ -18,9 +32,21 @@ model_params["initialize_option"] = "random"
 # the input file
 # model_params["state_input"] = "./..."
 
+# Options for average collection
+model_params["state_av_option"] = True
+model_params["e_av_option"] = True
+
+if model_params["state_av_option"]:
+    make_dir("../data/average_state")
+    model_params["state_av_output"] = "./average_state/"
+
+if model_params["e_av_option"]:
+    make_dir("../data/energy_moments")
+    model_params["e_av_output"] = "./energy_moments/"
+
 make_json_file(model_params,"../input/model_params.json")
 
-# Define mc parameters
+### Define mc parameters
 
 mc_params = {}
 

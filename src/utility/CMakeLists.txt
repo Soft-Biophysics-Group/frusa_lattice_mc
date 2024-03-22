@@ -1,9 +1,9 @@
-add_library(vector_utils 
+add_library(utils_library 
             io_utils.cc
             vector_utils.cc
             ${HEADER_FRUSA_UTILITY})
 
-target_include_directories(vector_utils PUBLIC 
+target_include_directories(utils_library PUBLIC 
                            ${INCLUDE_FRUSA_UTILITY})
 
-target_link_libraries(vector_utils PUBLIC compiler_flags)
+target_link_libraries(utils_library PUBLIC compiler_flags)

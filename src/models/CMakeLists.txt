@@ -1,12 +1,10 @@
 ### Create the main model library
 
 add_library(model_library model.cc
-            ${HEADER_FRUSA_MODELS}
-            ${HEADER_FRUSA_UTILITY})
+            ${HEADER_FRUSA_MODELS})
 
 target_include_directories(model_library PUBLIC 
                            ${INCLUDE_FRUSA_MODELS}
-                           ${INCLUDE_FRUSA_UTILITY}
                            ${INCLUDE_FRUSA_THIRDPARTY})
 
 target_link_libraries(model_library PRIVATE compiler_flags)

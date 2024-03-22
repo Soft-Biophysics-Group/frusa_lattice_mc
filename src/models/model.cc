@@ -33,11 +33,14 @@ namespace model_space{
   }
 
   void model::initialize_model_averages(){
+    initialize_averages(averages,parameters);
   }
 
   void model::update_model_averages(double T){
+    update_averages(averages,state,interactions,parameters,T);
   }
 
-  void model::save_model_averages(double T){
+  void model::save_model_averages(double T, int mcs_av){
+    save_averages(averages,state,parameters,T,mcs_av);
   }
 }

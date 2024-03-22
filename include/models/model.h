@@ -6,11 +6,7 @@
 
 /*Select the model library*/
 #if defined DEFAULT
-#include "default_parameters.h"
-#include "default_state.h"
-#include "default_interactions.h"
-#include "default_update.h"
-using namespace default_space;
+#include "default_include.h"
 #elif defined FIELDS
 #include "fields_parameters.h"
 #include "fields_state.h"
@@ -38,6 +34,9 @@ namespace model_space{
       // Structure containing the information about the interactions in the 
       // current state of the system
       interactions_struct interactions;
+
+      // Structure containing information about MC averages
+      averages_struct averages;
 
     public:
 
@@ -70,7 +69,7 @@ namespace model_space{
       void update_model_averages(double T);
 
       // Save the selected simulation averages to the corresponding files
-      void save_model_averages(double T);
+      void save_model_averages(double T, int mcs_av);
        
   };
 }

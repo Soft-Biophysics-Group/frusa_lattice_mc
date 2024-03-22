@@ -18,4 +18,5 @@ target_include_directories(mc_library PUBLIC
 
 target_link_libraries(mc_library PRIVATE compiler_flags)
 target_link_libraries(mc_library PRIVATE model_library)
+target_link_libraries(mc_library PRIVATE utils_library)
 

@@ -18,12 +18,12 @@ namespace default_space{
 
       if(state.occupation[index]==1){
         state.occupation[index] = 0;
-        state.average_occupation-= 1/state.N;
+        state.average_occupation-= 1.0/state.N;
         interactions.energy-= interactions.delta;
       }
       else if(exp(-interactions.delta/T)>uniform_dist(parameters.rng)){
         state.occupation[index] = 1;
-        state.average_occupation+= 1/state.N;
+        state.average_occupation+= 1.0/state.N;
         interactions.energy+= interactions.delta;
       }
     } 

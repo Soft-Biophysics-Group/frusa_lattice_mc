@@ -100,7 +100,7 @@ namespace default_space{
       state.occupation.push_back(1);
     }
     
-    state.average_occupation = 1;
+    state.average_occupation = 1.0;
   }
 }
 

@@ -1,5 +1,5 @@
-#ifndef DEFAULT_AVERAGE_HEADER_H
-#define DEFAULT_AVERAGE_HEADER_H
+#ifndef DEFAULT_AVERAGES_HEADER_H
+#define DEFAULT_AVERAGES_HEADER_H
 
 #include "default_parameters.h"
 #include "default_state.h"

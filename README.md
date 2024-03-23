@@ -6,12 +6,6 @@
 
 * Documentation (priority)
 * Write an interface for running jobs
-* Implement calculations of average energy, heat capacity, and correlation 
-  functios in `averages_utils`
-
-### `default` model (`default_model_dev` branch)
-
-* Write the `default_averages` functions to collect average occupation numbers
 
 ### Tutorial and `ising` model (`ising_dev` branch)
 

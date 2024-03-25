@@ -15,7 +15,11 @@
 #include "fields_update.h"
 using namespace fields_space;
 #elif defined LATTICEPARTICLES
-#include "lattice_particles_include.h"
+#include "lattice_particles_parameters.h"
+#include "lattice_particles_state.h"
+#include "lattice_particles_geometry.h"
+#include "lattice_particles_interactions.h"
+#include "lattice_particles_update.h"
 using namespace lattice_particles_space;
 #endif
 

@@ -21,13 +21,13 @@ namespace fields_space{
 
   // Structure containing parameters used for model definition:
   // ns                - number of orientation species
-  // Lx, Ly, Lz        - dimensions of the lattice 
+  // Lx, Ly, Lz        - dimensions of the lattice
   // Np                - number of particles
   // couplings         - array containing the coupling matrix on +x bond
   // rng               - random number generator
   // initialize_option - option string for choosing initialization function
   //                     current options are "from_file", "random", "uniform"
-  // state_input       - if initialize_option is set to "from_file", this 
+  // state_input       - if initialize_option is set to "from_file", this
   //                     string contains the location of the input structure
   struct model_parameters_struct{
     model_parameters_struct();
@@ -41,5 +41,5 @@ namespace fields_space{
     std::string initialize_option;
     std::string state_input;
   };
-}  
+}
 #endif

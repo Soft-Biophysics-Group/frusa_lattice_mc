@@ -1,15 +1,23 @@
-#include "lattice_particles_state.h" 
+#include "lattice_particle_state.h"
 
-namespace lattice_particles_space{
-  
+namespace lattice_particle_space{
+
   /*
    * Definitions required for the public routines of the model class
    */
   void initialize_state(state_struct &state,
                         model_parameters_struct &parameters){
-    
-    state.N = parameters.N;
-    
+
+    state.ns = parameters.ns;
+    state.Lx = parameters.Lx;
+    state.Ly = parameters.Ly;
+    state.Lz = parameters.Lz;
+    state.Np = parameters.Np;
+
+    // Set the total number of lattice sites and particle density
+    state.N = state.Lx*state.Ly*state.Lz;
+    state.rho_bar = (1.0*parameters.Np)/state.N;
+
     std::string option = parameters.initialize_option;
 
     try{
@@ -30,77 +38,179 @@ namespace lattice_particles_space{
       std::cout << "Incorrect initialization option: ''" << option << "''\n";
       exit(1);
     }
+
+    for(int r=0;r<state.N;r++){
+      if(state.local_density[r]>0){
+        state.donor_list.push_back(r);
+      }
+      if(state.local_density[r]<1){
+        state.acceptor_list.push_back(r);
+      }
+    }
   }
 
   void print_state(state_struct &state){
     std::cout << "\n---------------------------------------------\n";
-    std::cout << "Current state of the system\n";
+    std::cout << "Current structural properties of the system\n";
     std::cout << "---------------------------------------------\n\n";
-   
-    std::cout << "Number of particles N = " << state.N << "\n\n";
 
-    std::cout << "The average occupation number is: ";
-    std::cout << state.average_occupation << "\n\n";
+    std::cout << "Lattice dimensions:\n\n";
+    std::cout << "Lx = " << state.Lx << "\n";
+    std::cout << "Ly = " << state.Ly << "\n";
+    std::cout << "Lz = " << state.Lz << "\n\n";
 
-    std::cout << "Current state occupation:\n";
+    std::cout << "Number of particles Np = " << state.Np << "\n\n";
+
+    std::cout << "The total density of particles in the system is: ";
+    std::cout << state.rho_bar << "\n\n";
+
+    std::cout << "Current values of the fractional concentrations";
+    std::cout << " and local densities:\n";
     for(int r=0;r<state.N;r++){
 
-      std::cout << "r = " << r << " ";
-      std::cout << "n(r) = " << " ";
+      int i,j,k;
+      array_space::r_to_ijk(r,i,j,k,state.Lx,state.Ly,state.Lz);
 
-      std::cout << state.occupation[r] << "\n";
+      std::cout << "i = " << i << " ";
+      std::cout << "j = " << j << " ";
+      std::cout << "k = " << k << " ";
+
+      std::cout << "c(r) = " << " ";
+
+      for(int s=0;s<state.ns;s++){
+        std::cout << state.concentration[r][s] << " ";
+      }
+
+      std::cout << " rho(r) = " << " " << state.local_density[r];
+      std::cout << "\n";
     }
     std::cout << "\n\n";
   }
 
   void save_state(state_struct &state, std::string state_output){
-    io_space::save_vector(state.occupation,state.N,state_output);  
+
+    std::ofstream state_f;
+    state_f.open(state_output);
+    if(!state_f){
+      std::cerr << "Could not open "+state_output << std::endl;
+      exit(1);
+    }
+
+    for(int r=0;r<state.N;r++){
+      for(int s=0;s<state.ns;s++){
+        state_f << std::setprecision(8) << state.concentration[r][s] << " ";
+      }
+      state_f << "\n";
+    }
+    state_f.close();
   }
-  /* 
+  /*
    * End of the required definitions for the model class
    */
 
   /*
    * Library-specific definitions
    */
-  void initialize_state_from_file(state_struct &state, 
+  void initialize_state_from_file(state_struct &state,
                                   model_parameters_struct &parameters){
-    io_space::read_vector(state.occupation,state.N,parameters.state_input);
-    
-    double n_av = 0;
-    for(int r=0;r<state.N;r++){
-      n_av+= state.occupation[r];  
+    std::ifstream input_file;
+    input_file.open(parameters.state_input);
+
+    if(!input_file){
+      std::cerr << "Unable to open file "+parameters.state_input;
+      exit(1);
     }
-    
-    state.average_occupation = n_av/state.N;
+
+    SiteVector lattice_sites {};
+    // Fetching the orientations one by one
+    std::string orientations_line {std::getline(input_file)};
+    std::string_view orientation {};
+    while (orientations_line >> orientation) {
+        lattice_sites.append_back(site_state(0, orientation));
+    }
+    // Same for the particle types
+    std::string type_line {std::getline(input_file)};
+    std::string_view type {};
+    for (int n; n < state.n_sites; n++) {
+        type_line >> type;
+        lattice_sites[n].particle_type = std::stoi(type);
+    }
   }
 
-  void initialize_state_random(state_struct &state, 
+  void initialize_state_random(state_struct &state,
                                model_parameters_struct &parameters){
-    
-    int_dist binary_dist(0,1);
 
-    double n_av = 0;
+    real_dist uniform_dist(0,1);
 
     for(int r=0;r<state.N;r++){
-      
-      int n_r = binary_dist(parameters.rng);
-        
-      state.occupation.push_back(n_r);
 
-      n_av+= n_r;  
+      vec1d c_r;
+      double rho_r=0;
+
+      for(int s=0;s<state.ns-1;s++){
+
+        double c_r_s = uniform_dist(parameters.rng)*(state.rho_bar-rho_r);
+
+        c_r.push_back(c_r_s);
+        rho_r+= c_r_s;
+      }
+
+      c_r.push_back(state.rho_bar-rho_r);
+
+      std::shuffle(std::begin(c_r), std::end(c_r), parameters.rng);
+
+      state.concentration.push_back(c_r);
+      state.local_density.push_back(state.rho_bar);
     }
-    
-    state.average_occupation = n_av/state.N;
   }
 
   void initialize_state_uniform(state_struct &state){
-    
+
     for(int r=0;r<state.N;r++){
-      state.occupation.push_back(1);
+
+      vec1d c_r;
+
+      for(int s=0;s<state.ns;s++){
+        c_r.push_back(state.rho_bar/state.ns);
+      }
+
+      state.concentration.push_back(c_r);
+      state.local_density.push_back(state.rho_bar);
     }
-    
-    state.average_occupation = 1;
+  }
+
+  void update_state(int r, int index, int list_ind, double dc,
+                    state_struct &state, double eps){
+
+    state.concentration[r][index] += dc;
+    state.local_density[r] += dc;
+
+    if(std::find(state.donor_list.begin(),\
+                 state.donor_list.end(),r)!=state.donor_list.end()){
+
+      if(state.local_density[r]<eps){
+        state.donor_list.erase(state.donor_list.begin()+list_ind);
+      }
+    }
+    else{
+      if(state.local_density[r]>eps){
+        state.donor_list.push_back(r);
+      }
+    }
+
+
+    if(std::find(state.acceptor_list.begin(),\
+                 state.acceptor_list.end(),r)!=state.acceptor_list.end()){
+
+      if(state.local_density[r]>1-eps){
+        state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
+      }
+    }
+    else{
+      if(state.local_density[r]<1-eps){
+        state.acceptor_list.push_back(r);
+      }
+    }
   }
 }
 

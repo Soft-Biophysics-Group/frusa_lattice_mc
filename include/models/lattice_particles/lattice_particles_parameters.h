@@ -14,38 +14,36 @@ typedef std::mt19937 EngineType;
 using json = nlohmann::json;
 
 namespace lattice_particles_space{
+  using ContactMap=vec1d;
+
   /*
    * Definitions required for the public routines of the model class
    */
 
   // Structure containing parameters used for model definition:
-  // N                 - number of particles
-  // delta             - energy gap between two states
+  // n_types           - number of different particle types
+  // n_orientations    - number of orientations a particle can take
+  // lx, ly, lz        - dimensions of the lattice
+  // n_particles       - number of particles
+  // couplings         - Flattened array of contact energies between each
+  //                     possible pair of faces
   // rng               - random number generator
   // initialize_option - option string for choosing initialization function
   //                     current options are "from_file", "random", "uniform"
   // state_input       - if initialize_option is set to "from_file", this
   //                     string contains the location of the input structure
-  // state_av_option   - boolean to determine if the simulation will store
-  //                     MC averages of the occupation numbers
-  // e_av_option       - boolean to determine if the simulation will store
-  //                     MC averages of the first and second energy moments
-  // state_av_output   - if state_av_option is true, gives the location for the
-  //                     output file for MC averages of the occupation numbers
-  // e_av_output       - if e_av_option is true, gives the location for the
-  //                     output file for MC averages of the first and second
-  //                     energy moments
   struct model_parameters_struct{
     model_parameters_struct();
-    int N;
-    double delta;
-    EngineType rng;
-    std::string initialize_option;
-    std::string state_input;
-    bool state_av_option;
-    bool e_av_option;
-    std::string state_av_output;
-    std::string e_av_output;
+    int n_types {};
+    int n_orientations {};
+    int lx {};
+    int ly {};
+    int lz {};
+    int n_particles {};
+    ContactMap couplings {};
+    EngineType rng {};
+    std::string initialize_option {};
+    std::string state_input {};
   };
 }
 #endif

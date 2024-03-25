@@ -15,7 +15,7 @@ namespace fields_space{
     for(int r=0;r<state.N;r++){
       int update_type = binary_dist(parameters.rng);
 
-      if(update_type==0){
+      if(update_type<0){
         shift_local_density(state,interactions,parameters,T);
       }
       else{
@@ -61,8 +61,8 @@ namespace fields_space{
     }
     //std::cout << "rd = " << r_d << " r_a = " << r_a << "\n"; 
     
-    int index_d = select_element(r_d,0,state,parameters);
-    int index_a = select_element(r_a,1,state,parameters);
+    int index_d = select_element(r_d,0.0,state,parameters);
+    int index_a = select_element(r_a,1.0,state,parameters);
     
     //std::cout << "id = " << index_d << " ia = " << index_a << "\n"; 
 
@@ -139,11 +139,11 @@ namespace fields_space{
 
     int r = state.donor_list[list_ind];
    
-    int index_d = select_element(r,0,state,parameters);
-    int index_a = select_element(r,1,state,parameters);
+    int index_d = select_element(r,0.0,state,parameters);
+    int index_a = select_element(r,1.0,state,parameters);
 
     while(index_d==index_a){
-      index_a = select_element(r,1,state,parameters);
+      index_a = select_element(r,1.0,state,parameters);
     }
 
     double c_d = state.concentration[r][index_d];
@@ -197,8 +197,12 @@ namespace fields_space{
     //std::cout << "c_r = " << c[0] << " " << c[1] << "\n";
     vec1i c_ind;
 
-    for(int s=0;s<state.ns;s++){
+    //std::cout << "size of c = " << c.size() << "\n";
+
+    for(int s=0;s<c.size();s++){
+      //std::cout << "c[s] = " << (c[s]!=bound) << "\n";
       if(c[s]!=bound){
+        //std::cout << "s = " << s << "\n";
         c_ind.push_back(s);
       }
     }

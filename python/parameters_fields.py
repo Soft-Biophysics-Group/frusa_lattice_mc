@@ -1,15 +1,27 @@
 import numpy as np
-from io_tools import * 
+from io_tools import *
 
-### Define model parameters
+#Define model parameters
 
 model_params = {}
 
-# Number of particles
-model_params["N"] = 20
+#Number of fields components
+model_params["ns"] = 2
 
-# Energy gap
-model_params["delta"] = 1
+#Lattice dimensions
+model_params["Lx"] = 100
+model_params["Ly"] = 1
+model_params["Lz"] = 1
+
+#Number of particles
+model_params["Np"] = 20
+
+#Model parameters for a chain system
+k11 = -1
+k12 = 0
+k21 = 0
+T_model = 0.1
+model_params["couplings"] = [T_model,k11,k12,k21,k11]
 
 # Initialization option
 model_params["initialize_option"] = "random"
@@ -19,46 +31,41 @@ model_params["initialize_option"] = "random"
 # model_params["state_input"] = "./..."
 
 # Options for average collection
-model_params["state_av_option"] = True
 model_params["e_av_option"] = True
 
-if model_params["state_av_option"]:
-    make_dir("../data/average_state")
-    model_params["state_av_output"] = "./data/average_state/"
-
 if model_params["e_av_option"]:
-    make_dir("../data/energy_moments")
-    model_params["e_av_output"] = "./data/energy_moments/"
+    make_dir("../data/mf_energy_moments")
+    model_params["e_av_output"] = "./data/mf_energy_moments/"
 
 make_json_file(model_params,"../input/model_params.json")
 
-### Define mc parameters
+#Define mc parameters
 
 mc_params = {}
 
-# Number of MC steps used for equilibration
+#Number of MC steps used for equilibration
 mc_params["mcs_eq"] = 100
 
-# Number of MC steps used for averaging
+#Number of MC steps used for averaging
 mc_params["mcs_av"] = 1
 
-# Type of cooling schedule
+#Type of cooling schedule
 mc_params["cooling_schedule"] = "exponential"
 
-# Initial annealing temperature
+#Initial annealing temperature
 mc_params["Ti"] = 0
 
-# Final annealing temperature
+#Final annealing temperature
 mc_params["Tf"] = -5
 
-# Number of annealing steps
+#Number of annealing steps
 mc_params["Nt"] = 10
 
-# Option to collect state checkpoints at the end of each temperature cycle
+#Option to collect state checkpoints at the end of each temperature cycle
 mc_params["checkpoint_option"] = False
 
-# If checkpoint is True, we need to provide the output address for the 
-# checkpoint files
+#If checkpoint is True, we need to provide the output address for the 
+#checkpoint files
 if mc_params["checkpoint_option"]:
     mc_params["checkpoint_address"] = ""
 

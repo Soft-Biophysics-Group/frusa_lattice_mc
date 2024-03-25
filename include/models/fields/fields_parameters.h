@@ -29,6 +29,11 @@ namespace fields_space{
   //                     current options are "from_file", "random", "uniform"
   // state_input       - if initialize_option is set to "from_file", this 
   //                     string contains the location of the input structure
+  // e_av_option       - boolean to determine if the simulation will store 
+  //                     MC averages of the first and second MF E/S/F moments
+  // e_av_output       - if e_av_option is true, gives the location for the  
+  //                     output file for MC averages of the first and second 
+  //                     MF E/S/F moments moments
   struct model_parameters_struct{
     model_parameters_struct();
     int ns;
@@ -40,6 +45,8 @@ namespace fields_space{
     EngineType rng;
     std::string initialize_option;
     std::string state_input;
+    bool e_av_option;
+    std::string e_av_output;
   };
 }  
 #endif

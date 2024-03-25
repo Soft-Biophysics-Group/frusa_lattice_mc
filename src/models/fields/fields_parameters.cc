@@ -27,6 +27,13 @@ namespace fields_space{
       json_model_params["state_input"].template get<std::string>();
     }
     
+    e_av_option     = json_model_params["e_av_option"].template get<bool>();
+     
+    if(e_av_option==true){
+      e_av_output = \
+      json_model_params["e_av_output"].template get<std::string>();
+    }
+    
     std::random_device dev;
     EngineType engine(dev());
 

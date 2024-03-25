@@ -16,5 +16,7 @@ int main(){
  
   annealing.t_scan(new_model);
 
+  new_model.print_model_state();
+
   return 0;
 }

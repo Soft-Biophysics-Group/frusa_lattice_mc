@@ -38,11 +38,11 @@ model_params["e_av_option"] = True
 
 if model_params["state_av_option"]:
     make_dir("../data/average_state")
-    model_params["state_av_output"] = "./average_state/"
+    model_params["state_av_output"] = "./data/average_state/"
 
 if model_params["e_av_option"]:
     make_dir("../data/energy_moments")
-    model_params["e_av_output"] = "./energy_moments/"
+    model_params["e_av_output"] = "./data/energy_moments/"
 
 make_json_file(model_params,"../input/model_params.json")
 

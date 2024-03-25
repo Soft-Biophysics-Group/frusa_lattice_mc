@@ -9,12 +9,12 @@ namespace default_space{
                            model_parameters_struct &parameters){
   
     if(parameters.state_av_option==true){
-      averages.state_av = 0;
+      averages.state_av = 0.0;
     }
 
     if(parameters.e_av_option==true){
-      averages.e_av = 0;
-      averages.e2_av = 0;
+      averages.e_av = 0.0;
+      averages.e2_av = 0.0;
     }
   }
 
@@ -32,7 +32,6 @@ namespace default_space{
       averages.e_av+= interactions.energy;
       averages.e2_av+= interactions.energy*interactions.energy;
     }
-
   }
 
   void save_averages(averages_struct &averages, 
@@ -53,7 +52,7 @@ namespace default_space{
       averages.e_av/= mcs_av;
       averages.e2_av/= mcs_av;
       vec1d output_vec = {T, averages.e_av,averages.e2_av};
-      std::string output_file = parameters.state_av_output\
+      std::string output_file = parameters.e_av_output\
                                 +"e_av_T_"+std::to_string(T)\
                                 +".dat";
       io_space::save_vector(output_vec,3,output_file);

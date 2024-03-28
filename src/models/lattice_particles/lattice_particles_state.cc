@@ -48,13 +48,8 @@ namespace lattice_particles_space{
       exit(1);
     }
 
-    for(int r=0;r<state.N;r++){
-      if(state.local_density[r]>0){
-        state.donor_list.push_back(r);
-      }
-      if(state.local_density[r]<1){
-        state.acceptor_list.push_back(r);
-      }
+    for (std::size_t i {0}; i < state.lattice_sites.size(); i++){
+      state.full_sites[i] = isempty(state.lattice_sites[i]);
     }
   }
 
@@ -107,12 +102,12 @@ namespace lattice_particles_space{
 
     // Record the particle types on line 1
     for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
-      state_f << state.lattice_sites[i].type << ' ';
+        state_f << state.lattice_sites[i].type << ' ';
     }
     state_f << '\n';
     // And the particle orientations on line 2
     for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
-      state_f << state.lattice_sites[i].orientation << ' ';
+        state_f << state.lattice_sites[i].orientation << ' ';
     }
     state_f << '\n';
     state_f.close();
@@ -133,7 +128,6 @@ namespace lattice_particles_space{
       exit(1);
     }
 
-    SiteVector lattice_sites {};
     // Fetching the orientations one by one
     std::string line {};
     int type {};
@@ -181,52 +175,22 @@ namespace lattice_particles_space{
     }
   }
 
-  void initialize_state_uniform(state_struct &state){
-
-    for(int r=0;r<state.N;r++){
-
-      vec1d c_r;
-
-      for(int s=0;s<state.ns;s++){
-        c_r.push_back(state.rho_bar/state.ns);
-      }
-
-      state.concentration.push_back(c_r);
-      state.local_density.push_back(state.rho_bar);
-    }
+  //TODO I stopped here; continue
+  void update_state(int index, int type, int orientation, state_struct &state) {
+    // Unsigned index because the writes of this language hate you personnally
+    // Yes, you
+    std::size_t u_index {static_cast<std::size_t>(index)};
+    state.lattice_sites[u_index].orientation = orientation;
+    state.lattice_sites[u_index].type = type;
+    // TODO LSP says ambiguous call below, but I don't see why.
+    // See if compilation fails because of this.
+    state.full_sites[u_index] = isempty(state.lattice_sites[u_index]);
   }
 
-  void update_state(int r, int index, int list_ind, double dc,
-                    state_struct &state, double eps){
-
-    state.concentration[r][index] += dc;
-    state.local_density[r] += dc;
-
-    if(std::find(state.donor_list.begin(),\
-                 state.donor_list.end(),r)!=state.donor_list.end()){
-
-      if(state.local_density[r]<eps){
-        state.donor_list.erase(state.donor_list.begin()+list_ind);
-      }
-    }
-    else{
-      if(state.local_density[r]>eps){
-        state.donor_list.push_back(r);
-      }
-    }
-
-
-    if(std::find(state.acceptor_list.begin(),\
-                 state.acceptor_list.end(),r)!=state.acceptor_list.end()){
-
-      if(state.local_density[r]>1-eps){
-        state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
-      }
-    }
-    else{
-      if(state.local_density[r]<1-eps){
-        state.acceptor_list.push_back(r);
-      }
-    }
+  void swap_sites(int index1, int index2, state_struct&state)  {
+    std::size_t u_index1 {static_cast<std::size_t>(index1)};
+    std::size_t u_index2 {static_cast<std::size_t>(index2)};
+    site_state& site1 {state.lattice_sites[u_index1]};
+    site_state& site2 {state.lattice_sites[u_index2]};
   }
   }

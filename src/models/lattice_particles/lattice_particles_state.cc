@@ -18,7 +18,11 @@ namespace lattice_particles_space{
     state.lx = parameters.lx;
     state.ly = parameters.ly;
     state.lz = parameters.lz;
+    state.n_sites = state.lx * state.ly * state.lz;
     state.n_particles = parameters.n_particles;
+    state.lattice_sites =
+        SiteVector(static_cast<std::size_t>(state.n_sites), site_state{});
+    state.full_sites = vec1b(static_cast<std::size_t>(state.n_sites), false);
 
     // Set the total number of lattice sites and particle density
     state.n_sites = state.lx*state.ly*state.lz;
@@ -30,7 +34,8 @@ namespace lattice_particles_space{
         initialize_state_from_file(state,parameters);
       }
       else if(option=="random_fixed_particle_numbers"){
-          initialize_state_random_fixed_particle_numbers(state, parameters);
+        // Segfault happens here
+        initialize_state_random_fixed_particle_numbers(state, parameters);
       }
       else{
         throw option;
@@ -116,10 +121,11 @@ namespace lattice_particles_space{
       for (std::size_t t {0}; t < static_cast<std::size_t>(parameters.n_types); t++)
       {
         for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[n]); n++) {
-          int index{site_dist(parameters.rng)};
-          int orientation{orientation_dist(parameters.rng)};
-          state.lattice_sites[static_cast<std::size_t>(index)] =
-              site_state{orientation, static_cast<int>(t)};
+            std::size_t index{
+                static_cast<std::size_t>(site_dist(parameters.rng))};
+            int orientation{orientation_dist(parameters.rng)};
+            state.lattice_sites[index] =
+                site_state{orientation, static_cast<int>(t)};
         }
       }
   }

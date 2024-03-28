@@ -25,7 +25,7 @@ namespace lattice_particles_space{
   // Structure containing the characteristics of a lattice site.
   // Note that orientation 0 denotes an empty site, regardless of particle type
   struct site_state {
-    int type {1};
+    int type {0};
     int orientation {0};
     // TODO I should NOT have to define this, understand what I'm doing wrong.
   };

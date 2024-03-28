@@ -21,6 +21,12 @@
 
 * Debug Segmentation fault error in the fields library (priority)
 
+### `lattice_particles` model on branch `lattice_mc_dev`
+
+- Someday: make a more elegant iteration solution to loop through the \_sites and \_full
+  arrays of the state struct
+- Maybe: change the "initialize_state" functions into full-blown constructors?
+
 # `frusa_mc`
 
 ## Dependencies

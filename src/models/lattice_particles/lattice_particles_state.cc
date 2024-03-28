@@ -1,18 +1,27 @@
-#include "lattice_particle_state.h"
+#include "lattice_particles_state.h"
+#include <cstddef>
+#include <ranges>
+#include "vector_utils.h"
 
-namespace lattice_particle_space{
+/*
+ * Definitions required for the public routines of the model class
+ */
+namespace lattice_particles_space{
 
   /*
    * Definitions required for the public routines of the model class
    */
   void initialize_state(state_struct &state,
-                        model_parameters_struct &parameters){
+      model_parameters_struct &parameters){
 
-    state.ns = parameters.ns;
-    state.Lx = parameters.Lx;
-    state.Ly = parameters.Ly;
-    state.Lz = parameters.Lz;
-    state.Np = parameters.Np;
+    state.n_types = parameters.n_types;
+    state.n_orientations = parameters.n_orientations;
+    state.lx = parameters.lx;
+    state.ly = parameters.ly;
+    state.lz = parameters.lz;
+    state.n_sites = state.lx * state.ly * state.lz;
+    state.n_particles = parameters.n_particles;
+    state.full_sites = vec1b(static_cast<std::size_t>(state.n_sites), false);
 
     // Set the total number of lattice sites and particle density
     state.N = state.Lx*state.Ly*state.Lz;
@@ -24,11 +33,8 @@ namespace lattice_particle_space{
       if(option=="from_file"){
         initialize_state_from_file(state,parameters);
       }
-      else if(option=="random"){
-        initialize_state_random(state,parameters);
-      }
-      else if(option=="uniform"){
-        initialize_state_uniform(state);
+      else if(option=="random_fixed_particle_numbers"){
+        initialize_state_random_fixed_particle_numbers(state, parameters);
       }
       else{
         throw option;
@@ -96,12 +102,16 @@ namespace lattice_particle_space{
       exit(1);
     }
 
-    for(int r=0;r<state.N;r++){
-      for(int s=0;s<state.ns;s++){
-        state_f << std::setprecision(8) << state.concentration[r][s] << " ";
-      }
-      state_f << "\n";
+    // Record the particle types on line 1
+    for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
+      state_f << state.lattice_sites[i].type << ' ';
     }
+    state_f << '\n';
+    // And the particle orientations on line 2
+    for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
+      state_f << state.lattice_sites[i].orientation << ' ';
+    }
+    state_f << '\n';
     state_f.close();
   }
   /*
@@ -112,9 +122,8 @@ namespace lattice_particle_space{
    * Library-specific definitions
    */
   void initialize_state_from_file(state_struct &state,
-                                  model_parameters_struct &parameters){
-    std::ifstream input_file;
-    input_file.open(parameters.state_input);
+      model_parameters_struct &parameters){
+    std::ifstream input_file {parameters.state_input};
 
     if(!input_file){
       std::cerr << "Unable to open file "+parameters.state_input;
@@ -123,44 +132,50 @@ namespace lattice_particle_space{
 
     SiteVector lattice_sites {};
     // Fetching the orientations one by one
-    std::string orientations_line {std::getline(input_file)};
-    std::string_view orientation {};
-    while (orientations_line >> orientation) {
-        lattice_sites.append_back(site_state(0, orientation));
+    std::string line {};
+    int type {};
+    std::getline(input_file, line);
+    //Solution found at https://stackoverflow.com/a/20659156
+    std::stringstream ss{line};
+    while (ss >> type) {
+      state.lattice_sites.push_back(site_state {type, 0});
     }
     // Same for the particle types
-    std::string type_line {std::getline(input_file)};
-    std::string_view type {};
-    for (int n; n < state.n_sites; n++) {
-        type_line >> type;
-        lattice_sites[n].particle_type = std::stoi(type);
+    std::getline(input_file, line);
+    int orientation {};
+    std::stringstream ss2{line};
+    // TODO This is a bit horrible. Find a better way.
+    std::size_t site_index {0};
+    while (ss2 >> orientation) {
+      state.lattice_sites[site_index].orientation = orientation;
+      ++site_index;
     }
+    input_file.close();
   }
 
-  void initialize_state_random(state_struct &state,
-                               model_parameters_struct &parameters){
+  std::ostream& operator<< (std::ostream& out, site_state &site) {
+    out << site.type << ' ' << site.orientation;
+    return out;
+  }
 
-    real_dist uniform_dist(0,1);
+  void initialize_state_random_fixed_particle_numbers(
+      state_struct &state, model_parameters_struct &parameters) {
+    int_dist site_dist(0, state.n_sites);
+    int_dist orientation_dist(0, parameters.n_orientations);
 
-    for(int r=0;r<state.N;r++){
-
-      vec1d c_r;
-      double rho_r=0;
-
-      for(int s=0;s<state.ns-1;s++){
-
-        double c_r_s = uniform_dist(parameters.rng)*(state.rho_bar-rho_r);
-
-        c_r.push_back(c_r_s);
-        rho_r+= c_r_s;
+    // Fill the state until we get to the right number of particles of each
+    // type
+    state.lattice_sites =
+      SiteVector(static_cast<std::size_t>(state.n_sites), site_state{});
+    for (std::size_t t {0}; t < static_cast<std::size_t>(parameters.n_types); t++)
+    {
+      for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[t]); n++) {
+        std::size_t index{
+          static_cast<std::size_t>(site_dist(parameters.rng))};
+        int orientation{orientation_dist(parameters.rng)};
+        state.lattice_sites[index] =
+          site_state{static_cast<int>(t), orientation};
       }
-
-      c_r.push_back(state.rho_bar-rho_r);
-
-      std::shuffle(std::begin(c_r), std::end(c_r), parameters.rng);
-
-      state.concentration.push_back(c_r);
-      state.local_density.push_back(state.rho_bar);
     }
   }
 
@@ -212,6 +227,4 @@ namespace lattice_particle_space{
       }
     }
   }
-}
-
-
+  }

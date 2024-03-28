@@ -24,10 +24,14 @@ namespace lattice_particles_space{
   // Structure containing the characteristics of a lattice site.
   // Note that orientation 0 denotes an empty site, regardless of particle type
   struct site_state {
-    int particle_type {};
-    int particle_orientation {};
+    int type {0};
+    int orientation {0};
   };
-  using SiteVector = std::vector<std::reference_wrapper<site_state>>;
+  bool isempty(site_state& site);
+  std::ostream& operator<< (std::ostream& out, site_state &site);
+
+  using SiteVector = std::vector<site_state>;
+  using SiteBool = std::pair<site_state, bool>;
 
   // Structure containing the characteristics of the state of the system:
   // n_types          - number of different particle trypes

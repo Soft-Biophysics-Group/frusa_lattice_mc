@@ -120,7 +120,7 @@ namespace lattice_particles_space{
       // type
       for (std::size_t t {0}; t < static_cast<std::size_t>(parameters.n_types); t++)
       {
-        for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[n]); n++) {
+        for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[t]); n++) {
             std::size_t index{
                 static_cast<std::size_t>(site_dist(parameters.rng))};
             int orientation{orientation_dist(parameters.rng)};

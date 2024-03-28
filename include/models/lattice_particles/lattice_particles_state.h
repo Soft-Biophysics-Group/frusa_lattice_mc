@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <random>
 #include <string>
+#include <sstream>
 
 #include "vector_utils.h"
 
@@ -24,20 +25,24 @@ namespace lattice_particles_space{
   // Structure containing the characteristics of a lattice site.
   // Note that orientation 0 denotes an empty site, regardless of particle type
   struct site_state {
-    int particle_type {};
-    int particle_orientation {};
+    int type {1};
+    int orientation {0};
+    // TODO I should NOT have to define this, understand what I'm doing wrong.
   };
-  using SiteVector = std::vector<std::reference_wrapper<site_state>>;
+  bool isempty(site_state& site);
+
+  using SiteVector = std::vector<site_state>;
+  using SiteBool = std::pair<site_state, bool>;
 
   // Structure containing the characteristics of the state of the system:
   // n_types          - number of different particle trypes
   // n_orientations   - number of orientations a particle can take
   // lx, ly, lz       - dimensions of the lattice
   // n_sites          - total number of sites
-  // n_particles      - number of particles
+  // n_particles      - number of particles of each type
   // lattice_sites    - array of each lattice state
-  // full_sites       - Indices of all sites containing a particle
-  // empty_sites      - Indices of all empty sites
+  // full_sites       - Indices of booleans, where each one is true if the
+  //                    corresponding site is true and empty otherwise
   struct state_struct{
     int n_types {};
     int n_orientations {};
@@ -45,10 +50,9 @@ namespace lattice_particles_space{
     int ly {};
     int lz {};
     int n_sites {};
-    int n_particles {};
+    vec1i n_particles {};
     SiteVector lattice_sites {};
-    vec1i full_sites {};
-    vec1i empty_sites {};
+    vec1b full_sites {};
   };
 
   // Initialize the structural properties of the system, depending on the type
@@ -57,9 +61,12 @@ namespace lattice_particles_space{
                         model_parameters_struct &parameters);
 
   // Print the current values of the structural properties of the system
-  void print_state(state_struct &state);
+  // TODO Implement this
+  std::ostream& operator<< (std::ostream& out, state_struct &state);
 
   // Save the fractional concentrations to a file "state_output"
+  // First line of the file is a list of all the sites' particle types
+  // Second line is the list of particle orientations
   void save_state(state_struct &state, std::string state_output);
 
   /*
@@ -74,20 +81,21 @@ namespace lattice_particles_space{
   void initialize_state_from_file(state_struct &state,
                                   model_parameters_struct &parameters);
 
-  void initialize_state_random(state_struct &state,
-                               model_parameters_struct &parameters);
-
-  void initialize_state_uniform(state_struct &state);
+  // Initialize a state with a set random of particles uniformly distributed on
+  // the lattice, with a given number of particles given in parameters
+  void initialize_state_random_fixed_particle_numbers(
+      state_struct &state, model_parameters_struct &parameters);
 
   // Updates concentrations, local densities, and donor/acceptor lists
   // after a local update of a concentration field
-  // r        - lattice position of the updated field
-  // index    - component of the updated field
-  // list_ind - index of the updated field in either the donor or acceptor list
-  // dc       - amount by which the value of the field is changed
-  // state    - state of the system before update
-  void update_state(int r, int index, int list_ind, double dc,
-                    state_struct &state, double eps=1e-8);
+  // index            - index of the lattice site to update
+  // type             - new type of the particle at site index
+  // orientation      - new orientation of the particle at site index
+  // state            - state of the system before update
+  void update_state(int index, int type, int orientation, state_struct &state);
+
+  // Swap the states of sites at index1 and index2
+  void swap_sites(int index1, int index2, state_struct& state);
 }
 
 #endif

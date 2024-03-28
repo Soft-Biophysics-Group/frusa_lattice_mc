@@ -4,7 +4,7 @@
 #include <iostream>
 
 int main() {
-    //lattice_particles_space::model_parameters_struct test ;
+    lattice_particles_space::model_parameters_struct params ;
     std::cout << "Got there so far!";
     return 0;
 }

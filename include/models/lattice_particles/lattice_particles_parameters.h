@@ -20,6 +20,9 @@ namespace lattice_particles_space{
    * Definitions required for the public routines of the model class
    */
 
+  // TODO Add try/catches to this to make sure that we define the right
+  // quantitites
+
   // Structure containing parameters used for model definition:
   // n_types           - number of different particle types
   // n_orientations    - number of orientations a particle can take
@@ -29,17 +32,19 @@ namespace lattice_particles_space{
   //                     possible pair of faces
   // rng               - random number generator
   // initialize_option - option string for choosing initialization function
-  //                     current options are "from_file", "random", "uniform"
+  //                     current options are "from_file", "random"
   // state_input       - if initialize_option is set to "from_file", this
   //                     string contains the location of the input structure
   struct model_parameters_struct{
-    model_parameters_struct();
+    model_parameters_struct(const std::string& input_file);
+    model_parameters_struct():
+     model_parameters_struct("./input/model_params.json") {};
     int n_types {};
     int n_orientations {};
     int lx {};
     int ly {};
     int lz {};
-    int n_particles {};
+    vec1i n_particles {};
     ContactMap couplings {};
     EngineType rng {};
     std::string initialize_option {};

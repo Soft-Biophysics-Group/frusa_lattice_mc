@@ -1,4 +1,6 @@
 #include "lattice_particles_state.h"
+#include <cstddef>
+#include <ranges>
 
   /*
    * Definitions required for the public routines of the model class
@@ -40,7 +42,7 @@ namespace lattice_particles_space{
     }
 
     // Start keeping track of full and empty sites
-    for (int i {0}; i < state.n_sites; i++){
+    for (std::size_t i {0}; i < state.lattice_sites.size(); i++){
       state.full_sites[i] = isempty(state.lattice_sites[i]);
     }
   }
@@ -55,12 +57,12 @@ namespace lattice_particles_space{
     }
 
     // Record the particle types on line 1
-    for (int i = 0; i < state.n_sites; i++) {
+    for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
         state_f << state.lattice_sites[i].type << ' ';
     }
     state_f << '\n';
     // And the particle orientations on line 2
-    for (int i = 0; i < state.n_sites; i++) {
+    for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
         state_f << state.lattice_sites[i].orientation << ' ';
     }
     state_f << '\n';
@@ -82,7 +84,6 @@ namespace lattice_particles_space{
       exit(1);
     }
 
-    SiteVector lattice_sites {};
     // Fetching the orientations one by one
     std::string line {};
     int orientation {};
@@ -92,16 +93,16 @@ namespace lattice_particles_space{
     //Solution found at https://stackoverflow.com/a/20659156
     std::stringstream ss{line};
     while (ss >> orientation) {
-        lattice_sites.push_back(site_state {0, orientation});
+        state.lattice_sites.push_back(site_state {0, orientation});
     }
     // Same for the particle types
     std::getline(input_file, line);
     int type {};
     ss = std::stringstream(line);
     // TODO This is a bit horrible. Find a better way.
-    int site_index {0};
+    std::size_t site_index {0};
     while (ss >> type) {
-      lattice_sites[site_index].type = type;
+      state.lattice_sites[site_index].type = type;
     }
   }
 
@@ -112,28 +113,34 @@ namespace lattice_particles_space{
 
       // Fill the state until we get to the right number of particles of each
       // type
-      for (int t {0}; t < parameters.n_types; t++)
+      for (std::size_t t {0}; t < static_cast<std::size_t>(parameters.n_types); t++)
       {
-        for (int n {0}; n < parameters.n_particles[n]; n++) {
+        for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[n]); n++) {
           int index{site_dist(parameters.rng)};
           int orientation{orientation_dist(parameters.rng)};
-          state.lattice_sites[index] = site_state{orientation, t};
+          state.lattice_sites[static_cast<std::size_t>(index)] =
+              site_state{orientation, static_cast<int>(t)};
         }
       }
   }
 
   //TODO I stopped here; continue
   void update_state(int index, int type, int orientation, state_struct &state) {
-    state.lattice_sites[index].orientation = orientation;
-    state.lattice_sites[index].type = type;
+    // Unsigned index because the writes of this language hate you personnally
+    // Yes, you
+    std::size_t u_index {static_cast<std::size_t>(index)};
+    state.lattice_sites[u_index].orientation = orientation;
+    state.lattice_sites[u_index].type = type;
     // TODO LSP says ambiguous call below, but I don't see why.
     // See if compilation fails because of this.
-    state.full_sites[index] = isempty(state.lattice_sites[index]);
+    state.full_sites[u_index] = isempty(state.lattice_sites[u_index]);
   }
 
   void swap_sites(int index1, int index2, state_struct&state)  {
-    site_state& site1 {state.lattice_sites[index1]};
-    site_state& site2 {state.lattice_sites[index2]};
+    std::size_t u_index1 {static_cast<std::size_t>(index1)};
+    std::size_t u_index2 {static_cast<std::size_t>(index2)};
+    site_state& site1 {state.lattice_sites[u_index1]};
+    site_state& site2 {state.lattice_sites[u_index2]};
 
     int init_orientation_2 { site2.orientation };
     int init_type_2 { site2.type };

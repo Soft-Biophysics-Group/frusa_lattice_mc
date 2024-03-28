@@ -1,9 +1,10 @@
 {
-  "ns":2,
-  "Lx": 100,
-  "Ly": 1,
-  "Lz": 1,
-  "Np": 20,
+  "n_types":1,
+  "n_orientations":6,
+  "lx": 10,
+  "ly": 10,
+  "lz": 1,
+  "n_particles": [10, 10],
   "couplings": [
     0.1,
     -1,
@@ -11,5 +12,5 @@
     0,
     -1
   ],
-  "initialize_option":"uniform"
+  "initialize_option":"random_fixed_particle_numbers"
 }

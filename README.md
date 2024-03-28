@@ -25,6 +25,7 @@
 
 - Someday: make a more elegant iteration solution to loop through the \_sites and \_full
   arrays of the state struct
+- Maybe: change the "initialize_state" functions into full-blown constructors?
 
 # `frusa_mc`
 

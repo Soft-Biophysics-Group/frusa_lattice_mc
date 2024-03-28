@@ -27,9 +27,9 @@ namespace lattice_particles_space{
   struct site_state {
     int type {0};
     int orientation {0};
-    // TODO I should NOT have to define this, understand what I'm doing wrong.
   };
   bool isempty(site_state& site);
+  std::ostream& operator<< (std::ostream& out, site_state &site);
 
   using SiteVector = std::vector<site_state>;
   using SiteBool = std::pair<site_state, bool>;

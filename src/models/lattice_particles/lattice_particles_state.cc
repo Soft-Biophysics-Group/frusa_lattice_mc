@@ -1,17 +1,18 @@
 #include "lattice_particles_state.h"
 #include <cstddef>
 #include <ranges>
+#include "vector_utils.h"
 
-  /*
-   * Definitions required for the public routines of the model class
-   */
+/*
+ * Definitions required for the public routines of the model class
+ */
 namespace lattice_particles_space{
 
   /*
    * Definitions required for the public routines of the model class
    */
   void initialize_state(state_struct &state,
-                        model_parameters_struct &parameters){
+      model_parameters_struct &parameters){
 
     state.n_types = parameters.n_types;
     state.n_orientations = parameters.n_orientations;
@@ -20,8 +21,6 @@ namespace lattice_particles_space{
     state.lz = parameters.lz;
     state.n_sites = state.lx * state.ly * state.lz;
     state.n_particles = parameters.n_particles;
-    state.lattice_sites =
-        SiteVector(static_cast<std::size_t>(state.n_sites), site_state{});
     state.full_sites = vec1b(static_cast<std::size_t>(state.n_sites), false);
 
     // Set the total number of lattice sites and particle density
@@ -34,7 +33,6 @@ namespace lattice_particles_space{
         initialize_state_from_file(state,parameters);
       }
       else if(option=="random_fixed_particle_numbers"){
-        // Segfault happens here
         initialize_state_random_fixed_particle_numbers(state, parameters);
       }
       else{
@@ -63,12 +61,12 @@ namespace lattice_particles_space{
 
     // Record the particle types on line 1
     for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
-        state_f << state.lattice_sites[i].type << ' ';
+      state_f << state.lattice_sites[i].type << ' ';
     }
     state_f << '\n';
     // And the particle orientations on line 2
     for (std::size_t i = 0; i < state.lattice_sites.size(); i++) {
-        state_f << state.lattice_sites[i].orientation << ' ';
+      state_f << state.lattice_sites[i].orientation << ' ';
     }
     state_f << '\n';
     state_f.close();
@@ -81,7 +79,7 @@ namespace lattice_particles_space{
    * Library-specific definitions
    */
   void initialize_state_from_file(state_struct &state,
-                                  model_parameters_struct &parameters){
+      model_parameters_struct &parameters){
     std::ifstream input_file {parameters.state_input};
 
     if(!input_file){
@@ -91,43 +89,50 @@ namespace lattice_particles_space{
 
     // Fetching the orientations one by one
     std::string line {};
-    int orientation {};
+    int type {};
     std::getline(input_file, line);
-    // TODO Would it work without the explicit definition? i.e. with:
-    //while (std::stringstream(line) >> orientation) {...
     //Solution found at https://stackoverflow.com/a/20659156
     std::stringstream ss{line};
-    while (ss >> orientation) {
-        state.lattice_sites.push_back(site_state {0, orientation});
+    while (ss >> type) {
+      state.lattice_sites.push_back(site_state {type, 0});
     }
     // Same for the particle types
     std::getline(input_file, line);
-    int type {};
-    ss = std::stringstream(line);
+    int orientation {};
+    std::stringstream ss2{line};
     // TODO This is a bit horrible. Find a better way.
     std::size_t site_index {0};
-    while (ss >> type) {
-      state.lattice_sites[site_index].type = type;
+    while (ss2 >> orientation) {
+      state.lattice_sites[site_index].orientation = orientation;
+      ++site_index;
     }
+    input_file.close();
+  }
+
+  std::ostream& operator<< (std::ostream& out, site_state &site) {
+    out << site.type << ' ' << site.orientation;
+    return out;
   }
 
   void initialize_state_random_fixed_particle_numbers(
       state_struct &state, model_parameters_struct &parameters) {
-      int_dist site_dist(0, state.n_sites);
-      int_dist orientation_dist(0, parameters.n_orientations);
+    int_dist site_dist(0, state.n_sites);
+    int_dist orientation_dist(0, parameters.n_orientations);
 
-      // Fill the state until we get to the right number of particles of each
-      // type
-      for (std::size_t t {0}; t < static_cast<std::size_t>(parameters.n_types); t++)
-      {
-        for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[t]); n++) {
-            std::size_t index{
-                static_cast<std::size_t>(site_dist(parameters.rng))};
-            int orientation{orientation_dist(parameters.rng)};
-            state.lattice_sites[index] =
-                site_state{orientation, static_cast<int>(t)};
-        }
+    // Fill the state until we get to the right number of particles of each
+    // type
+    state.lattice_sites =
+      SiteVector(static_cast<std::size_t>(state.n_sites), site_state{});
+    for (std::size_t t {0}; t < static_cast<std::size_t>(parameters.n_types); t++)
+    {
+      for (std::size_t n {0}; n < static_cast<std::size_t>(parameters.n_particles[t]); n++) {
+        std::size_t index{
+          static_cast<std::size_t>(site_dist(parameters.rng))};
+        int orientation{orientation_dist(parameters.rng)};
+        state.lattice_sites[index] =
+          site_state{static_cast<int>(t), orientation};
       }
+    }
   }
 
   //TODO I stopped here; continue
@@ -155,4 +160,4 @@ namespace lattice_particles_space{
     update_state(index2, site1.type, site1.orientation, state);
     update_state(index1, init_type_2, init_orientation_2, state);
   }
-}
+  }

@@ -1,7 +1,7 @@
 #include "vector_utils.h"
 
 namespace array_space{
-  
+
   void ij_to_r(int &r, int i, int j, int Lx, int Ly){
     r = i + Lx*j;
   }
@@ -10,7 +10,7 @@ namespace array_space{
     j = r/Lx;
     i = r-Lx*j;
   }
-  
+
   void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz){
     r = i + Lx*j + Lx*Ly*k;
   }
@@ -21,7 +21,7 @@ namespace array_space{
     i = r-Lx*j-Lx*Ly*k;
   }
 
-  int mod(int a, int b){ 
-    return (a % b + b) % b; 
+  int mod(int a, int b){
+    return (a % b + b) % b;
   }
 }

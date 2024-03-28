@@ -4,7 +4,8 @@
 #include <iostream>
 
 int main() {
-    lattice_particles_space::model_parameters_struct params ;
-    std::cout << "Got there so far!";
+    lattice_particles_space::model_parameters_struct params(
+        "../../../input/model_params.json");
+    std::cout << params;
     return 0;
 }

@@ -50,5 +50,7 @@ namespace lattice_particles_space{
     std::string initialize_option {};
     std::string state_input {};
   };
+
+  std::ostream& operator<< (std::ostream& out, model_parameters_struct& params);
 }
 #endif

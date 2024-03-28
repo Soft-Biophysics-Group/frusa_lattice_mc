@@ -1,4 +1,5 @@
 #include "lattice_particles_parameters.h"
+#include "vector_utils.h"
 
 namespace lattice_particles_space {
 
@@ -32,5 +33,26 @@ model_parameters_struct::model_parameters_struct() {
     EngineType engine(dev());
 
     rng = engine;
+}
+
+std::ostream& operator<< (std::ostream& out, model_parameters_struct& params) {
+    out << "Printing the parameters for this simulation\n\n";
+    out << "Number of particle types:" << params.n_types << '\n';
+    out << "Number of possible particle orientations:" << params.n_orientations << '\n';
+    out << "Lattice dimensions:" << '(' << params.lx << ", " << params.ly
+        << ", " << params.lz << ")\n";
+    out << "Number of particles of each type:" << '[';
+    array_space::print_vector(out, params.n_particles);
+    out << "]\n";
+    out << "Flattened couplings matrix: [";
+    array_space::print_vector(out, params.couplings);
+    out << "]\n";
+    out << "Chosen initialize option: " << params.initialize_option << '\n';
+    if (params.initialize_option == "from_file") 
+        out << "Initialized from file " << params.state_input << '\n';
+
+    out << "End parameter print \n\n";
+
+    return out;
 }
 } // namespace lattice_particles_space

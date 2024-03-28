@@ -1,6 +1,9 @@
-#include "lattice_particle_state.h"
+#include "lattice_particles_state.h"
 
-namespace lattice_particle_space{
+  /*
+   * Definitions required for the public routines of the model class
+   */
+namespace lattice_particles_space{
 
   /*
    * Definitions required for the public routines of the model class
@@ -8,27 +11,24 @@ namespace lattice_particle_space{
   void initialize_state(state_struct &state,
                         model_parameters_struct &parameters){
 
-    state.ns = parameters.ns;
-    state.Lx = parameters.Lx;
-    state.Ly = parameters.Ly;
-    state.Lz = parameters.Lz;
-    state.Np = parameters.Np;
+    state.n_types = parameters.n_types;
+    state.n_orientations = parameters.n_orientations;
+    state.lx = parameters.lx;
+    state.ly = parameters.ly;
+    state.lz = parameters.lz;
+    state.n_particles = parameters.n_particles;
 
     // Set the total number of lattice sites and particle density
-    state.N = state.Lx*state.Ly*state.Lz;
-    state.rho_bar = (1.0*parameters.Np)/state.N;
+    state.n_sites = state.lx*state.ly*state.lz;
 
-    std::string option = parameters.initialize_option;
+    std::string_view option = parameters.initialize_option;
 
     try{
       if(option=="from_file"){
         initialize_state_from_file(state,parameters);
       }
-      else if(option=="random"){
-        initialize_state_random(state,parameters);
-      }
-      else if(option=="uniform"){
-        initialize_state_uniform(state);
+      else if(option=="random_fixed_particle_numbers"){
+          initialize_state_random_fixed_particle_numbers(state, parameters);
       }
       else{
         throw option;
@@ -39,69 +39,31 @@ namespace lattice_particle_space{
       exit(1);
     }
 
-    for(int r=0;r<state.N;r++){
-      if(state.local_density[r]>0){
-        state.donor_list.push_back(r);
-      }
-      if(state.local_density[r]<1){
-        state.acceptor_list.push_back(r);
-      }
+    // Start keeping track of full and empty sites
+    for (int i {0}; i < state.n_sites; i++){
+      state.full_sites[i] = isempty(state.lattice_sites[i]);
     }
   }
 
-  void print_state(state_struct &state){
-    std::cout << "\n---------------------------------------------\n";
-    std::cout << "Current structural properties of the system\n";
-    std::cout << "---------------------------------------------\n\n";
-
-    std::cout << "Lattice dimensions:\n\n";
-    std::cout << "Lx = " << state.Lx << "\n";
-    std::cout << "Ly = " << state.Ly << "\n";
-    std::cout << "Lz = " << state.Lz << "\n\n";
-
-    std::cout << "Number of particles Np = " << state.Np << "\n\n";
-
-    std::cout << "The total density of particles in the system is: ";
-    std::cout << state.rho_bar << "\n\n";
-
-    std::cout << "Current values of the fractional concentrations";
-    std::cout << " and local densities:\n";
-    for(int r=0;r<state.N;r++){
-
-      int i,j,k;
-      array_space::r_to_ijk(r,i,j,k,state.Lx,state.Ly,state.Lz);
-
-      std::cout << "i = " << i << " ";
-      std::cout << "j = " << j << " ";
-      std::cout << "k = " << k << " ";
-
-      std::cout << "c(r) = " << " ";
-
-      for(int s=0;s<state.ns;s++){
-        std::cout << state.concentration[r][s] << " ";
-      }
-
-      std::cout << " rho(r) = " << " " << state.local_density[r];
-      std::cout << "\n";
-    }
-    std::cout << "\n\n";
-  }
+  bool isempty(site_state& site) { return site.orientation == 0; };
 
   void save_state(state_struct &state, std::string state_output){
-
-    std::ofstream state_f;
-    state_f.open(state_output);
+    std::ofstream state_f {state_output};
     if(!state_f){
       std::cerr << "Could not open "+state_output << std::endl;
       exit(1);
     }
 
-    for(int r=0;r<state.N;r++){
-      for(int s=0;s<state.ns;s++){
-        state_f << std::setprecision(8) << state.concentration[r][s] << " ";
-      }
-      state_f << "\n";
+    // Record the particle types on line 1
+    for (int i = 0; i < state.n_sites; i++) {
+        state_f << state.lattice_sites[i].type << ' ';
     }
+    state_f << '\n';
+    // And the particle orientations on line 2
+    for (int i = 0; i < state.n_sites; i++) {
+        state_f << state.lattice_sites[i].orientation << ' ';
+    }
+    state_f << '\n';
     state_f.close();
   }
   /*
@@ -113,8 +75,7 @@ namespace lattice_particle_space{
    */
   void initialize_state_from_file(state_struct &state,
                                   model_parameters_struct &parameters){
-    std::ifstream input_file;
-    input_file.open(parameters.state_input);
+    std::ifstream input_file {parameters.state_input};
 
     if(!input_file){
       std::cerr << "Unable to open file "+parameters.state_input;
@@ -123,95 +84,62 @@ namespace lattice_particle_space{
 
     SiteVector lattice_sites {};
     // Fetching the orientations one by one
-    std::string orientations_line {std::getline(input_file)};
-    std::string_view orientation {};
-    while (orientations_line >> orientation) {
-        lattice_sites.append_back(site_state(0, orientation));
+    std::string line {};
+    int orientation {};
+    std::getline(input_file, line);
+    // TODO Would it work without the explicit definition? i.e. with:
+    //while (std::stringstream(line) >> orientation) {...
+    //Solution found at https://stackoverflow.com/a/20659156
+    std::stringstream ss{line};
+    while (ss >> orientation) {
+        lattice_sites.push_back(site_state {0, orientation});
     }
     // Same for the particle types
-    std::string type_line {std::getline(input_file)};
-    std::string_view type {};
-    for (int n; n < state.n_sites; n++) {
-        type_line >> type;
-        lattice_sites[n].particle_type = std::stoi(type);
+    std::getline(input_file, line);
+    int type {};
+    ss = std::stringstream(line);
+    // TODO This is a bit horrible. Find a better way.
+    int site_index {0};
+    while (ss >> type) {
+      lattice_sites[site_index].type = type;
     }
   }
 
-  void initialize_state_random(state_struct &state,
-                               model_parameters_struct &parameters){
+  void initialize_state_random_fixed_particle_numbers(
+      state_struct &state, model_parameters_struct &parameters) {
+      int_dist site_dist(0, state.n_sites);
+      int_dist orientation_dist(0, parameters.n_orientations);
 
-    real_dist uniform_dist(0,1);
-
-    for(int r=0;r<state.N;r++){
-
-      vec1d c_r;
-      double rho_r=0;
-
-      for(int s=0;s<state.ns-1;s++){
-
-        double c_r_s = uniform_dist(parameters.rng)*(state.rho_bar-rho_r);
-
-        c_r.push_back(c_r_s);
-        rho_r+= c_r_s;
+      // Fill the state until we get to the right number of particles of each
+      // type
+      for (int t {0}; t < parameters.n_types; t++)
+      {
+        for (int n {0}; n < parameters.n_particles[n]; n++) {
+          int index{site_dist(parameters.rng)};
+          int orientation{orientation_dist(parameters.rng)};
+          state.lattice_sites[index] = site_state{orientation, t};
+        }
       }
-
-      c_r.push_back(state.rho_bar-rho_r);
-
-      std::shuffle(std::begin(c_r), std::end(c_r), parameters.rng);
-
-      state.concentration.push_back(c_r);
-      state.local_density.push_back(state.rho_bar);
-    }
   }
 
-  void initialize_state_uniform(state_struct &state){
-
-    for(int r=0;r<state.N;r++){
-
-      vec1d c_r;
-
-      for(int s=0;s<state.ns;s++){
-        c_r.push_back(state.rho_bar/state.ns);
-      }
-
-      state.concentration.push_back(c_r);
-      state.local_density.push_back(state.rho_bar);
-    }
+  //TODO I stopped here; continue
+  void update_state(int index, int type, int orientation, state_struct &state) {
+    state.lattice_sites[index].orientation = orientation;
+    state.lattice_sites[index].type = type;
+    // TODO LSP says ambiguous call below, but I don't see why.
+    // See if compilation fails because of this.
+    state.full_sites[index] = isempty(state.lattice_sites[index]);
   }
 
-  void update_state(int r, int index, int list_ind, double dc,
-                    state_struct &state, double eps){
+  void swap_sites(int index1, int index2, state_struct&state)  {
+    site_state& site1 {state.lattice_sites[index1]};
+    site_state& site2 {state.lattice_sites[index2]};
 
-    state.concentration[r][index] += dc;
-    state.local_density[r] += dc;
+    int init_orientation_2 { site2.orientation };
+    int init_type_2 { site2.type };
 
-    if(std::find(state.donor_list.begin(),\
-                 state.donor_list.end(),r)!=state.donor_list.end()){
-
-      if(state.local_density[r]<eps){
-        state.donor_list.erase(state.donor_list.begin()+list_ind);
-      }
-    }
-    else{
-      if(state.local_density[r]>eps){
-        state.donor_list.push_back(r);
-      }
-    }
-
-
-    if(std::find(state.acceptor_list.begin(),\
-                 state.acceptor_list.end(),r)!=state.acceptor_list.end()){
-
-      if(state.local_density[r]>1-eps){
-        state.acceptor_list.erase(state.acceptor_list.begin()+list_ind);
-      }
-    }
-    else{
-      if(state.local_density[r]<1-eps){
-        state.acceptor_list.push_back(r);
-      }
-    }
+    // TODO Why is clangd throwing an ambiguous call error below?
+    update_state(index2, site1.type, site1.orientation, state);
+    update_state(index1, init_type_2, init_orientation_2, state);
   }
 }
-
-

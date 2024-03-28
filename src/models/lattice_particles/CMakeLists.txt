@@ -2,17 +2,17 @@
 set(HEADER_LATTICEPARTICLES
     ${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_parameters.h
     ${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_state.h
-    #${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_interactions.h
-    #${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_update.h
-    #${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_averages.h
+    ${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_interactions.h
+    ${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_update.h
+    ${INCLUDE_FRUSA_MODELS}/lattice_particles/lattice_particles_averages.h
     ${INCLUDE_FRUSA_THIRDPARTY}/json.hpp)
 
 set(SOURCE_LATTICEPARTICLES
     lattice_particles_parameters.cc
     lattice_particles_state.cc
-    #lattice_particles_interactions.cc
-    #lattice_particles_update.cc
-    #lattice_particles_averages.cc
+    lattice_particles_interactions.cc
+    lattice_particles_update.cc
+    lattice_particles_averages.cc
     )
 
 ### Create the lattice_particles library and include the header directories
@@ -22,7 +22,7 @@ add_library(lattice_particles_library
 
 if("${MODEL_TYPE}" STREQUAL "lattice_hexagonal")
 
-    target_compile_definitions(fields_library PRIVATE "LATTICEPARTICLES_HEXAGONAL")
+    target_compile_definitions(lattice_particles_library PRIVATE "LATTICEPARTICLES_HEXAGONAL")
 
     add_library(user_library STATIC lattice_particles_hexagonal.cc)
 

@@ -23,9 +23,16 @@
 
 ### `lattice_particles` model on branch `lattice_mc_dev`
 
-- Someday: make a more elegant iteration solution to loop through the \_sites and \_full
+- Someday: make a more elegant iteration solution to loop through the sites and occupation
   arrays of the state struct
 - Maybe: change the "initialize_state" functions into full-blown constructors?
+- Next: check the hashing give correct values, and that I don't need to subtract 1 from the
+  n_states and n_orientations.
+- Someday: make a lattice library where we compile the functions (e.g. geometry) used by both
+  the fields and lattice particles libraries.
+- Next: write a Python code to generate the flattened LEL from 21 interaction energies for
+  hexagonal particles
+- Next: Figure out where to create the array of neighbours used in geometry
 
 # `frusa_mc`
 

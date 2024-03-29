@@ -1,11 +1,11 @@
 #include "fields_hexagonal.h"
 
 namespace fields_space{
-  
+
   vec3d get_coupling_matrix_hexagonal(vec1d couplings){
-    
+
     vec3d coupling_matrix;
-    
+
     // Read the coupling matrix for the bond along the +x axis from the input
     // file. The structure of couplings is assumed to be a flattened version of
     // the coupling_matrix.
@@ -33,12 +33,12 @@ namespace fields_space{
       }
       coupling_matrix.push_back(array_k);
     }
-    
-    return coupling_matrix; 
+
+    return coupling_matrix;
   }
 
   vec1i get_neighbours_hexagonal(int r, int Lx, int Ly){
-    
+
     int i,j;
 
     array_space::r_to_ij(r,i,j,Lx,Ly);
@@ -57,10 +57,10 @@ namespace fields_space{
     array_space::ij_to_r(r5,i ,jm,Lx,Ly);
 
     vec1i neighbours = {r0,r1,r2,r3,r4,r5};
-    
+
     return neighbours;
   }
-  
+
   int get_bond_direction_hexagonal(int r1, int r2, int Lx, int Ly){
 
     int i1,j1;

@@ -16,6 +16,23 @@ namespace array_space{
    * Flattened arrays are preferred over nested vector because during the
    * MC updates we only have to generate a single random index, instead of 3.
    */
+  // Next few functions deal with going from vectors of parameters to hashed
+  // integers for efficient contact energy retrieval
+
+  // Get a hashed state integer from particle characteristics, returning 0 if
+  // the site is empty
+  int hash_into_state(int type, int orientation, int n_orientations);
+  // Get a hashed contact integer from pair characteristics
+  // Hash 3 integers, the 2 first of which can take the same values, into a
+  // single number
+  int hash_3integers(int x1, int x2, int y, int x_range);
+  // This function takes as the reference edge for the contact the smallest
+  // edge and assigns a contact identity based on it.
+  int hash_into_contact(int state1, int state2, int edge1, int edge2,
+                        int n_states);
+
+  // Next functions are for going back and forth between lattice coordinates
+  // and a single hashed site index
 
   // Calculates the flat array index (r) given the 2D coordinates (i,j) and
   // the dimensions of the system (Lx,Ly)

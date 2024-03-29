@@ -22,7 +22,7 @@ add_library(lattice_particles_library
 
 if("${MODEL_TYPE}" STREQUAL "lattice_hexagonal")
 
-    target_compile_definitions(fields_library PRIVATE "LATTICEPARTICLES_HEXAGONAL")
+    target_compile_definitions(lattice_particles_library PRIVATE "LATTICEPARTICLES_HEXAGONAL")
 
     add_library(user_library STATIC lattice_particles_hexagonal.cc)
 

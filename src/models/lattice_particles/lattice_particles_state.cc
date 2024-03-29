@@ -26,8 +26,6 @@ namespace lattice_particles_space{
     state.full_sites = vec1b(static_cast<std::size_t>(state.n_sites), false);
 
     // Set the total number of lattice sites and particle density
-    state.N = state.Lx*state.Ly*state.Lz;
-    state.rho_bar = (1.0*parameters.Np)/state.N;
 
     std::string option = parameters.initialize_option;
 
@@ -36,7 +34,6 @@ namespace lattice_particles_space{
         initialize_state_from_file(state,parameters);
       }
       else if(option=="random_fixed_particle_numbers"){
-        // Segfault happens here
         initialize_state_random_fixed_particle_numbers(state, parameters);
       }
       else{
@@ -51,44 +48,6 @@ namespace lattice_particles_space{
     for (std::size_t i {0}; i < state.lattice_sites.size(); i++){
       state.full_sites[i] = isempty(state.lattice_sites[i]);
     }
-  }
-
-  void print_state(state_struct &state){
-    std::cout << "\n---------------------------------------------\n";
-    std::cout << "Current structural properties of the system\n";
-    std::cout << "---------------------------------------------\n\n";
-
-    std::cout << "Lattice dimensions:\n\n";
-    std::cout << "Lx = " << state.Lx << "\n";
-    std::cout << "Ly = " << state.Ly << "\n";
-    std::cout << "Lz = " << state.Lz << "\n\n";
-
-    std::cout << "Number of particles Np = " << state.Np << "\n\n";
-
-    std::cout << "The total density of particles in the system is: ";
-    std::cout << state.rho_bar << "\n\n";
-
-    std::cout << "Current values of the fractional concentrations";
-    std::cout << " and local densities:\n";
-    for(int r=0;r<state.N;r++){
-
-      int i,j,k;
-      array_space::r_to_ijk(r,i,j,k,state.Lx,state.Ly,state.Lz);
-
-      std::cout << "i = " << i << " ";
-      std::cout << "j = " << j << " ";
-      std::cout << "k = " << k << " ";
-
-      std::cout << "c(r) = " << " ";
-
-      for(int s=0;s<state.ns;s++){
-        std::cout << state.concentration[r][s] << " ";
-      }
-
-      std::cout << " rho(r) = " << " " << state.local_density[r];
-      std::cout << "\n";
-    }
-    std::cout << "\n\n";
   }
 
   void save_state(state_struct &state, std::string state_output){
@@ -173,7 +132,6 @@ namespace lattice_particles_space{
         }
       }
     }
-  }
 
   //TODO I stopped here; continue
   void update_state(int index, int type, int orientation, state_struct &state) {

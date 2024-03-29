@@ -27,6 +27,8 @@ namespace lattice_particles_space{
   struct site_state {
     int type {0};
     int orientation {0};
+    site_state() = default;
+    site_state(int t, int o) : type{t}, orientation{o} {};
   };
   bool isempty(site_state& site);
   std::ostream& operator<< (std::ostream& out, site_state &site);

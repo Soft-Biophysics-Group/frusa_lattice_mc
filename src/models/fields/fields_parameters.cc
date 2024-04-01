@@ -1,3 +1,6 @@
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
+
 #include "fields_parameters.h"
 
 namespace fields_space{

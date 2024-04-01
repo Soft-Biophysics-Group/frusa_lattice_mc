@@ -1,3 +1,9 @@
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
+
+#ifndef IO_UTILS_HEADER_H
+#define IO_UTILS_HEADER_H
+
 #include "vector_utils.h"
 #include <iostream>
 #include <fstream>
@@ -23,3 +29,5 @@ namespace io_space{
   void save_vector(vec2i &array, int N1, int N2, std::string location);
   void save_vector(vec2d &array, int N1, int N2, std::string location);
 }
+
+#endif

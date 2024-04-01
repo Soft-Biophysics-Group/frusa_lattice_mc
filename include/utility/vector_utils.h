@@ -1,3 +1,9 @@
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
+
+#ifndef IO_VECTOR_HEADER_H
+#define IO_VECTOR_HEADER_H
+
 #include <vector>
 
 typedef std::vector<int> vec1i;
@@ -33,3 +39,5 @@ namespace array_space{
   // another positive integer b
   int mod(int a, int b);
 }
+
+#endif

@@ -1,3 +1,6 @@
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
+
 #ifndef PARTICLES_1D_HEADER_H
 #define PARTICLES_1D_HEADER_H
 

@@ -33,6 +33,17 @@
 - Next: write a Python code to generate the flattened LEL from 21 interaction energies for
   hexagonal particles
 - Next: Figure out where to create the array of neighbours used in geometry
+- When I implement the moves: make sure I generate only hashed integers, rather than pairs or
+  triplets, in order to keep things faaaaast (i.e. generate a full state rather than an
+  orientation + a type)
+- Someday/maybe: Pre-calculate the exponentials of the interactions so that we can calculate
+  the energy differences faster during MC moves
+- Next: the interactions structure is redundant for lattice particles and can be absorbed in
+  the state struct (I only need to keep track  of the energy)
+- Now: partial reformatting
+  - Site should be a class, not a struct. Should store state as well as orientation and type
+    in order to be more consistent. Should be updated using external methods
+  - When I get the contacts between the Sites, 
 
 # `frusa_mc`
 

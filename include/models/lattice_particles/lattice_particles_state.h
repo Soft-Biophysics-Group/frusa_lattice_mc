@@ -39,6 +39,8 @@ namespace lattice_particles_space{
   // Structure containing the characteristics of the state of the system:
   // n_types          - number of different particle trypes
   // n_orientations   - number of orientations a particle can take
+  // n_states         - total number of states (type+orientation) a given
+  //                    particle can take
   // lx, ly, lz       - dimensions of the lattice
   // n_sites          - total number of sites
   // n_particles      - number of particles of each type
@@ -48,6 +50,7 @@ namespace lattice_particles_space{
   struct state_struct{
     int n_types {};
     int n_orientations {};
+    int n_states {};
     int lx {};
     int ly {};
     int lz {};

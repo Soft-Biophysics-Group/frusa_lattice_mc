@@ -1,29 +1,24 @@
-#ifndef LATTICEPARTICLES_INTERACTIONS_H
-#define LATTICEPARTICLES_INTERACTIONS_H
-
-#include "lattice_particles_parameters.h"
-#include "lattice_particles_state.h"
-#include "lattice_particles_geometry.h"
-
-#include <iostream>
-#include <cmath>
-
-#include "vector_utils.h"
+#include "lattice_particles_interactions.h"
+#include <iomanip>
 
 namespace lattice_particles_space {
-  // Structure containing the characteristics of the model interactions:
-  // energy          - current energy of the system
-  // free_energy     - energy + entropy
-  struct interactions_struct{
-    ContactMap couplings;
-    double energy;
-  };
+void initialize_interactions(state_struct &state,
+                             interactions_struct &interactions,
+                             model_parameters_struct &parameters) {
+  interactions.couplings = parameters.couplings;
+  interactions.energy = get_energy(state, interactions);
+}
 
-  // Calculate interactions characteristics of the current state of the system
-  void initialize_interactions(state_struct &state,
-                               interactions_struct &interactions,
-                               model_parameters_struct &parameters);
-
+template <int N>
+double get_site_energy(int site_index, state_struct &state,
+                       ContactMap coupling_matrix, Neighbours<N> neighbours) {
+    // TODO Stopped here
+    double site_energy{0.0};
+    get_neighbours(neighbours, site_index, state.lx, state.ly, state.lz);
+    for (site_state& neigh_site : neighbours) {
+      
+    }
+}
   // Print the summary of the interactions characteristics
   void print_interactions(state_struct &state,
                           interactions_struct &interactions);
@@ -45,6 +40,4 @@ namespace lattice_particles_space {
                            double dc, state_struct &state,
                            interactions_struct &interactions);
 
-} // lattice_particles_space
-
-#endif
+} // namespace lattice_particles_space

@@ -11,44 +11,44 @@ namespace lattice_particles_space{
   /*
    * Definitions required for the public routines of the model class
    */
-  void initialize_state(state_struct &state,
-      model_parameters_struct &parameters){
+void initialize_state(state_struct &state,
+                      model_parameters_struct &parameters) {
 
-    state.n_types = parameters.n_types;
-    state.n_orientations = parameters.n_orientations;
-    state.lx = parameters.lx;
-    state.ly = parameters.ly;
-    state.lz = parameters.lz;
-    state.n_sites = state.lx * state.ly * state.lz;
-    state.n_particles = parameters.n_particles;
-    state.lattice_sites =
-        SiteVector(static_cast<std::size_t>(state.n_sites), site_state{});
-    state.full_sites = vec1b(static_cast<std::size_t>(state.n_sites), false);
+  state.n_types = parameters.n_types;
+  state.n_orientations = parameters.n_orientations;
+  state.lx = parameters.lx;
+  state.ly = parameters.ly;
+  state.lz = parameters.lz;
+  state.n_sites = state.lx * state.ly * state.lz;
+  state.n_particles = parameters.n_particles;
+  state.lattice_sites =
+      SiteVector(static_cast<std::size_t>(state.n_sites), site_state{});
+  state.full_sites = vec1b(static_cast<std::size_t>(state.n_sites), false);
 
     // Set the total number of lattice sites and particle density
 
-    std::string option = parameters.initialize_option;
+  std::string option = parameters.initialize_option;
 
-    try{
-      if(option=="from_file"){
-        initialize_state_from_file(state,parameters);
-      }
-      else if(option=="random_fixed_particle_numbers"){
-        initialize_state_random_fixed_particle_numbers(state, parameters);
-      }
-      else{
-        throw option;
-      }
+  try{
+    if(option=="from_file"){
+      initialize_state_from_file(state,parameters);
     }
-    catch(std::string option){
-      std::cout << "Incorrect initialization option: ''" << option << "''\n";
-      exit(1);
+    else if(option=="random_fixed_particle_numbers"){
+      initialize_state_random_fixed_particle_numbers(state, parameters);
     }
-
-    for (std::size_t i {0}; i < state.lattice_sites.size(); i++){
-      state.full_sites[i] = isempty(state.lattice_sites[i]);
+    else{
+      throw option;
     }
   }
+  catch(std::string option){
+    std::cout << "Incorrect initialization option: ''" << option << "''\n";
+    exit(1);
+  }
+
+  for (std::size_t i {0}; i < state.lattice_sites.size(); i++){
+    state.full_sites[i] = isempty(state.lattice_sites[i]);
+  }
+}
 
   void save_state(state_struct &state, std::string state_output){
 

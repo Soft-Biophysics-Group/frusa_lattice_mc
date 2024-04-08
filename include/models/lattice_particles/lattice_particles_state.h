@@ -24,17 +24,36 @@ namespace lattice_particles_space{
 
   // Structure containing the characteristics of a lattice site.
   // Note that orientation 0 denotes an empty site, regardless of particle type
-  struct site_state {
-    int type {0};
-    int orientation {0};
-    site_state() = default;
-    site_state(int t, int o) : type{t}, orientation{o} {};
+  class site_state {
+    public:
+      // TODO Do I need this constructor?
+      site_state() = default;
+      site_state(int type, int orientation, model_parameters_struct &params)
+          : type_m{type}, orientation_m{orientation},
+            n_orientations{params.n_orientations} {
+          state_m = calc_state();
+      }
+      int get_type() { return type_m; };
+      int get_orientation() { return orientation_m; } ;
+      int get_state() { return state_m; };
+      bool is_empty() { return orientation_m == 0; };
+      void set_state(int type, int orientation) {
+        type_m = type;
+        orientation_m = orientation;
+        state_m = calc_state();
+      };
+      friend std::ostream& operator<< (std::ostream& out, site_state &site);
+    private:
+      int type_m {0};
+      int orientation_m {0};
+      int state_m {0};
+      int n_orientations {0};
+      int calc_state() {
+          return array_space::hash_into_state(type_m, orientation_m, n_orientations);
+      };
   };
-  bool isempty(site_state& site);
-  std::ostream& operator<< (std::ostream& out, site_state &site);
 
   using SiteVector = std::vector<site_state>;
-  using SiteBool = std::pair<site_state, bool>;
 
   // Structure containing the characteristics of the state of the system:
   // n_types          - number of different particle trypes

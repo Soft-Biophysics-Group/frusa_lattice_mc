@@ -1,48 +1,59 @@
-#ifndef LATTICEPARTICLES_INTERACTIONS_H
-#define LATTICEPARTICLES_INTERACTIONS_H
+#ifndef LATTICEPARTICLES_UPDATE_HEADER_H
+#define LATTICEPARTICLES_UPDATE_HEADER_H
 
 #include "lattice_particles_parameters.h"
 #include "lattice_particles_state.h"
 #include "lattice_particles_geometry.h"
+#include "lattice_particles_interactions.h"
 
-#include <iostream>
-#include <cmath>
+namespace lattice_particles_space{
+  /*
+   * Definitions required for the public routines of the model class
+   */
 
-#include "vector_utils.h"
+  // Function used to perform state.N updates of the system (considered a
+  // single MC step)
+  // state        - configuration of the system before the update
+  // interactions - energetics of the system before the update
+  // parameters   - used to access random number generator (parameters.rng)
+  // T            - annealing temperature (not the same as T_model!)
+  void update_system(state_struct &state, 
+                     interactions_struct &interactions,
+                     model_parameters_struct &parameters,
+                     double T);
 
-namespace lattice_particles_space {
-  // Structure containing the characteristics of the model interactions:
-  // energy          - current energy of the system
-  // free_energy     - energy + entropy
-  struct interactions_struct{
-    ContactMap coupling_matrix;
-    double energy;
-  };
+  /*
+   * End of the required definitions for the model class
+   */
 
-  // Calculate interactions characteristics of the current state of the system
-  void initialize_interactions(state_struct &state,
-                               interactions_struct &interactions,
-                               model_parameters_struct &parameters);
+  /*
+   * Library-specific definitions
+   */
+ 
+  // Function to shift density from one lattice site to another
+  // See arguments of update_state
+  // eps - threshold for density transfer (transfer everything below eps)
+  void shift_local_density(state_struct &state,
+                           interactions_struct &interactions,
+                           model_parameters_struct &parameters,
+                           double T, double eps=1e-8);
 
-  // Print the summary of the interactions characteristics
-  void print_interactions(state_struct &state,
-                          interactions_struct &interactions);
+  // Function to update the fractional concentrations on a given site
+  // See arguments for update_state and shift_local_density
+  void convert_concentrations(state_struct &state,
+                              interactions_struct &interactions,
+                              model_parameters_struct &parameters,
+                              double T, double eps=1e-8);  
 
-  void print_energy(state_struct &state,
-                    interactions_struct &interactions);
-
-  double get_site_energy(int site_index, state_struct &state,
-                         ContactMap coupling_matrix);
-
-  // Function to update energy after concentration transfer from donor to
-  // the acceptor field. r_d             - lattice position of the donor r_a
-  // - lattice position of the acceptor index_d         - donor field
-  // component index_a         - acceptor field component dc              -
-  // amount of concentration transferred
-  double get_energy_change(int r_d, int r_a, int index_d, int index_a,
-                           double dc, state_struct &state,
-                           interactions_struct &interactions);
-
-} // lattice_particles_space
+  // Function to randomly select a field component at a given lattice site
+  // r          - lattice position of the field
+  // bound      - field component must be !=bound in order to be 
+  //              a selection candidate
+  // state      - current state of the system
+  // parameters - used to extract random number generator (parameters.rng) 
+  int select_element(int r, double bound, 
+                     state_struct &state, 
+                     model_parameters_struct &parameters);
+}
 
 #endif

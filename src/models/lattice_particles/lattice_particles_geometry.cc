@@ -18,6 +18,5 @@ int get_bond_directions(int r1, int r2, int Lx, int Ly, int Lz) {
 #if defined LATTICEPARTICLES_HEXAGONAL
         return get_bond_directions_hexagonal(int r1, int r2, int Lx, int Ly);
 #endif
-    return dr;
 }
 } // namespace lattice_particles_space

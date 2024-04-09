@@ -36,12 +36,14 @@ namespace lattice_particles_space{
       int get_type() { return type_m; };
       int get_orientation() { return orientation_m; } ;
       int get_state() { return state_m; };
+      int get_site_index() { return site_index_m; }
       bool is_empty() { return orientation_m == 0; };
       void set_state(int type, int orientation) {
         type_m = type;
         orientation_m = orientation;
         state_m = calc_state();
       };
+      void set_site_index(int new_index) { site_index_m = new_index; };
       friend std::ostream& operator<< (std::ostream& out, site_state &site);
       void swap_with(site_state& state2);
     private:
@@ -49,6 +51,7 @@ namespace lattice_particles_space{
       int orientation_m {0};
       int state_m {0};
       int n_orientations_m {0};
+      int site_index_m {0};
       int calc_state() {
           return array_space::hash_into_state(type_m, orientation_m, n_orientations_m);
       };
@@ -81,7 +84,8 @@ namespace lattice_particles_space{
   // of parameters.initialize_option
   void initialize_state(state_struct &state,
                         model_parameters_struct &parameters);
-
+  // Assign the indices to all the sites in lattice_sites
+  void initialize_site_state_indices(SiteVector lattice_sites);
   // Print the current values of the structural properties of the system
   // TODO Implement this
   std::ostream& operator<< (std::ostream& out, state_struct &state);
@@ -107,14 +111,6 @@ namespace lattice_particles_space{
   // the lattice, with a given number of particles given in parameters
   void initialize_state_random_fixed_particle_numbers(
       state_struct &state, model_parameters_struct &parameters);
-
-  // Updates concentrations, local densities, and donor/acceptor lists
-  // after a local update of a concentration field
-  // index            - index of the lattice site to update
-  // type             - new type of the particle at site index
-  // orientation      - new orientation of the particle at site index
-  // state            - state of the system before update
-  void update_state(int index, int type, int orientation, state_struct &state);
 }
 
 #endif

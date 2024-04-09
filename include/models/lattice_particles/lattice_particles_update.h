@@ -50,20 +50,26 @@ namespace lattice_particles_space{
   // enum order) being picked.
   move_probas_vec get_move_probas(std::string& mc_json_file);
 
-  // Returns the index of a random lattice site containing a particle
-  int select_random_full(state_struct& state, model_parameters_struct &parameters);
+  // Silly helper function
+  bool is_empty(site_state& site) { return site.is_empty(); };
+  // Returns the a random lattice site containing a particle
+  site_state select_random_full(state_struct &state,
+                                 model_parameters_struct &parameters);
 
-  // Same for a random lattice site containing no particle
-  int select_random_empty(state_struct& state, model_parameters_struct &parameters);
+  // Returns a random lattice site containing no particle
+  site_state select_random_empty(state_struct &state,
+                                  model_parameters_struct &parameters);
 
   /*
-   * IMPORTANT NOTE: The following functions only perform the candidate MC move
-   * but do not calculate the resulting energy difference.
+   * The following functions perform a MC move and return the corresponding
+   * The following functions perform a MC move and return the correspondingenergy difference.
    */
-  void swap_empty_full(state_struct &state, model_parameters_struct &parameters);
-  void swap_full_full(state_struct &state, model_parameters_struct &parameters);
-  void rotate(state_struct &state, model_parameters_struct &parameters);
-  void mutate(state_struct &state, model_parameters_struct &parameters);
+  double swap_empty_full(state_struct &state, model_parameters_struct &parameters);
+  double swap_full_full(state_struct &state, model_parameters_struct &parameters);
+  double rotate(state_struct &state, model_parameters_struct &parameters);
+  double mutate(state_struct &state, model_parameters_struct &parameters);
+
+  // Helper function to determine if sites are neighbours
 }
 
 #endif

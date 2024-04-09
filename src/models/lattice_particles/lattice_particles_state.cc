@@ -41,14 +41,23 @@ void initialize_state(state_struct &state,
     std::cout << "Incorrect initialization option: ''" << option << "''\n";
     exit(1);
   }
+  initialize_site_state_indices(state.lattice_sites);
 }
 
 void site_state::swap_with(site_state& state2) {
   int temp_type {state2.type_m};
   int temp_orientation {state2.orientation_m};
+  int temp_index {state2.site_index_m};
 
   state2.set_state(type_m, orientation_m);
+  state2.set_site_index(site_index_m);
   set_state(temp_type, temp_orientation);
+  set_site_index(state2.site_index_m);
+}
+
+void initialize_site_state_indices(SiteVector lattice_sites) {
+   for (std::size_t i {0}; i<lattice_sites.size(); i++)
+     lattice_sites[i].set_site_index(i);
 }
 
 void save_state(state_struct &state, std::string state_output) {
@@ -136,10 +145,4 @@ void initialize_state_random_fixed_particle_numbers(
   }
 }
 
-void update_state(int index, int type, int orientation, state_struct &state) {
-  // Unsigned index because the writes of this language hate you personnally
-  // Yes, you
-  std::size_t u_index{static_cast<std::size_t>(index)};
-  state.lattice_sites[u_index].set_state(type, orientation);
-}
 } // namespace lattice_particles_space

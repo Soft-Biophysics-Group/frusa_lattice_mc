@@ -1,65 +1,61 @@
-#include "lattice_particles_geometry.h"
 #include "lattice_particles_hexagonal.h"
+#include "lattice_particles_geometry.h"
 #include "vector_utils.h"
 
 namespace lattice_particles_space {
-  void get_neighbours_hexagonal(Neighbours<6>& neighbours, int r, int lx, int ly) {
-    int i,j;
+void get_neighbours_hexagonal(Neighbours<6> &neighbours, int r, int lx,
+                              int ly) {
+  int i, j;
 
-    array_space::r_to_ij(r,i,j,lx,ly);
+  array_space::r_to_ij(r, i, j, lx, ly);
 
-    // Left and right coordinates, taking into account lattice edges
-    int im = array_space::mod(i-1,lx);
-    int ip = array_space::mod(i+1,lx);
-    int jm = array_space::mod(j-1,ly);
-    int jp = array_space::mod(j+1,ly);
+  // Left and right coordinates, taking into account lattice edges
+  int im = array_space::mod(i - 1, lx);
+  int ip = array_space::mod(i + 1, lx);
+  int jm = array_space::mod(j - 1, ly);
+  int jp = array_space::mod(j + 1, ly);
 
-    array_space::ij_to_r(neighbours[0],ip,j ,lx,ly);
-    array_space::ij_to_r(neighbours[1],ip,jp,lx,ly);
-    array_space::ij_to_r(neighbours[2],i ,jp,lx,ly);
-    array_space::ij_to_r(neighbours[3],im,j ,lx,ly);
-    array_space::ij_to_r(neighbours[4],im,jm,lx,ly);
-    array_space::ij_to_r(neighbours[5],i ,jm,lx,ly);
-  }
-
-  int get_bond_direction_hexagonal(int r1, int r2, int Lx, int Ly){
-
-    int i1,j1;
-    array_space::r_to_ij(r1,i1,j1,Lx,Ly);
-
-    int i1m = array_space::mod(i1-1,Lx);
-    int i1p = array_space::mod(i1+1,Lx);
-    int j1m = array_space::mod(j1-1,Ly);
-    int j1p = array_space::mod(j1+1,Ly);
-
-    // TODO Maybe I can make this a bit more elegant?
-    int r1_0,r1_1,r1_2,r1_3,r1_4,r1_5;
-    array_space::ij_to_r(r1_0,i1p,j1 ,Lx,Ly);
-    array_space::ij_to_r(r1_1,i1p,j1p,Lx,Ly);
-    array_space::ij_to_r(r1_2,i1 ,j1p,Lx,Ly);
-    array_space::ij_to_r(r1_3,i1m,j1 ,Lx,Ly);
-    array_space::ij_to_r(r1_4,i1m,j1m,Lx,Ly);
-    array_space::ij_to_r(r1_5,i1 ,j1m,Lx,Ly);
-
-    if(r2==r1_0){
-      return 0;
-    }
-    else if(r2==r1_1){
-      return 1;
-    }
-    else if(r2==r1_2){
-      return 2;
-    }
-    else if(r2==r1_3){
-      return 3;
-    }
-    else if(r2==r1_4){
-      return 4;
-    }
-    else if(r2==r1_5){
-      return 5;
-    }
-    // In case things fail spectacularly
-    return -1;
-  }
+  array_space::ij_to_r(neighbours[0], ip, j, lx, ly);
+  array_space::ij_to_r(neighbours[1], ip, jp, lx, ly);
+  array_space::ij_to_r(neighbours[2], i, jp, lx, ly);
+  array_space::ij_to_r(neighbours[3], im, j, lx, ly);
+  array_space::ij_to_r(neighbours[4], im, jm, lx, ly);
+  array_space::ij_to_r(neighbours[5], i, jm, lx, ly);
 }
+
+int get_bond_direction_hexagonal(int r1, int r2, int Lx, int Ly) {
+
+  int i1, j1;
+  array_space::r_to_ij(r1, i1, j1, Lx, Ly);
+
+  int i1m = array_space::mod(i1 - 1, Lx);
+  int i1p = array_space::mod(i1 + 1, Lx);
+  int j1m = array_space::mod(j1 - 1, Ly);
+  int j1p = array_space::mod(j1 + 1, Ly);
+
+  // TODO Maybe I can make this a bit more elegant?
+  int r1_0, r1_1, r1_2, r1_3, r1_4, r1_5;
+  array_space::ij_to_r(r1_0, i1p, j1, Lx, Ly);
+  array_space::ij_to_r(r1_1, i1p, j1p, Lx, Ly);
+  array_space::ij_to_r(r1_2, i1, j1p, Lx, Ly);
+  array_space::ij_to_r(r1_3, i1m, j1, Lx, Ly);
+  array_space::ij_to_r(r1_4, i1m, j1m, Lx, Ly);
+  array_space::ij_to_r(r1_5, i1, j1m, Lx, Ly);
+
+  if (r2 == r1_0) {
+    return 0;
+  } else if (r2 == r1_1) {
+    return 1;
+  } else if (r2 == r1_2) {
+    return 2;
+  } else if (r2 == r1_3) {
+    return 3;
+  } else if (r2 == r1_4) {
+    return 4;
+  } else if (r2 == r1_5) {
+    return 5;
+  }
+  // In case things fail spectacularly
+  return -1;
+}
+} // namespace lattice_particles_space

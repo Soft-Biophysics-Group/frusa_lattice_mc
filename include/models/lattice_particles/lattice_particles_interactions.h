@@ -45,11 +45,12 @@ double get_contact_energy(site_state &center_site, site_state &neighbour_site,
                           int center_site_edge, int neighbour_site_edge,
                           ContactMap contact_map, int n_states);
 
-double get_site_energy(int site_index, state_struct &state,
-                       ContactMap coupling_matrix);
+template <int N>
+double get_site_energy(site_state &site, state_struct &state,
+                       interactions_struct<N>& interactions);
 
 template <int N>
-double get_energy(state_struct &state, interactions_struct<N> interactions);
+double get_energy(state_struct& state, interactions_struct<N> interactions);
 
 } // lattice_particles_space
 

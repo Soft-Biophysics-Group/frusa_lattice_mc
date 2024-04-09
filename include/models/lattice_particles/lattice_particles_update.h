@@ -20,8 +20,7 @@ using json = nlohmann::json;
 // interactions - energetics of the system before the update
 // parameters   - used to access random number generator (parameters.rng)
 // T            - annealing temperature (not the same as T_model!)
-template <int N>
-void update_system(state_struct &state, interactions_struct<N> &interactions,
+void update_system(state_struct &state, interactions_struct &interactions,
                    model_parameters_struct &parameters, double T);
 
 
@@ -70,32 +69,25 @@ int select_random_empty_index(state_struct &state,
  * difference.
  */
 // TODO Finish writing this once I'm done with minor redesigns
-template <int N>
 double swap_sites(site_state &site1, site_state &site2, state_struct &state,
                   model_parameters_struct &parameters,
-                  interactions_struct<N> &interactions, double T);
-template <int N>
+                  interactions_struct &interactions, double T);
 double swap_empty_full(state_struct &state, model_parameters_struct &parameters,
-                       interactions_struct<N> &interactions, double T);
-template <int N>
+                       interactions_struct &interactions, double T);
 double swap_full_full(state_struct &state, model_parameters_struct &parameters,
-                      interactions_struct<N> &interactions, double T);
-template <int N>
+                      interactions_struct &interactions, double T);
 double rotate(state_struct &state, model_parameters_struct &parameters,
-              interactions_struct<N> &interactions, double T);
-template <int N>
+              interactions_struct &interactions, double T);
 double mutate(state_struct &state, model_parameters_struct &parameters,
-              interactions_struct<N> &interactions, double T);
+              interactions_struct &interactions, double T);
 
 // Helper function to determine if sites are neighbours
 // bool are_neighbours(site_state& site_1, site_state& site_2);
-template <int N>
 bool are_neighbours(int site_1_index, int site_2_index,
-                    interactions_struct<N> &interactions, state_struct &state);
+                    interactions_struct &interactions, state_struct &state);
 
-template <int N>
 double neighbour_correction(int site_1_index, int site_2_index,
-                            interactions_struct<N> &interactions,
+                            interactions_struct &interactions,
                             state_struct &state,
                             model_parameters_struct &parameters);
 

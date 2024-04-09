@@ -17,25 +17,21 @@ namespace lattice_particles_space {
 // couplings          - Interaction energy between neighbouring particles
 // energy             - Energy of the system
 
-template <int N>
 struct interactions_struct {
     ContactMap couplings {};
     double energy {};
-    Neighbours<N> neighbours {};
+    Neighbours neighbours {};
 };
 
 // Calculate interactions characteristics of the current state of the system
-template <int N>
 void initialize_interactions(state_struct &state,
-                             interactions_struct<N> &interactions,
+                             interactions_struct &interactions,
                              model_parameters_struct &parameters);
 
 // Print the summary of the interactions characteristics
-template <int N>
-void print_interactions(state_struct &state, interactions_struct<N> &interactions);
+void print_interactions(state_struct &state, interactions_struct &interactions);
 
-template <int N>
-void print_energy(state_struct &state, interactions_struct<N> &interactions);
+void print_energy(state_struct &state, interactions_struct &interactions);
 
 // Get the contact energy between 2 neighbouring sites, center_site and
 // neighbour_site, touching along the edge of center_site contact_edge.
@@ -45,12 +41,10 @@ double get_contact_energy(site_state &center_site, site_state &neighbour_site,
                           int center_site_edge, int neighbour_site_edge,
                           ContactMap contact_map, int n_states);
 
-template <int N>
 double get_site_energy(site_state &site, state_struct &state,
-                       interactions_struct<N>& interactions);
+                       interactions_struct& interactions);
 
-template <int N>
-double get_energy(state_struct& state, interactions_struct<N> interactions);
+double get_energy(state_struct& state, interactions_struct interactions);
 
 } // lattice_particles_space
 

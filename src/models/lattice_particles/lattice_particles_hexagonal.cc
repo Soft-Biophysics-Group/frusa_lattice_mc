@@ -3,7 +3,7 @@
 #include "vector_utils.h"
 
 namespace lattice_particles_space {
-void get_neighbours_hexagonal(Neighbours<6> &neighbours, int r, int lx,
+void get_neighbours_hexagonal(Neighbours &neighbours, int r, int lx,
                               int ly) {
   int i, j;
 

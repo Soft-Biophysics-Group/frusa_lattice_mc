@@ -23,8 +23,6 @@
 
 ### `lattice_particles` model on branch `lattice_mc_dev`
 
-- Someday: make a more elegant iteration solution to loop through the sites and occupation
-  arrays of the state struct
 - Maybe: change the "initialize_state" functions into full-blown constructors?
 - Next: check the hashing give correct values, and that I don't need to subtract 1 from the
   n_states and n_orientations.
@@ -40,7 +38,6 @@
 - Next: the interactions structure is redundant for lattice particles and can be absorbed in
   the state struct (I only need to keep track  of the energy); figure out if I actually need
   it
-- Next: figure out where I defined the int N for the template `interactions_struct`
 - Next: figure out where to declare the move_probas array in the code
 
 # `frusa_mc`

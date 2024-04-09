@@ -5,9 +5,8 @@
 
 namespace lattice_particles_space {
 
-template <int N>
 void initialize_interactions(state_struct &state,
-                             interactions_struct<N> &interactions,
+                             interactions_struct &interactions,
                              model_parameters_struct &parameters) {
   interactions.couplings = parameters.couplings;
   interactions.energy = get_energy(state, interactions);
@@ -22,9 +21,8 @@ double get_contact_energy(site_state &center_site, site_state &neighbour_site,
   return contact_map[contact_index];
 }
 
-template <int N>
 double get_site_energy(site_state &site, state_struct &state,
-                       interactions_struct<N>& interactions) {
+                       interactions_struct& interactions) {
   double site_energy{0.0};
   get_neighbours(interactions.neighbours, site.get_site_index(),
       state.lx, state.ly, state.lz);
@@ -44,8 +42,7 @@ double get_site_energy(site_state &site, state_struct &state,
   return site_energy;
 }
 
-template <int N>
-double get_energy(state_struct& state, interactions_struct<N> interactions) {
+double get_energy(state_struct& state, interactions_struct interactions) {
   double energy {0.0};
   for (site_state& site : state.lattice_sites)
     energy += get_site_energy(site, state, interactions);

@@ -6,15 +6,13 @@
 
 
 namespace lattice_particles_space{
-  template <int N>
-    using Neighbours = std::array<int, N>;
+#if defined LATTICEPARTICLES_HEXAGONAL
+    using Neighbours = std::array<int, 6>;
+#endif
 
   // Calculates the positions of the nearest neighbours of site r
-  template <int N>
-  void get_neighbours(Neighbours<N> &neighbours, int r, int Lx, int Ly, int Lz);
-
-  template <int N>
-  void get_neighbours(Neighbours<N> &neighbours, int r, state_struct &state) {
+  void get_neighbours(Neighbours &neighbours, int r, int Lx, int Ly, int Lz);
+  void get_neighbours(Neighbours &neighbours, int r, state_struct &state) {
       get_neighbours(neighbours, r, state);
   }
 

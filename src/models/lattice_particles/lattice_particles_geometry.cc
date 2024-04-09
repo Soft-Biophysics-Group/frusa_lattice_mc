@@ -7,8 +7,7 @@
 
 namespace lattice_particles_space {
 
-template <int N>
-void get_neighbours(Neighbours<N>& neighbours, int r, int Lx, int Ly, int Lz) {
+void get_neighbours(Neighbours& neighbours, int r, int Lx, int Ly, int Lz) {
 #if defined LATTICEPARTICLES_HEXAGONAL
     get_neighbours_hexagonal(neighbours, r, Lx, Ly);
 #endif

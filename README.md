@@ -43,6 +43,8 @@
 - Next: figure out where I defined the int N for the template `interactions_struct`
 - Maybe/someday: change energy measurement routines so that they depend on `site_state`s, not
   `int`s
+- Next: ask Andray if we _really_ need the composed moves in MC (i.e. rotation-swap, etc...)
+- Next: figure out where to declare the move_probas array in the code
 
 # `frusa_mc`
 

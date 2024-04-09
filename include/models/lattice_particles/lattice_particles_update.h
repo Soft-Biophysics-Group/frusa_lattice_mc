@@ -5,8 +5,10 @@
 #include "lattice_particles_state.h"
 #include "lattice_particles_geometry.h"
 #include "lattice_particles_interactions.h"
+#include "json.hpp"
 
 namespace lattice_particles_space{
+  using json = nlohmann::json;
   /*
    * Definitions required for the public routines of the model class
    */
@@ -17,8 +19,9 @@ namespace lattice_particles_space{
   // interactions - energetics of the system before the update
   // parameters   - used to access random number generator (parameters.rng)
   // T            - annealing temperature (not the same as T_model!)
-  void update_system(state_struct &state, 
-                     interactions_struct &interactions,
+  template <int N>
+  void update_system(state_struct &state,
+                     interactions_struct<N> &interactions,
                      model_parameters_struct &parameters,
                      double T);
 
@@ -29,31 +32,38 @@ namespace lattice_particles_space{
   /*
    * Library-specific definitions
    */
- 
-  // Function to shift density from one lattice site to another
-  // See arguments of update_state
-  // eps - threshold for density transfer (transfer everything below eps)
-  void shift_local_density(state_struct &state,
-                           interactions_struct &interactions,
-                           model_parameters_struct &parameters,
-                           double T, double eps=1e-8);
 
-  // Function to update the fractional concentrations on a given site
-  // See arguments for update_state and shift_local_density
-  void convert_concentrations(state_struct &state,
-                              interactions_struct &interactions,
-                              model_parameters_struct &parameters,
-                              double T, double eps=1e-8);  
+  enum class mc_moves{
+    swap_empty_full,
+    swap_full_full,
+    rotate,
+    mutate,
+    n_enum_moves
+  };
+  using move_probas_vec = std::array<double, static_cast<int>(mc_moves::n_enum_moves)>;
 
-  // Function to randomly select a field component at a given lattice site
-  // r          - lattice position of the field
-  // bound      - field component must be !=bound in order to be 
-  //              a selection candidate
-  // state      - current state of the system
-  // parameters - used to extract random number generator (parameters.rng) 
-  int select_element(int r, double bound, 
-                     state_struct &state, 
-                     model_parameters_struct &parameters);
+  // Returns a vector assigning the probability of each of the moves in
+  // mc_moves being picked at every MC step.
+  // mc_json_file is the same file used for in the engine header.
+  // The file should include a vector of n_enum_moves doubles summing to one,
+  // each of which corresponds to the probability of the associated move (in
+  // enum order) being picked.
+  move_probas_vec get_move_probas(std::string& mc_json_file);
+
+  // Returns the index of a random lattice site containing a particle
+  int select_random_full(state_struct& state, model_parameters_struct &parameters);
+
+  // Same for a random lattice site containing no particle
+  int select_random_empty(state_struct& state, model_parameters_struct &parameters);
+
+  /*
+   * IMPORTANT NOTE: The following functions only perform the candidate MC move
+   * but do not calculate the resulting energy difference.
+   */
+  void swap_empty_full(state_struct &state, model_parameters_struct &parameters);
+  void swap_full_full(state_struct &state, model_parameters_struct &parameters);
+  void rotate(state_struct &state, model_parameters_struct &parameters);
+  void mutate(state_struct &state, model_parameters_struct &parameters);
 }
 
 #endif

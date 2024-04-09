@@ -30,7 +30,7 @@ namespace lattice_particles_space{
       site_state() = default;
       site_state(int type, int orientation, model_parameters_struct &params)
           : type_m{type}, orientation_m{orientation},
-            n_orientations{params.n_orientations} {
+            n_orientations_m{params.n_orientations} {
           state_m = calc_state();
       }
       int get_type() { return type_m; };
@@ -43,13 +43,14 @@ namespace lattice_particles_space{
         state_m = calc_state();
       };
       friend std::ostream& operator<< (std::ostream& out, site_state &site);
+      void swap_with(site_state& state2);
     private:
       int type_m {0};
       int orientation_m {0};
       int state_m {0};
-      int n_orientations {0};
+      int n_orientations_m {0};
       int calc_state() {
-          return array_space::hash_into_state(type_m, orientation_m, n_orientations);
+          return array_space::hash_into_state(type_m, orientation_m, n_orientations_m);
       };
   };
 
@@ -64,8 +65,6 @@ namespace lattice_particles_space{
   // n_sites          - total number of sites
   // n_particles      - number of particles of each type
   // lattice_sites    - array of each lattice state
-  // full_sites       - Indices of booleans, where each one is true if the
-  //                    corresponding site is true and empty otherwise
   struct state_struct{
     int n_types {};
     int n_orientations {};
@@ -76,7 +75,6 @@ namespace lattice_particles_space{
     int n_sites {};
     vec1i n_particles {};
     SiteVector lattice_sites {};
-    vec1b full_sites {};
   };
 
   // Initialize the structural properties of the system, depending on the type
@@ -117,9 +115,6 @@ namespace lattice_particles_space{
   // orientation      - new orientation of the particle at site index
   // state            - state of the system before update
   void update_state(int index, int type, int orientation, state_struct &state);
-
-  // Swap the states of sites at index1 and index2
-  void swap_sites(int index1, int index2, state_struct& state);
 }
 
 #endif

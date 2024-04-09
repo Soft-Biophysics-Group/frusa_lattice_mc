@@ -4,8 +4,9 @@
 #include <iomanip>
 
 namespace lattice_particles_space {
+template <int N>
 void initialize_interactions(state_struct &state,
-                             interactions_struct &interactions,
+                             interactions_struct<N> &interactions,
                              model_parameters_struct &parameters) {
   interactions.couplings = parameters.couplings;
   interactions.energy = get_energy(state, interactions);

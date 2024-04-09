@@ -16,7 +16,7 @@ namespace lattice_particles_space {
 // Structure containing the characteristics of the model interactions:
 // couplings          - Interaction energy between neighbouring particles
 // energy             - Energy of the system
-//
+
 template <int N>
 struct interactions_struct {
     ContactMap couplings {};

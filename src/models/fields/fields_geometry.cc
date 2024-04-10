@@ -9,7 +9,7 @@
 #endif
 
 namespace fields_space{
-  
+
   vec3d get_coupling_matrix(vec1d couplings){
 #if defined FIELDS_CHAIN
     vec3d coupling_matrix = get_coupling_matrix_chain(couplings);
@@ -17,7 +17,7 @@ namespace fields_space{
     vec3d coupling_matrix = get_coupling_matrix_square(couplings);
 #elif defined FIELDS_HEXAGONAL
     vec3d coupling_matrix = get_coupling_matrix_hexagonal(couplings);
-#endif 
+#endif
     return coupling_matrix;
   }
 
@@ -28,10 +28,10 @@ namespace fields_space{
     vec1i neighbours = get_neighbours_square(r,Lx,Ly);
 #elif defined FIELDS_HEXAGONAL
     vec1i neighbours = get_neighbours_hexagonal(r,Lx,Ly);
-#endif 
+#endif
     return neighbours;
   }
-  
+
   int get_bond_direction(int r1, int r2, int Lx, int Ly, int Lz){
 #if defined FIELDS_CHAIN
     int dr = get_bond_direction_chain(r1,r2,Lx);
@@ -39,7 +39,7 @@ namespace fields_space{
     int dr = get_bond_direction_square(r1,r2,Lx,Ly);
 #elif defined FIELDS_HEXAGONAL
     int dr = get_bond_direction_hexagonal(r1,r2,Lx,Ly);
-#endif 
+#endif
     return dr;
   }
 }

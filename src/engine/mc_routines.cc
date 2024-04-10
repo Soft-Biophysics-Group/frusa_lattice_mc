@@ -6,7 +6,7 @@ namespace simulation_space{
     /*
      * Populate the struct using the input JSON file
      */
-    
+
     std::ifstream mc_f;
     mc_f.open("./input/mc_params.json");
     if(!mc_f){
@@ -15,7 +15,7 @@ namespace simulation_space{
     }
 
     json json_mc_params = json::parse(mc_f);
-  
+
     mcs_eq            = json_mc_params["mcs_eq"].template get<int>();
     mcs_av            = json_mc_params["mcs_av"].template get<int>();
     cooling_schedule  =\
@@ -25,7 +25,7 @@ namespace simulation_space{
     Nt                = json_mc_params["Nt"].template get<int>();
     checkpoint_option =\
       json_mc_params["checkpoint_option"].template get<bool>();
-    
+
     if(checkpoint_option){
       checkpoint_address =\
         json_mc_params["checkpoint_address"].template get<std::string>();
@@ -56,7 +56,7 @@ namespace simulation_space{
 
     // Define the array of temperatures for the annealing
     double dT = (parameters.Tf-parameters.Ti)/parameters.Nt;
-        
+
     for(int i=0;i<parameters.Nt;i++){
       T_array.push_back(parameters.Ti+i*dT);
     }
@@ -66,7 +66,7 @@ namespace simulation_space{
     std::cout << "\n---------------------------------------------\n";
     std::cout << "      Monte-Carlo simulation parameters\n";
     std::cout << "---------------------------------------------\n\n";
-   
+
     std::cout << "Number of equilibration steps mcs_eq = ";
     std::cout << parameters.mcs_eq << "\n";
     std::cout << "Number of averaging steps mcs_av = ";
@@ -86,15 +86,15 @@ namespace simulation_space{
       std::cout << "Output location for checkpoints: ";
       std::cout << parameters.checkpoint_address << "\n\n";
     }
-      
+
     std::cout << "Output location for the final structure: ";
     std::cout << parameters.final_structure_address << "\n\n";
   }
 
   void mc::t_scan(model_space::model &simulation_model){
-   
+
     for(int i=0;i<parameters.Nt;i++){
-      
+
       double T;
 
       switch(cooling_option){
@@ -107,7 +107,7 @@ namespace simulation_space{
       }
 
       mc_simulate(simulation_model,T);
-      
+
       if(parameters.checkpoint_option){
         simulation_model.save_model_state(parameters.checkpoint_address+\
                                           "structure_"+\
@@ -123,11 +123,11 @@ namespace simulation_space{
   void mc::mc_simulate(model_space::model &simulation_model, double T){
 
     // Equilibrate the system for mcs_eq steps
-    for(int step=0;step<parameters.mcs_eq;step++){  
+    for(int step=0;step<parameters.mcs_eq;step++){
       simulation_model.update_model_system(T);
     }
 
-    // Depending on the options in the mc_params structure, initialize the 
+    // Depending on the options in the mc_params structure, initialize the
     // containers that will store the MC averages
     simulation_model.initialize_model_averages();
 

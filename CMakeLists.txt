@@ -38,6 +38,7 @@ project(${META_PROJECT_NAME}
 
 add_library(compiler_flags INTERFACE)
 target_compile_features(compiler_flags INTERFACE cxx_std_11)
+set (CMAKE_CXX_STANDARD 20)
 
 ################################################################################
 

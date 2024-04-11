@@ -6,7 +6,6 @@
 #include "lattice_particles_interactions.h"
 #include "lattice_particles_parameters.h"
 #include "lattice_particles_state.h"
-#include "model.h"
 
 namespace lattice_particles_space {
 using json = nlohmann::json;
@@ -32,11 +31,11 @@ void update_system(state_struct &state, interactions_struct &interactions,
  * Library-specific definitions
  */
 
-enum class mc_moves {
-  swap_empty_full,
-  swap_full_full,
-  rotate,
-  mutate,
+enum mc_moves {
+  swap_empty_full_enum,
+  swap_full_full_enum,
+  rotate_enum,
+  mutate_enum,
   n_enum_moves
 };
 
@@ -56,11 +55,11 @@ mc_moves pick_random_move(move_probas_vec move_probas,
                           model_parameters_struct &parameters);
 
 // Returns the index of a random lattice site containing a particle
-mc_moves select_random_full_index(state_struct &state,
+std::size_t select_random_full_index(state_struct &state,
                              model_parameters_struct &parameters);
 
 // Returns the index of a random lattice site containing no particle
-int select_random_empty_index(state_struct &state,
+std::size_t select_random_empty_index(state_struct &state,
                               model_parameters_struct &parameters);
 
 /*
@@ -69,7 +68,7 @@ int select_random_empty_index(state_struct &state,
  * difference.
  */
 // TODO Finish writing this once I'm done with minor redesigns
-double swap_sites(site_state &site1, site_state &site2, state_struct &state,
+double swap_sites(std::size_t index1, std::size_t index2, state_struct &state,
                   model_parameters_struct &parameters,
                   interactions_struct &interactions, double T);
 double swap_empty_full(state_struct &state, model_parameters_struct &parameters,

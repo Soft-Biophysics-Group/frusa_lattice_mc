@@ -30,16 +30,13 @@
   the fields and lattice particles libraries.
 - Next: write a Python code to generate the flattened LEL from 21 interaction energies for
   hexagonal particles
-- When I implement the moves: make sure I generate only hashed integers, rather than pairs or
-  triplets, in order to keep things faaaaast (i.e. generate a full state rather than an
-  orientation + a type)
 - Someday/maybe: Pre-calculate the exponentials of the interactions so that we can calculate
   the energy differences faster during MC moves
 - Next: the interactions structure is redundant for lattice particles and can be absorbed in
   the state struct (I only need to keep track  of the energy); figure out if I actually need
   it
 - Next: figure out where to declare the move_probas array in the code
-
+- When I start the cubic lattice: start specializing at compile time like Andrey does
 # `frusa_mc`
 
 ## Dependencies

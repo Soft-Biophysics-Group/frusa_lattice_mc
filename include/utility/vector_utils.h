@@ -36,11 +36,11 @@ namespace array_space{
 
   // Calculates the flat array index (r) given the 2D coordinates (i,j) and
   // the dimensions of the system (Lx,Ly)
-  void ij_to_r(int &r, int i, int j, int Lx, int Ly);
+  void ij_to_r(int &r, int i, int j, int Lx);
 
   // Calculates the 2D coordinates (i,j) given the flat array inde (r) and
   // the dimensions of the system
-  void r_to_ij(int r, int &i, int &j, int Lx, int Ly);
+  void r_to_ij(int r, int &i, int &j, int Lx);
 
   // Calculates the flat array index (r) given the 3D coordinates (i,j,k) and
   // the dimensions of the system (Lx,Ly,Lz)

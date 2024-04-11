@@ -1,8 +1,8 @@
 {
-  "n_types":1,
+  "n_types":2,
   "n_orientations":6,
-  "lx": 10,
-  "ly": 10,
+  "lx": 5,
+  "ly": 5,
   "lz": 1,
   "n_particles": [10, 10],
   "couplings": [

@@ -36,14 +36,14 @@ namespace lattice_particles_space{
       int get_type() { return type_m; };
       int get_orientation() { return orientation_m; } ;
       int get_state() { return state_m; };
-      int get_site_index() { return site_index_m; }
+      std::size_t get_site_index() { return site_index_m; }
       bool is_empty() { return orientation_m == 0; };
       void set_state(int type, int orientation) {
         type_m = type;
         orientation_m = orientation;
         state_m = calc_state();
       };
-      void set_site_index(int new_index) { site_index_m = new_index; };
+      void set_site_index(std::size_t new_index) { site_index_m = new_index; };
       friend std::ostream& operator<< (std::ostream& out, site_state &site);
       void swap_with(site_state& state2);
     private:
@@ -51,7 +51,7 @@ namespace lattice_particles_space{
       int orientation_m {0};
       int state_m {0};
       int n_orientations_m {0};
-      int site_index_m {0};
+      std::size_t site_index_m {0};
       int calc_state() {
           return array_space::hash_into_state(type_m, orientation_m, n_orientations_m);
       };
@@ -78,6 +78,8 @@ namespace lattice_particles_space{
     int n_sites {};
     vec1i n_particles {};
     SiteVector lattice_sites {};
+    vec1i full_sites {};
+    vec1i empty_sites {};
   };
 
   // Initialize the structural properties of the system, depending on the type

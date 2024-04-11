@@ -13,11 +13,12 @@ model_parameters_struct::model_parameters_struct(const std::string& input_file) 
 
     json json_model_params = json::parse(model_input_f);
 
+    n_types = json_model_params["n_types"].template get<int>();
     n_orientations = json_model_params["n_orientations"].template get<int>();
     lx             = json_model_params["lx"].template get<int>();
     ly             = json_model_params["ly"].template get<int>();
     lz             = json_model_params["lz"].template get<int>();
-    n_particles    = json_model_params["n_particles"].template get<ContactMap>();
+    n_particles    = json_model_params["n_particles"].template get<vec1i>();
     couplings      = json_model_params["couplings"].template get<vec1d>();
     initialize_option =
         json_model_params["initialize_option"].template get<std::string>();

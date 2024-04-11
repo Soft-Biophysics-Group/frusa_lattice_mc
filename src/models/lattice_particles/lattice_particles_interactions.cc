@@ -2,6 +2,7 @@
 #include "lattice_particles_geometry.h"
 #include "vector_utils.h"
 #include <iomanip>
+#include <array>
 
 namespace lattice_particles_space {
 
@@ -10,6 +11,8 @@ void initialize_interactions(state_struct &state,
                              model_parameters_struct &parameters) {
   interactions.couplings = parameters.couplings;
   interactions.energy = get_energy(state, interactions);
+  interactions.n_neighbours =
+      static_cast<int>(std::size(interactions.neighbours));
 }
 
 double get_contact_energy(site_state &center_site, site_state &neighbour_site,
@@ -18,27 +21,28 @@ double get_contact_energy(site_state &center_site, site_state &neighbour_site,
   int contact_index{array_space::hash_into_contact(
       center_site.get_state(), neighbour_site.get_state(),
       center_site_edge, neighbour_site_edge, n_states)};
-  return contact_map[contact_index];
+  return contact_map[static_cast<std::size_t>(contact_index)];
 }
 
 double get_site_energy(site_state &site, state_struct &state,
                        interactions_struct& interactions) {
   double site_energy{0.0};
-  get_neighbours(interactions.neighbours, site.get_site_index(),
+  get_neighbours(interactions.neighbours, static_cast<int>(site.get_site_index()),
       state.lx, state.ly, state.lz);
   // NOTE that the loop index is also the contact edge for the site @
   // site_index
   // TODO Check that's actually the case...
-  for (std::size_t contact_edge {0}; contact_edge < N; contact_edge++) {
+  for (std::size_t contact_edge{0};
+       static_cast<int>(contact_edge) < state.n_orientations; contact_edge++) {
     int neighbour_ind{interactions.neighbours[contact_edge]};
-    site_state& neighbour_site{state.lattice_sites[neighbour_ind]};
+    site_state &neighbour_site{state.lattice_sites[static_cast<std::size_t>(neighbour_ind)]};
     // TODO Check I'm looking at the right directions
-    int neighbour_site_edge{get_bond_direction(neighbour_ind, site.get_site_index(),
+    int neighbour_site_edge{get_bond_direction(neighbour_ind, static_cast<int>(site.get_site_index()),
                                                 state.lx, state.ly, state.lz)};
     site_energy += get_contact_energy(
         site, neighbour_site, static_cast<int>(contact_edge),
         neighbour_site_edge, interactions.couplings, state.n_states);
-      }
+  }
   return site_energy;
 }
 

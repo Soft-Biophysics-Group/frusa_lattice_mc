@@ -29,20 +29,20 @@ namespace array_space{
       return hash_3integers(state2, state1, edge2, n_states);
   }
 
-  void ij_to_r(int &r, int i, int j, int Lx, int Ly){
+  void ij_to_r(int &r, int i, int j, int Lx){
     r = i + Lx*j;
   }
 
-  void r_to_ij(int r, int &i, int &j, int Lx, int Ly){
+  void r_to_ij(int r, int &i, int &j, int Lx){
     j = r/Lx;
     i = r-Lx*j;
   }
 
-  void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz){
+  void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly){
     r = i + Lx*j + Lx*Ly*k;
   }
 
-  void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly, int Lz){
+  void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly){
     k = r/(Lx*Ly);
     j = (r-Lx*Ly*k)/Lx;
     i = r-Lx*j-Lx*Ly*k;

@@ -68,17 +68,18 @@ std::size_t select_random_empty_index(state_struct &state,
  * difference.
  */
 // TODO Finish writing this once I'm done with minor redesigns
-double swap_sites(std::size_t index1, std::size_t index2, state_struct &state,
-                  model_parameters_struct &parameters,
-                  interactions_struct &interactions, double T);
+double attempt_swap_sites(std::size_t index1, std::size_t index2,
+                          state_struct &state,
+                          model_parameters_struct &parameters,
+                          interactions_struct &interactions, double T);
 double swap_empty_full(state_struct &state, model_parameters_struct &parameters,
                        interactions_struct &interactions, double T);
 double swap_full_full(state_struct &state, model_parameters_struct &parameters,
                       interactions_struct &interactions, double T);
-double rotate(state_struct &state, model_parameters_struct &parameters,
-              interactions_struct &interactions, double T);
-double mutate(state_struct &state, model_parameters_struct &parameters,
-              interactions_struct &interactions, double T);
+double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
+                      interactions_struct &interactions, double T);
+double attempt_mutate(state_struct &state, model_parameters_struct &parameters,
+                      interactions_struct &interactions, double T);
 
 // Helper function to determine if sites are neighbours
 // bool are_neighbours(site_state& site_1, site_state& site_2);

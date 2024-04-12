@@ -37,6 +37,8 @@
   it
 - Next: figure out where to declare the move_probas array in the code
 - When I start the cubic lattice: start specializing at compile time like Andrey does
+- Next: remove the actually useless site class
+
 # `frusa_mc`
 
 ## Dependencies

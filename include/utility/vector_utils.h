@@ -4,6 +4,7 @@
 #include <vector>
 
 typedef std::vector<int> vec1i;
+typedef std::vector<std::size_t> vec1s;
 typedef std::vector<double> vec1d;
 using vec1b = std::vector<bool>;
 typedef std::vector<std::vector<int>> vec2i;

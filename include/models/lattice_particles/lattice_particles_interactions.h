@@ -39,14 +39,12 @@ void print_energy(state_struct &state, interactions_struct &interactions);
 // neighbour_site, touching along the edge of center_site contact_edge.
 // contact_map is the object containing the energy of all possible contacts
 // between pairs of particles.
-double get_contact_energy(site_state &center_site, site_state &neighbour_site,
+double get_contact_energy(site_state& full_site, site_state &neighbour_site,
                           int center_site_edge, int neighbour_site_edge,
                           ContactMap contact_map, int n_states);
-double get_contact_energy(std::size_t center_index, std::size_t neighbour_index,
-                          state_struct& state, interactions_struct& interactions);
 
-double get_site_energy(site_state &site, state_struct &state,
-                       interactions_struct& interactions);
+double get_site_energy(std::size_t site_index, state_struct &state,
+                       interactions_struct &interactions);
 
 double get_energy(state_struct& state, interactions_struct interactions);
 

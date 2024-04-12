@@ -185,6 +185,18 @@ void SiteVector::swap_sites(const int index1, const int index2) {
   std::swap(orientations_m[u_index1], orientations_m[u_index2]);
 }
 
+int FullEmptySites::get_random_full_site(model_parameters_struct &parameters) {
+  std::size_t n_full_sites { full_sites_indices_m.size() };
+  int_dist full_sites_dist(0, n_full_sites);
+  return full_sites_indices_m[full_sites_dist(parameters.rng)];
+}
+
+int FullEmptySites::get_random_empty_site(model_parameters_struct &parameters) {
+  std::size_t n_empty_sites { empty_sites_indices_m.size() };
+  int_dist empty_sites_dist(0, n_empty_sites);
+  return empty_sites_indices_m[empty_sites_dist(parameters.rng)];
+}
+
 // TODO Check I got the right indices
 void FullEmptySites::update_after_swap(const int initially_full_index,
                                        const int initially_empty_index) {

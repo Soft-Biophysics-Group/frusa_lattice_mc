@@ -49,10 +49,16 @@ public:
         types_m[static_cast<std::size_t>(site_index)],
         orientations_m[static_cast<std::size_t>(site_index)], n_orientations_m);
   }
+  void set_type(const int site_index, const int new_type) {
+    types_m[static_cast<std::size_t>(site_index)] = new_type;
+  }
+  void set_orientation(const int site_index, const int new_orientation) {
+    orientations_m[static_cast<std::size_t>(site_index)] = new_orientation;
+  }
   void set_site(const int site_index, const int new_type,
                 const int new_orientation) {
-    types_m[static_cast<std::size_t>(site_index)] = new_type;
-    orientations_m[static_cast<std::size_t>(site_index)] = new_orientation;
+    set_type(site_index, new_type);
+    set_orientation(site_index, new_orientation);
   }
   void swap_sites(const int index1, const int index2);
   friend std::ostream &operator<<(std::ostream &out, state_struct &state);
@@ -73,6 +79,14 @@ public:
   FullEmptySites(state_struct &state);
   void update_after_swap(const int initially_full_index,
                          const int initially_empty_index);
+  int get_n_full_sites() {
+    return static_cast<std::size_t>(full_sites_indices_m.size());
+  };
+  int get_n_empty_sites() {
+    return static_cast<std::size_t>(empty_sites_indices_m.size());
+  };
+  int get_random_full_site(model_parameters_struct& parameters);
+  int get_random_empty_site(model_parameters_struct& parameters);
   friend std::ostream &operator<<(std::ostream &out, state_struct &state);
 
 private:
@@ -137,6 +151,8 @@ void initialize_state_from_file(vec1i types, vec1i orientations,
 void initialize_state_random_fixed_particle_numbers(
     vec1i types, vec1i orientations, state_struct &state,
     model_parameters_struct &parameters);
+
+void swap_sites(state_struct &state, int site_1_index, int site_2_index);
 
 } // namespace lattice_particles_space
 #endif

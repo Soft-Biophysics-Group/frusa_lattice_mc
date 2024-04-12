@@ -1,31 +1,40 @@
 #include "lattice_particles_interactions.h"
 #include "lattice_particles_geometry.h"
 #include "vector_utils.h"
-#include <iomanip>
 #include <array>
+#include <iomanip>
 
 namespace lattice_particles_space {
 
-void initialize_interactions(state_struct &state,
-                             interactions_struct &interactions,
-                             model_parameters_struct &parameters) {
+void initialize_interactions(interactions_struct &interactions,
+                             const state_struct &state,
+                             const model_parameters_struct &parameters) {
   interactions.couplings = parameters.couplings;
   interactions.energy = get_energy(state, interactions);
   interactions.n_neighbours =
       static_cast<int>(std::size(interactions.neighbours));
 }
 
-double get_contact_energy(site_state& center_site, site_state &neighbour_site,
-                          int center_site_edge, int neighbour_site_edge,
-                          ContactMap contact_map, int n_states) {
-  int contact_index{array_space::hash_into_contact(
-      center_site.get_state(), neighbour_site.get_state(),
-      center_site_edge, neighbour_site_edge, n_states)};
+double get_contact_energy(state_struct &state, int site1, int site2,
+                          interactions_struct &interactions) {
+  int state1{state.lattice_sites.get_state(site1)};
+  int state2{state.lattice_sites.get_state(site2)};
+  int edge1{get_bond_direction(site1, site2, state)};
+  int edge2{get_bond_direction(site2, site1, state)};
+
+  return get_contact_energy(interactions.couplings, state1, state2, edge1,
+                            edge2, state.n_states);
+}
+
+double get_contact_energy(ContactMap contact_map, int state1, int state2,
+                          int edge1, int edge2, int n_states) {
+  int contact_index{
+      array_space::hash_into_contact(state1, state2, edge1, edge2, n_states)};
   return contact_map[static_cast<std::size_t>(contact_index)];
 }
 
-double get_site_energy(std::size_t site_index, state_struct &state,
-                       interactions_struct& interactions) {
+double get_site_energy(state_struct &state, interactions_struct &interactions,
+                       int site_index) {
   double site_energy{0.0};
   get_neighbours(interactions.neighbours, site_index, state);
   // NOTE that the loop index is also the contact edge for the site @
@@ -33,22 +42,17 @@ double get_site_energy(std::size_t site_index, state_struct &state,
   // TODO Check that's actually the case...
   for (std::size_t contact_edge{0};
        contact_edge < interactions.neighbours.size(); contact_edge++) {
-    std::size_t neighbour_ind{interactions.neighbours[contact_edge]};
+    int neighbour_ind{interactions.neighbours[contact_edge]};
     // TODO Check I'm looking at the right directions
-    int neighbour_site_edge{
-        get_bond_direction(neighbour_ind, site_index, state)};
     site_energy +=
-        get_contact_energy(state.lattice_sites[site_index],
-                           state.lattice_sites[neighbour_site_edge],
-                           static_cast<int>(contact_edge), neighbour_site_edge,
-                           interactions.couplings, state.n_states);
+        get_contact_energy(state, site_index, neighbour_ind, interactions);
   }
   return site_energy;
 }
 
-double get_energy(state_struct& state, interactions_struct interactions) {
-  double energy {0.0};
-  for (std::size_t i {0}; i < state.n_sites; i++)
+double get_energy(state_struct &state, interactions_struct interactions) {
+  double energy{0.0};
+  for (int i{0}; i < state.n_sites; i++)
     energy += get_site_energy(i, state, interactions);
   // Divide by 2, otherwise we'll be double counting!
   return energy / 2;

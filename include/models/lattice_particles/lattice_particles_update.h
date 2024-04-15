@@ -31,36 +31,16 @@ void update_system(state_struct &state, interactions_struct &interactions,
  * Library-specific definitions
  */
 
-enum mc_moves {
-  swap_empty_full_enum,
-  swap_full_full_enum,
-  rotate_enum,
-  mutate_enum,
-  n_enum_moves
-};
-
-using move_probas_vec =
-    std::array<double, static_cast<int>(mc_moves::n_enum_moves)>;
-
-// Returns a vector assigning the probability of each of the moves in
-// mc_moves being picked at every MC step.
-// mc_json_file is the same file used for in the engine header.
-// The file should include a vector of n_enum_moves doubles summing to one,
-// each of which corresponds to the probability of the associated move (in
-// enum order) being picked.
-move_probas_vec get_move_probas(std::string &mc_json_file);
-
 // Pick one move at random
-mc_moves pick_random_move(move_probas_vec move_probas,
-                          model_parameters_struct &parameters);
+mc_moves pick_random_move(model_parameters_struct &parameters);
 
 // Returns the index of a random lattice site containing a particle
 std::size_t select_random_full_index(state_struct &state,
-                             model_parameters_struct &parameters);
+                                     model_parameters_struct &parameters);
 
 // Returns the index of a random lattice site containing no particle
 std::size_t select_random_empty_index(state_struct &state,
-                              model_parameters_struct &parameters);
+                                      model_parameters_struct &parameters);
 
 /*
  * The following functions perform a MC move and return the corresponding
@@ -92,7 +72,8 @@ double neighbour_correction(int site_1_index, int site_2_index,
 
 // Accept or reject a move associated with energy delta_e at temperature T
 // according to the Metropolis-Hastings rule
-bool is_move_accepted(double delta_e, double T, model_parameters_struct& parameters);
+bool is_move_accepted(double delta_e, double T,
+                      model_parameters_struct &parameters);
 } // namespace lattice_particles_space
 
 #endif

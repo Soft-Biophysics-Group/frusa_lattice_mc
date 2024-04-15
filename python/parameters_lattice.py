@@ -135,6 +135,18 @@ model_params["couplings"] = uniform_couplings_hexagonal(type_couplings)
 
 model_params["initialize_option"] = "random_fixed_particle_numbers"
 
+# # swap_empty_full_enum,
+  # swap_full_full_enum,
+  # rotate_enum,
+  # mutate_enum,
+model_params["move_probas"] = [
+    1/4, # swap_empty_full
+    1/4,   # swap_full_full
+    1/4, # rotate
+    1/4    # mutate
+    ]
+
+
 make_json_file(model_params, "../input/model_params.json")
 
 # Define mc parameters

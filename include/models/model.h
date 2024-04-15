@@ -1,3 +1,6 @@
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
+
 #ifndef MODEL_HEADER_H
 #define MODEL_HEADER_H
 

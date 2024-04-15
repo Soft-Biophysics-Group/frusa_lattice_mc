@@ -1,6 +1,7 @@
-#include "fields_state.h"
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
 
-namespace lattice_particles_space{
+#include "fields_state.h" 
 
   /*
    * Definitions required for the public routines of the model class

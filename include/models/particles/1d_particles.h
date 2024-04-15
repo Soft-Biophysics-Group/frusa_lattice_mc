@@ -1,5 +1,8 @@
-#ifndef FIELDS_1D_HEADER_H
-#define FIELDS_1D_HEADER_H
+// Copyright (c) 2024 Andrey Zelenskiy
+// Part of frusa_mc, released under BSD 3-Clause License.
+
+#ifndef PARTICLES_1D_HEADER_H
+#define PARTICLES_1D_HEADER_H
 
 #include "utils.h"
 
@@ -17,29 +20,21 @@ namespace model_space{
       /*Number of particles*/
       int Np;
 
-      /*Total density of particles*/
-      double psi_bar;
-
       /*Model parameter vector*/
       vec1d parameters;
       
       /*Interaction parameters*/
       double k11, k12, k21;
 
-      /*Mean-field temperature (not annealing temperature!)*/
-      double T_model;
-
-      /*Vector containing the relative concentrations*/
-      vec2d concentrations;
+      /*Vectors containing the positions and orientations of the particles*/
+      vec1i positions;
+      vec1i orientations;
 
       /*Coupling matrix*/
       vec3d coupling_matrix;
 
       /*Energy of the system*/
       double energy;
-
-      /*Threshold for smallest possible local density*/
-      double eps=1e-8;
   
       /*
        * Pseudorandom number generator definitions
@@ -51,31 +46,27 @@ namespace model_space{
       /*Define random distributions used by the class*/
       real_dist uniform_dist;
       int_dist  particle_dist;
+      int_dist  empty_dist;
       int_dist  binary_dist;
 
       /*
        * Private routines of the class
        */
 
-      /*Function to initialize the system of anisotropic fields*/
+      /*Function to initialize the system of anisotropic particles*/
       void initialize();
       
-      /*Function to extract the states of neighbours of a given site*/
+      /*Function to extract the states of neighbours of a given particle*/
       vec2i get_neighbours(int);
 
-      /*Function to shift density from lattice site to another*/
-      void shift_local_density(int,double);
+      /*Function to calculate the total energy of the system*/
+      double get_energy();
 
-      /*Calculate bounds for local density transfer*/
-      void get_donor_bound(int, vec1d &, double &, int &);
-      void get_acceptor_bound(int, vec1d &, double &, int &);
+      /*Function to update the position of the chosen particle*/
+      void update_position(int,double);
 
-      /*Function to update the fractional concentrations on a given site*/
-      void convert_concentrations(int,double);
-
-      /*Calculate the change in the entropic contribution*/
-      double get_entropy_shift(vec1d, int, double);
-      double get_entropy_convert(vec1d, int, double);
+      /*Function to update the orientation of the chosen particle*/
+      void update_orientation(int,double);
 
       /*Function to calculate the density vector*/
       void update_psi(vec2d&);
@@ -85,9 +76,6 @@ namespace model_space{
       /*Class constructor*/
       model(const struct model_params &);
  
-      /*Function to calculate the total energy of the system*/
-      double get_energy();
-
       /*
        * Required public routines of the class
        */

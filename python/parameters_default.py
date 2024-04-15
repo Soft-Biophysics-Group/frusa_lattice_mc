@@ -1,21 +1,23 @@
 import numpy as np
 import os
-from json_dump import * 
+from json_dump import *
+
 
 def make_dir(name):
     """
-    Creates a new directory if it doesn't already exist at the 
+    Creates a new directory if it doesn't already exist at the
     specified address/name.
-    
+
     Arguments:
-    
+
     name - (str) name and location of the new directory.
     """
-    
+
     if not os.path.exists(name):
         os.makedirs(name)
 
-### Define model parameters
+# Define model parameters
+
 
 model_params = {}
 
@@ -44,9 +46,9 @@ if model_params["e_av_option"]:
     make_dir("../data/energy_moments")
     model_params["e_av_output"] = "./data/energy_moments/"
 
-make_json_file(model_params,"../input/model_params.json")
+make_json_file(model_params, "../input/model_params.json")
 
-### Define mc parameters
+# Define mc parameters
 
 mc_params = {}
 
@@ -71,7 +73,7 @@ mc_params["Nt"] = 10
 # Option to collect state checkpoints at the end of each temperature cycle
 mc_params["checkpoint_option"] = False
 
-# If checkpoint is True, we need to provide the output address for the 
+# If checkpoint is True, we need to provide the output address for the
 # checkpoint files
 if mc_params["checkpoint_option"]:
     mc_params["checkpoint_address"] = ""
@@ -79,4 +81,4 @@ if mc_params["checkpoint_option"]:
 # Output location of the final state configuration (must end with "/")
 mc_params["final_structure_address"] = "./"
 
-make_json_file(mc_params,"../input/mc_params.json")
+make_json_file(mc_params, "../input/mc_params.json")

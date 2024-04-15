@@ -22,13 +22,13 @@ struct interactions_struct {
     ContactMap couplings {};
     double energy {};
     Neighbours neighbours {};
-    int n_neighbours {};
+    int n_edges {};
 };
 
 // Calculate interactions characteristics of the current state of the system
 void initialize_interactions(interactions_struct &interactions,
-                             const state_struct &state,
-                             const model_parameters_struct &parameters);
+                             state_struct &state,
+                             model_parameters_struct &parameters);
 
 // Print the summary of the interactions characteristics
 void print_interactions(state_struct &state, interactions_struct &interactions);
@@ -39,17 +39,25 @@ void print_energy(state_struct &state, interactions_struct &interactions);
 // site2, touching along respective edge indices edge1 and edge2.
 // contact_map is the object containing the energy of all possible contacts
 // between pairs of particles.
-double get_contact_energy(ContactMap contact_map, int state1, int state2,
-                          int edge1, int edge2, int n_states);
-// overload of previous function for sites on the state
 double get_contact_energy(state_struct &state, int site1, int site2,
                           interactions_struct &interactions);
 
 double get_site_energy(state_struct &state, interactions_struct &interactions,
                        int site_index);
 
-double get_energy(state_struct& state, interactions_struct interactions);
+double get_energy(state_struct& state, interactions_struct& interactions);
 
+// This function takes as the reference edge for the contact the smallest
+// edge and assigns a contact identity based on it.
+int get_contact_index(state_struct &state, int site1, int site2, int edge1,
+                      interactions_struct& interactions);
+
+int get_contact_index_full_empty(int edge, int type, int orientation,
+                                 int n_edges);
+int get_contact_index_full_full(int state1, int state2, int edge1, int n_states,
+                                int n_edges, int n_types);
+
+std::ostream& operator<< (std::ostream& out, interactions_struct& interactions); 
 } // lattice_particles_space
 
 #endif

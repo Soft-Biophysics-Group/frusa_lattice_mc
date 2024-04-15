@@ -12,7 +12,7 @@
 using json = nlohmann::json;
 
 namespace simulation_space{
-  
+
   /*Monte Carlo parameters*/
   struct mc_parameters_struct{
     mc_parameters_struct();
@@ -26,11 +26,11 @@ namespace simulation_space{
     std::string checkpoint_address;
     std::string final_structure_address;
   };
-     
+
   class mc {
     private:
       /*
-       * Private variables 
+       * Private variables
        */
 
       // Simulation parameters

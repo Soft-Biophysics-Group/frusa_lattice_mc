@@ -33,7 +33,6 @@ int get_bond_direction_hexagonal(int r1, int r2, int Lx, int Ly) {
   int j1m = array_space::mod(j1 - 1, Ly);
   int j1p = array_space::mod(j1 + 1, Ly);
 
-  // TODO Maybe I can make this a bit more elegant?
   int r1_0, r1_1, r1_2, r1_3, r1_4, r1_5;
   array_space::ij_to_r(r1_0, i1p, j1, Lx);
   array_space::ij_to_r(r1_1, i1p, j1p, Lx);
@@ -58,4 +57,12 @@ int get_bond_direction_hexagonal(int r1, int r2, int Lx, int Ly) {
   // In case things fail spectacularly
   return -1;
 }
+
+int get_conjugate_edge_hexagonal(int edge) {
+  if (edge == 3)
+    return 6;
+  else
+    return array_space::mod(edge + 3, 6);
+}
+
 } // namespace lattice_particles_space

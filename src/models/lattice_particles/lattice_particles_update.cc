@@ -79,10 +79,10 @@ double attempt_swap_sites(int index1, int index2, state_struct &state,
                    get_site_energy(state, interactions, index2);
   if (sites_are_neighbours) {
     energy_change -=
-        neighbour_correction(index1, index2, interactions, state, parameters);
+        get_contact_energy(state, index1, index2, interactions);
   }
   // Accept or reject move
-  if (move_accepted(energy_change, T)) {
+  if (is_move_accepted(energy_change, T, parameters)) {
     return energy_change;
   } else {
     swap_sites(state, index1, index2);
@@ -105,8 +105,8 @@ double attempt_swap_empty_full(state_struct &state,
                                interactions_struct &interactions, double T) {
   int full_site_index{state.full_empty_sites.get_random_full_site(parameters)};
   int empty_site_index{state.full_empty_sites.get_random_empty_site(parameters)};
-  attempt_swap_sites(full_site_index, empty_site_index, state, parameters,
-                     interactions, T);
+  return attempt_swap_sites(full_site_index, empty_site_index, state,
+                            parameters, interactions, T);
 }
 
 double attempt_swap_full_full(state_struct &state,
@@ -114,7 +114,7 @@ double attempt_swap_full_full(state_struct &state,
                               interactions_struct &interactions, double T) {
   int site1{state.full_empty_sites.get_random_full_site(parameters)};
   int site2{state.full_empty_sites.get_random_full_site(parameters)};
-  attempt_swap_sites(site1, site2, state, parameters, interactions, T);
+  return attempt_swap_sites(site1, site2, state, parameters, interactions, T);
 }
 
 double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
@@ -129,7 +129,7 @@ double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
   int old_orientation{state.lattice_sites.get_orientation(site_index)};
   state.lattice_sites.set_orientation(site_index, new_orientation);
   energy_change += get_site_energy(state, interactions, site_index);
-  if (move_accepted(energy_change, T))
+  if (is_move_accepted(energy_change, T, parameters))
     return energy_change;
   else {
     state.lattice_sites.set_orientation(site_index, old_orientation);
@@ -149,11 +149,22 @@ double attempt_mutate(state_struct &state, model_parameters_struct &parameters,
   int old_type{state.lattice_sites.get_type(site_index)};
   state.lattice_sites.set_type(site_index, new_type);
   energy_change += get_site_energy(state, interactions, site_index);
-  if (move_accepted(energy_change, T))
+  if (is_move_accepted(energy_change, T, parameters))
     return energy_change;
   else {
     state.lattice_sites.set_type(site_index, old_type);
     return 0.0;
+  }
+}
+
+bool is_move_accepted(double delta_e, double T,
+                   model_parameters_struct &parameters) {
+  if (delta_e < 0) {
+    return true;
+  } else {
+    real_dist proba_dist(0, 1);
+    double boltzmann_factor{std::exp(-delta_e / T)};
+    return boltzmann_factor > proba_dist(parameters.rng);
   }
 }
 

@@ -25,6 +25,10 @@ struct state_struct;
  * Definitions required for the public routines of the model class
  */
 
+// Get a hashed state integer from particle characteristics, returning 0 if
+// the site is empty
+int hash_into_state(int type, int orientation, int n_orientations);
+
 /*
  * Class that stores the state of the full lattice.
  * Created along with the state according to one of the options which must be
@@ -45,7 +49,7 @@ public:
     return orientations_m[static_cast<std::size_t>(site_index)] == 0;
   };
   int get_state(const int site_index) const {
-    return array_space::hash_into_state(
+    return hash_into_state(
         types_m[static_cast<std::size_t>(site_index)],
         orientations_m[static_cast<std::size_t>(site_index)], n_orientations_m);
   }
@@ -80,10 +84,10 @@ public:
   void update_after_swap(const int initially_full_index,
                          const int initially_empty_index);
   int get_n_full_sites() {
-    return static_cast<std::size_t>(full_sites_indices_m.size());
+    return static_cast<int>(full_sites_indices_m.size());
   };
   int get_n_empty_sites() {
-    return static_cast<std::size_t>(empty_sites_indices_m.size());
+    return static_cast<int>(empty_sites_indices_m.size());
   };
   int get_random_full_site(model_parameters_struct& parameters);
   int get_random_empty_site(model_parameters_struct& parameters);
@@ -142,17 +146,18 @@ void save_state(state_struct &state, std::string state_output);
  */
 
 // Various methods for state initialization
-void initialize_state_from_file(vec1i types, vec1i orientations,
-                                state_struct &state,
+void initialize_state_from_file(vec1i& types, vec1i& orientations,
                                 model_parameters_struct &parameters);
 
 // Initialize a state with a set random of particles uniformly distributed on
 // the lattice, with a given number of particles given in parameters
 void initialize_state_random_fixed_particle_numbers(
-    vec1i types, vec1i orientations, state_struct &state,
+    vec1i& types, vec1i& orientations, state_struct &state,
     model_parameters_struct &parameters);
 
 void swap_sites(state_struct &state, int site_1_index, int site_2_index);
+
+int type_of_state(int state, int n_orientations);
 
 } // namespace lattice_particles_space
 #endif

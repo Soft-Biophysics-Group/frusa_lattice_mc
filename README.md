@@ -23,21 +23,14 @@
 
 ### `lattice_particles` model on branch `lattice_mc_dev`
 
-- Maybe: change the "initialize_state" functions into full-blown constructors?
-- Next: check the hashing give correct values, and that I don't need to subtract 1 from the
-  n_states and n_orientations.
 - Someday: make a lattice library where we compile the functions (e.g. geometry) used by both
   the fields and lattice particles libraries.
-- Next: write a Python code to generate the flattened LEL from 21 interaction energies for
-  hexagonal particles
 - Someday/maybe: Pre-calculate the exponentials of the interactions so that we can calculate
   the energy differences faster during MC moves
-- Next: the interactions structure is redundant for lattice particles and can be absorbed in
-  the state struct (I only need to keep track  of the energy); figure out if I actually need
-  it
 - Next: figure out where to declare the move_probas array in the code
 - When I start the cubic lattice: start specializing at compile time like Andrey does
-- 
+- After I'm done: regularize the number of edges to be a constexpr int defined at compile
+  time, depending on the compilation option chosen
 
 # `frusa_mc`
 

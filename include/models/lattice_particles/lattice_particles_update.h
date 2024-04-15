@@ -92,7 +92,7 @@ double neighbour_correction(int site_1_index, int site_2_index,
 
 // Accept or reject a move associated with energy delta_e at temperature T
 // according to the Metropolis-Hastings rule
-bool move_accepted(double delta_e, double T);
+bool is_move_accepted(double delta_e, double T, model_parameters_struct& parameters);
 } // namespace lattice_particles_space
 
 #endif

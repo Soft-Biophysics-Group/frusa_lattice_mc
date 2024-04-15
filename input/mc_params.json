@@ -5,6 +5,5 @@
   "Ti": 0,
   "Tf": -5,
   "Nt": 10,
-  "checkpoint_option": false,
-  "final_structure_address": "./"
+  "checkpoint_option": false
 }

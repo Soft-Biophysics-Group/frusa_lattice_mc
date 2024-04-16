@@ -8,8 +8,8 @@
 
 namespace lattice_particles_space {
 
-void initialize_interactions(interactions_struct &interactions,
-                             state_struct &state,
+void initialize_interactions(state_struct &state,
+                             interactions_struct &interactions,
                              model_parameters_struct &parameters) {
   interactions.couplings = parameters.couplings;
   interactions.n_edges =

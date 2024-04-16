@@ -60,6 +60,9 @@ struct model_parameters_struct {
   std::string initialize_option{};
   std::string state_input{};
   move_probas_arr move_probas{};
+  // TODO Add code to get option from json
+  bool e_av_option {true};
+  bool e_av_output {true};
 };
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params);

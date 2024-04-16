@@ -26,8 +26,8 @@ struct interactions_struct {
 };
 
 // Calculate interactions characteristics of the current state of the system
-void initialize_interactions(interactions_struct &interactions,
-                             state_struct &state,
+void initialize_interactions(state_struct &state,
+                             interactions_struct &interactions,
                              model_parameters_struct &parameters);
 
 // Print the summary of the interactions characteristics

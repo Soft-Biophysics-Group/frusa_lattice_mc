@@ -159,5 +159,7 @@ void swap_sites(state_struct &state, int site_1_index, int site_2_index);
 
 int type_of_state(int state, int n_orientations);
 
+void print_state(state_struct& state) { std::cout << state; } ;
+
 } // namespace lattice_particles_space
 #endif

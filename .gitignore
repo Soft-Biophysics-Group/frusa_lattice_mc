@@ -4,6 +4,7 @@
 *.json
 
 /build*/
+/data*/
 /test*/
 /input*/
 /.cache*/

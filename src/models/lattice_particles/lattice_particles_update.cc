@@ -13,7 +13,7 @@ void update_system(state_struct &state, interactions_struct &interactions,
   // Pick the kind of move we'll be making
   for (int i{0}; i < state.n_sites; i++) {
     mc_moves chosen_move{pick_random_move(parameters)};
-    std::cout << chosen_move << '\n';
+    //std::cout << chosen_move << '\n';
     switch (chosen_move) {
     case mc_moves::swap_empty_full_enum:
       interactions.energy +=
@@ -55,7 +55,7 @@ double attempt_swap_sites(int index1, int index2, state_struct &state,
   double energy_change{0.0};
   bool sites_are_neighbours{
       are_neighbours(index1, index2, interactions, state)};
-  std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
+  //std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
   // Initial energy, possibly including neighbour correction
   energy_change -= get_site_energy(state, interactions, index1) +
                    get_site_energy(state, interactions, index2);
@@ -70,13 +70,13 @@ double attempt_swap_sites(int index1, int index2, state_struct &state,
   if (sites_are_neighbours) {
     energy_change -= get_contact_energy(state, index1, index2, interactions);
   }
-  std::cout << "Energy change is: " << energy_change << '\n' ;
+  //std::cout << "Energy change is: " << energy_change << '\n' ;
   // Accept or reject move
   if (is_move_accepted(energy_change, T, parameters)) {
-    std::cout << "Move accepted!\n" ;
+    //std::cout << "Move accepted!\n" ;
     return energy_change;
   } else {
-    std::cout << "Move rejected :(\n";
+    //std::cout << "Move rejected :(\n";
     swap_sites(state, index1, index2);
     return 0.0;
   }
@@ -98,8 +98,8 @@ double attempt_swap_empty_full(state_struct &state,
   int full_site_index{state.full_empty_sites.get_random_full_site(parameters)};
   int empty_site_index{
       state.full_empty_sites.get_random_empty_site(parameters)};
-  std::cout << "Attempting swap of empty site " << empty_site_index
-            << " with full site " << full_site_index << '\n';
+  //std::cout << "Attempting swap of empty site " << empty_site_index
+            //<< " with full site " << full_site_index << '\n';
   return attempt_swap_sites(full_site_index, empty_site_index, state,
                             parameters, interactions, T);
 }
@@ -113,8 +113,8 @@ double attempt_swap_full_full(state_struct &state,
   // try again
   while (site2 == site1)
     site2 = state.full_empty_sites.get_random_full_site(parameters);
-  std::cout << "Attempting swap of full sites " << site1 << " and " << site2
-            << '\n';
+  //std::cout << "Attempting swap of full sites " << site1 << " and " << site2
+            //<< '\n';
   return attempt_swap_sites(site1, site2, state, parameters, interactions, T);
 }
 
@@ -131,17 +131,17 @@ double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
   // Let's avoid doing a rotation to the same orientation as before
   while (new_orientation == old_orientation)
     new_orientation = rot_dist(parameters.rng);
-  std::cout << "Attempting rotation of site " << site_index
-            << " with orientation " << old_orientation << " to "
-            << new_orientation << '\n';
+  //std::cout << "Attempting rotation of site " << site_index
+            //<< " with orientation " << old_orientation << " to "
+            //<< new_orientation << '\n';
   state.lattice_sites.set_orientation(site_index, new_orientation);
   energy_change += get_site_energy(state, interactions, site_index);
-  std::cout << "Energy change is: " << energy_change << '\n' ;
+  //std::cout << "Energy change is: " << energy_change << '\n' ;
   if (is_move_accepted(energy_change, T, parameters)) {
-    std::cout << "Move accepted!\n";
+    //std::cout << "Move accepted!\n";
     return energy_change;
   } else {
-    std::cout << "Move rejected!\n";
+    //std::cout << "Move rejected!\n";
     state.lattice_sites.set_orientation(site_index, old_orientation);
     return 0.0;
   }
@@ -160,16 +160,16 @@ double attempt_mutate(state_struct &state, model_parameters_struct &parameters,
   // Let's avoid doing a mutation to the same type as before
   while (new_type == old_type)
     new_type = type_dist(parameters.rng);
-  std::cout << "Attempting mutation of site " << site_index
-            << " with particle type " << old_type << " to " << new_type << '\n';
+  //std::cout << "Attempting mutation of site " << site_index
+            //<< " with particle type " << old_type << " to " << new_type << '\n';
   state.lattice_sites.set_type(site_index, new_type);
   energy_change += get_site_energy(state, interactions, site_index);
-  std::cout << "Energy change is: " << energy_change << '\n' ;
+  //std::cout << "Energy change is: " << energy_change << '\n' ;
   if (is_move_accepted(energy_change, T, parameters)) {
-    std::cout << "Move accepted!\n";
+    //std::cout << "Move accepted!\n";
     return energy_change;
   } else {
-    std::cout << "Move rejected!\n";
+    //std::cout << "Move rejected!\n";
     state.lattice_sites.set_type(site_index, old_type);
     return 0.0;
   }

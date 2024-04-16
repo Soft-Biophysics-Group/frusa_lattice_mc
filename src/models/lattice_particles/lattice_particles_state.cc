@@ -56,41 +56,12 @@ void save_state(state_struct &state, std::string state_output) {
  * Library-specific definitions
  */
 
-SiteVector::SiteVector(std::string &option, state_struct &state,
-                       model_parameters_struct &parameters) {
-  n_orientations_m = parameters.n_orientations;
-  try {
-    if (option == "from_file") {
-      initialize_state_from_file(types_m, orientations_m, parameters);
-    } else if (option == "random_fixed_particle_numbers") {
-      initialize_state_random_fixed_particle_numbers(types_m, orientations_m,
-                                                     state, parameters);
-    } else {
-      throw option;
-    }
-  } catch (std::string option) {
-    std::cout << "Incorrect initialization option: ''" << option << "''\n";
-    exit(1);
-  }
-}
+/* -----------------------------
+ * Functions to initialize state
+ * -----------------------------*/
 
-FullEmptySites::FullEmptySites(state_struct &state) {
-  site_inds_to_full_empty_m = vec1s(static_cast<std::size_t>(state.n_sites));
-  for (int i{0}; i < state.n_sites; ++i) {
-    std::size_t u_i{static_cast<std::size_t>(i)};
-    if (state.lattice_sites.is_empty(i)) {
-      empty_sites_indices_m.push_back(u_i);
-      site_inds_to_full_empty_m[u_i] = empty_sites_indices_m.size()-1;
-    } else {
-      full_sites_indices_m.push_back(u_i);
-      site_inds_to_full_empty_m[u_i] = full_sites_indices_m.size()-1;
-    }
-  }
-}
-
-void initialize_state_from_file(vec1i& types, vec1i& orientations,
+void initialize_state_from_file(vec1i &types, vec1i &orientations,
                                 model_parameters_struct &parameters) {
-
   std::ifstream input_file{parameters.state_input};
   if (!input_file) {
     std::cerr << "Unable to open file " + parameters.state_input;
@@ -116,7 +87,7 @@ void initialize_state_from_file(vec1i& types, vec1i& orientations,
 }
 
 void initialize_state_random_fixed_particle_numbers(
-    vec1i& types, vec1i& orientations, state_struct &state,
+    vec1i &types, vec1i &orientations, state_struct &state,
     model_parameters_struct &parameters) {
   // Orientation has to start at 1 so that the site is not empty
   int_dist orientation_dist(1, parameters.n_orientations);
@@ -148,35 +119,28 @@ void initialize_state_random_fixed_particle_numbers(
   std::shuffle(orientations.begin(), orientations.end(), rng2);
 }
 
-std::ostream &operator<<(std::ostream &out, state_struct &state) {
-  out << "Printing current system state\n";
-  out << "Number of particle types: " << state.n_types << '\n';
-  out << "Number of particle orientations: " << state.n_orientations << '\n';
-  out << "Lattice dimensions: (" << state.lx << ", " << state.ly << ", "
-      << state.lz << ")\n";
-  out << "Number of lattice sites: " << state.n_sites << '\n';
-  out << "Number of particles of each type: ";
-  array_space::print_vector<int>(out, state.n_particles);
-  out << '\n';
-  out << "Particle type at each site:\n";
-  array_space::print_vector(out, state.lattice_sites.types_m);
-  out << '\n';
-  out << "Particle orientation at each site:\n";
-  array_space::print_vector(out, state.lattice_sites.orientations_m);
-  out << '\n';
-  out << "Indices of full sites:\n";
-  array_space::print_vector(out, state.full_empty_sites.full_sites_indices_m);
-  out << '\n';
-  out << "Indices of empty sites:\n";
-  array_space::print_vector(out, state.full_empty_sites.empty_sites_indices_m);
-  out << '\n';
-  out << "Mapping of lattice sites to full and empty lists:\n";
-  array_space::print_vector(out,
-                            state.full_empty_sites.site_inds_to_full_empty_m);
-  out << '\n';
+/* ----------------------------------
+ *SiteVector class method definitions
+ *----------------------------------*/
 
-  return out;
+SiteVector::SiteVector(std::string &option, state_struct &state,
+                       model_parameters_struct &parameters) {
+  n_orientations_m = parameters.n_orientations;
+  try {
+    if (option == "from_file") {
+      initialize_state_from_file(types_m, orientations_m, parameters);
+    } else if (option == "random_fixed_particle_numbers") {
+      initialize_state_random_fixed_particle_numbers(types_m, orientations_m,
+                                                     state, parameters);
+    } else {
+      throw option;
+    }
+  } catch (std::string option) {
+    std::cout << "Incorrect initialization option: ''" << option << "''\n";
+    exit(1);
+  }
 }
+void print_state(state_struct &state) { std::cout << state; };
 
 void SiteVector::swap_sites(const int index1, const int index2) {
   std::size_t u_index1{static_cast<std::size_t>(index1)};
@@ -184,6 +148,35 @@ void SiteVector::swap_sites(const int index1, const int index2) {
 
   std::swap(types_m[u_index1], types_m[u_index2]);
   std::swap(orientations_m[u_index1], orientations_m[u_index2]);
+}
+
+int SiteVector::get_state(const int site_index) const {
+  // If site is empty, we'll return 0
+  int state{0};
+  // Else we recycle Andrey's function to hash 2 integers into 1
+  if (!is_empty(site_index)) {
+    array_space::ij_to_r(state, get_orientation(site_index),
+                         get_type(site_index), n_orientations_m);
+  }
+  return state;
+}
+
+/* ---------------------------------------
+ * FullEmptySites class method definitions
+ * ---------------------------------------*/
+
+FullEmptySites::FullEmptySites(state_struct &state) {
+  site_inds_to_full_empty_m = vec1s(static_cast<std::size_t>(state.n_sites));
+  for (int i{0}; i < state.n_sites; ++i) {
+    std::size_t u_i{static_cast<std::size_t>(i)};
+    if (state.lattice_sites.is_empty(i)) {
+      empty_sites_indices_m.push_back(u_i);
+      site_inds_to_full_empty_m[u_i] = empty_sites_indices_m.size() - 1;
+    } else {
+      full_sites_indices_m.push_back(u_i);
+      site_inds_to_full_empty_m[u_i] = full_sites_indices_m.size() - 1;
+    }
+  }
 }
 
 int FullEmptySites::get_random_full_site(model_parameters_struct &parameters) {
@@ -232,21 +225,33 @@ void swap_sites(state_struct &state, int site_1_index, int site_2_index) {
   }
 }
 
-int hash_into_state(int type, int orientation, int n_orientations) {
-  if (orientation == 0)
-    return 0;
-  else {
-    // Highjacking the functions Andrey already wrote
-    int state {0};
-    array_space::ij_to_r(state, orientation, type, n_orientations);
-    return state;
-  }
+std::ostream &operator<<(std::ostream &out, state_struct &state) {
+  out << "Printing current system state\n";
+  out << "Number of particle types: " << state.n_types << '\n';
+  out << "Number of particle orientations: " << state.n_orientations << '\n';
+  out << "Lattice dimensions: (" << state.lx << ", " << state.ly << ", "
+      << state.lz << ")\n";
+  out << "Number of lattice sites: " << state.n_sites << '\n';
+  out << "Number of particles of each type: ";
+  array_space::print_vector<int>(out, state.n_particles);
+  out << '\n';
+  out << "Particle type at each site:\n";
+  array_space::print_vector(out, state.lattice_sites.types_m);
+  out << '\n';
+  out << "Particle orientation at each site:\n";
+  array_space::print_vector(out, state.lattice_sites.orientations_m);
+  out << '\n';
+  out << "Indices of full sites:\n";
+  array_space::print_vector(out, state.full_empty_sites.full_sites_indices_m);
+  out << '\n';
+  out << "Indices of empty sites:\n";
+  array_space::print_vector(out, state.full_empty_sites.empty_sites_indices_m);
+  out << '\n';
+  out << "Mapping of lattice sites to full and empty lists:\n";
+  array_space::print_vector(out,
+                            state.full_empty_sites.site_inds_to_full_empty_m);
+  out << '\n';
+  return out;
 }
 
-int type_of_state(int state, int n_orientations) {
-  // TODO Make sure this returns correct results
-  return state / n_orientations;
-}
-
-void print_state(state_struct &state) { std::cout << state ; };
 } // namespace lattice_particles_space

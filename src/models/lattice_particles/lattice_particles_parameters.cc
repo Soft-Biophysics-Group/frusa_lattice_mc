@@ -8,7 +8,7 @@ model_parameters_struct::model_parameters_struct(
 
   std::ifstream model_input_f{input_file};
   if (!model_input_f) {
-    std::cerr << "Could not open JSON model parameters file" << std::endl;
+    std::cerr << "Could not open JSON model parameters file" << '\n';
     exit(1);
   }
 
@@ -23,16 +23,12 @@ model_parameters_struct::model_parameters_struct(
   couplings = json_model_params["couplings"].template get<vec1d>();
   initialize_option =
       json_model_params["initialize_option"].template get<std::string>();
-
   if (initialize_option == "from_file") {
     state_input = json_model_params["state_input"].template get<std::string>();
   }
-
   std::random_device dev;
   EngineType engine(dev());
-
   rng = engine;
-
   move_probas = get_move_probas(input_file);
 }
 
@@ -50,12 +46,14 @@ std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {
   array_space::print_vector(out, params.couplings);
   out << "]\n";
   out << "Chosen initialize option: " << params.initialize_option << '\n';
-  if (params.initialize_option == "from_file")
+  if (params.initialize_option == "from_file") {
     out << "Initialized from file " << params.state_input << '\n';
+  }
   out << "Move probabilities: ";
   // TODO Remove that ugly 6
-  for (auto prob : params.move_probas)
+  for (auto prob : params.move_probas) {
     out << prob << ", ";
+  }
   out << '\n';
 
   out << "End parameter print \n\n";
@@ -63,8 +61,8 @@ std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {
   return out;
 }
 
-move_probas_arr get_move_probas(const std::string &mc_json_file) {
-  std::ifstream mc_json_f{mc_json_file};
+move_probas_arr get_move_probas(const std::string &model_input_file) {
+  std::ifstream mc_json_f{model_input_file};
   if (!mc_json_f) {
     std::cerr << "Could not find MC paramereters file" << '\n';
     exit(1);
@@ -73,8 +71,9 @@ move_probas_arr get_move_probas(const std::string &mc_json_file) {
   move_probas_arr move_probas{
       mc_json["move_probas"].template get<move_probas_arr>()};
   // Move probabilities have to sum to 1
-  if ((std::accumulate(move_probas.begin(), move_probas.end(), 0.) != 1.0))
+  if ((std::accumulate(move_probas.begin(), move_probas.end(), 0.) != 1.0)) {
     throw std::runtime_error("Move probabilities do not sum to 1!");
+  }
 
   return move_probas;
 }

@@ -18,16 +18,13 @@ typedef std::uniform_int_distribution<int> int_dist;
 typedef std::uniform_real_distribution<double> real_dist;
 
 namespace lattice_particles_space {
+
 // Forward declaration for member classes
 struct state_struct;
 
 /*
  * Definitions required for the public routines of the model class
  */
-
-// Get a hashed state integer from particle characteristics, returning 0 if
-// the site is empty
-int hash_into_state(int type, int orientation, int n_orientations);
 
 /*
  * Class that stores the state of the full lattice.
@@ -48,11 +45,7 @@ public:
   bool is_empty(const int site_index) const {
     return orientations_m[static_cast<std::size_t>(site_index)] == 0;
   };
-  int get_state(const int site_index) const {
-    return hash_into_state(
-        types_m[static_cast<std::size_t>(site_index)],
-        orientations_m[static_cast<std::size_t>(site_index)], n_orientations_m);
-  }
+  int get_state(const int site_index) const;
   void set_type(const int site_index, const int new_type) {
     types_m[static_cast<std::size_t>(site_index)] = new_type;
   }
@@ -76,6 +69,7 @@ private:
 /*
  * Class which keeps track of which lattice sites are full and empty.
  * To be updated whenever we swap full and empty sites.
+ * Useful to pick a full/empty site at random.
  */
 class FullEmptySites {
 public:
@@ -89,8 +83,8 @@ public:
   int get_n_empty_sites() {
     return static_cast<int>(empty_sites_indices_m.size());
   };
-  int get_random_full_site(model_parameters_struct& parameters);
-  int get_random_empty_site(model_parameters_struct& parameters);
+  int get_random_full_site(model_parameters_struct &parameters);
+  int get_random_empty_site(model_parameters_struct &parameters);
   friend std::ostream &operator<<(std::ostream &out, state_struct &state);
 
 private:
@@ -109,7 +103,8 @@ private:
 // lx, ly, lz       - dimensions of the lattice
 // n_sites          - total number of sites
 // n_particles      - number of particles of each type
-// lattice_sites    - array of each lattice state
+// lattice_sites    - See SiteVector class
+// full_empty_sites - See FullEmptySites class
 struct state_struct {
   int n_types{};
   int n_orientations{};
@@ -126,13 +121,14 @@ struct state_struct {
 // Initialize the structural properties of the system, depending on the type
 // of parameters.initialize_option
 void initialize_state(state_struct &state, model_parameters_struct &parameters);
-void fill_full_empty_arrays(state_struct &state);
 
 // Print the current values of the structural properties of the system
-// TODO Implement this
 std::ostream &operator<<(std::ostream &out, state_struct &state);
+// Thin wrapper around operator<< to make this header consistent with the rest
+void print_state(state_struct &state);
 
-// Save the fractional concentrations to a file "state_output"
+
+// Save the state of the lattice to a file "state_output"
 // First line of the file is a list of all the sites' particle types
 // Second line is the list of particle orientations
 void save_state(state_struct &state, std::string state_output);
@@ -146,20 +142,20 @@ void save_state(state_struct &state, std::string state_output);
  */
 
 // Various methods for state initialization
-void initialize_state_from_file(vec1i& types, vec1i& orientations,
+// Initialize state from a file specified in the model_parameters_struct
+// object. Will fill up the types and orientations array of a SiteVector class.
+void initialize_state_from_file(vec1i &types, vec1i &orientations,
                                 model_parameters_struct &parameters);
 
 // Initialize a state with a set random of particles uniformly distributed on
 // the lattice, with a given number of particles given in parameters
 void initialize_state_random_fixed_particle_numbers(
-    vec1i& types, vec1i& orientations, state_struct &state,
+    vec1i &types, vec1i &orientations, state_struct &state,
     model_parameters_struct &parameters);
 
+// Exchange the states of site_1 and site_2, updating both the SiteVector and
+// FullEmptySites objects
 void swap_sites(state_struct &state, int site_1_index, int site_2_index);
-
-int type_of_state(int state, int n_orientations);
-
-void print_state(state_struct& state);
 
 } // namespace lattice_particles_space
 #endif

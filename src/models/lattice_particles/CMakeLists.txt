@@ -10,6 +10,7 @@ set(HEADER_LATTICEPARTICLES
 set(SOURCE_LATTICEPARTICLES
     lattice_particles_parameters.cc
     lattice_particles_state.cc
+    lattice_particles_geometry.cc
     lattice_particles_interactions.cc
     lattice_particles_update.cc
     lattice_particles_averages.cc

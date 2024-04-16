@@ -1,6 +1,7 @@
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/engine)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/models)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/utility)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
 set(HEADER_FRUSA_ENGINE
     ${HEADER_FRUSA_ENGINE}

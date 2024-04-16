@@ -129,10 +129,9 @@ std::ostream &operator<<(std::ostream &out, interactions_struct &interactions) {
   array_space::print_vector(out, interactions.couplings);
   out << '\n';
   out << "System energy is: " << interactions.energy << '\n';
-  out << "Last verified neighbours were: ";
-  array_space::print_array<int, 6>(out, interactions.neighbours);
+  //out << "Last verified neighbours were: ";
+  //array_space::print_array<int, 6>(out, interactions.neighbours);
   out << "Stored number of site edges:" << n_edges << '\n';
-
   return out;
 }
 

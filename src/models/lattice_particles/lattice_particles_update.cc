@@ -11,26 +11,27 @@ namespace lattice_particles_space {
 void update_system(state_struct &state, interactions_struct &interactions,
                    model_parameters_struct &parameters, double T) {
   // Pick the kind of move we'll be making
-  // TODO Initialize move_probas somewhere
-  mc_moves chosen_move{pick_random_move(parameters)};
-  std::cout << chosen_move << '\n' ;
-  switch (chosen_move) {
-  case mc_moves::swap_empty_full_enum:
-    interactions.energy +=
-        attempt_swap_empty_full(state, parameters, interactions, T);
-    break;
-  case mc_moves::swap_full_full_enum:
-    interactions.energy +=
-        attempt_swap_full_full(state, parameters, interactions, T);
-    break;
-  case mc_moves::rotate_enum:
-    interactions.energy += attempt_rotate(state, parameters, interactions, T);
-    break;
-  case mc_moves::mutate_enum:
-    interactions.energy += attempt_mutate(state, parameters, interactions, T);
-    break;
-  default:
-    throw std::runtime_error("Something went wrong in the move selection");
+  for (int i{0}; i < state.n_sites; i++) {
+    mc_moves chosen_move{pick_random_move(parameters)};
+    std::cout << chosen_move << '\n';
+    switch (chosen_move) {
+    case mc_moves::swap_empty_full_enum:
+      interactions.energy +=
+          attempt_swap_empty_full(state, parameters, interactions, T);
+      break;
+    case mc_moves::swap_full_full_enum:
+      interactions.energy +=
+          attempt_swap_full_full(state, parameters, interactions, T);
+      break;
+    case mc_moves::rotate_enum:
+      interactions.energy += attempt_rotate(state, parameters, interactions, T);
+      break;
+    case mc_moves::mutate_enum:
+      interactions.energy += attempt_mutate(state, parameters, interactions, T);
+      break;
+    default:
+      throw std::runtime_error("Something went wrong in the move selection");
+    }
   }
 }
 

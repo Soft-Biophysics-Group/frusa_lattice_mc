@@ -248,4 +248,5 @@ int type_of_state(int state, int n_orientations) {
   return state / n_orientations;
 }
 
+void print_state(state_struct &state) { std::cout << state ; };
 } // namespace lattice_particles_space

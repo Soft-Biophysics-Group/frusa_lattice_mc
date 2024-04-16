@@ -133,4 +133,13 @@ std::ostream& operator<< (std::ostream& out, interactions_struct& interactions) 
 
   return out;
 }
+
+void print_interactions(state_struct &state, interactions_struct &interactions) {
+  std::cout << interactions;
+}
+
+
+void print_energy(state_struct &state, interactions_struct &interactions) {
+  std::cout << interactions.energy ;
+}
 } // namespace lattice_particles_space

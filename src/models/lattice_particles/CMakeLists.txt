@@ -31,10 +31,11 @@ endif()
 
 target_include_directories(user_library PUBLIC
                            ${INCLUDE_FRUSA_MODELS}/lattice_particles
-                           ${INCLUDE_FRUSA_UTILITY})
+                           ${INCLUDE_FRUSA_UTILITY}
+                           ${INCLUDE_FRUSA_THIRDPARTY})
 
 target_link_libraries(user_library PRIVATE compiler_flags)
-target_link_libraries(user_library PRIVATE vector_utils)
+target_link_libraries(user_library PRIVATE utils_library)
 
 target_link_libraries(lattice_particles_library PRIVATE user_library)
 
@@ -44,4 +45,4 @@ target_include_directories(lattice_particles_library PUBLIC
                            ${INCLUDE_FRUSA_THIRDPARTY})
 
 target_link_libraries(lattice_particles_library PRIVATE compiler_flags)
-target_link_libraries(lattice_particles_library PRIVATE vector_utils)
+target_link_libraries(lattice_particles_library PRIVATE utils_library)

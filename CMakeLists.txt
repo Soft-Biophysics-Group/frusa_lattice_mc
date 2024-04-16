@@ -1,4 +1,5 @@
 ### CMake Version ##############################################################
+variable_watch(INCLUDE_FRUSA_THIRDPARTY)
 
 cmake_minimum_required(VERSION 3.16...3.22)
 

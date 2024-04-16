@@ -454,5 +454,6 @@
     0.5,
     0.5
   ],
-  "initialize_option": "random_fixed_particle_numbers"
+  "initialize_option": "random_fixed_particle_numbers",
+  "move_probas": [0.5, 0.0, 0.5, 0]
 }

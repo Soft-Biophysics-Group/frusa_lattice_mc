@@ -5,15 +5,12 @@
 ### General
 
 * Documentation (priority)
+* Geometry class (priority)
 * Write an interface for running jobs
-
-### Tutorial and `ising` model (`ising_dev` branch)
-
-* Write a tutorial on ising model (priority)
 
 ### `fields` model on branch `fields_dev`
 
-* Debug Segmentation fault error in the fields library (priority)
+* Debug Segmentation fault error in the fields library
 
 # `frusa_mc`
 

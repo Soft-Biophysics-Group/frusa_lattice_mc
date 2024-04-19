@@ -6,4 +6,4 @@
 /build*/
 /test/build*/
 /input*/
-
+.cache/

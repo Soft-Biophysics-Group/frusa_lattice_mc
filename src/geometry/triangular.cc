@@ -1,3 +1,4 @@
+#include "triangular.h"
 #include "geometry.h"
 
 namespace geometry_space {

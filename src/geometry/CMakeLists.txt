@@ -1,5 +1,7 @@
 ### Collect the header and source files to be compiled
 set(SOURCE_GEOMETRY
+    ${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/triangular.cc
     )
 
 ### Create the geometry library and include the header directories

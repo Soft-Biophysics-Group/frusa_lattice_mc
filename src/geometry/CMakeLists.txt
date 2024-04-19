@@ -3,7 +3,7 @@ set(SOURCE_GEOMETRY
     )
 
 ### Create the geometry library and include the header directories
-add_library(geometry_library 
+add_library(geometry_library
             ${SOURCE_DEFAULT}
             ${HEADER_GEOMETRY}
             ${HEADER_THIRDPARTY}
@@ -14,10 +14,10 @@ target_include_directories(geometry_library PUBLIC
                            ${INCLUDE_FRUSA_THIRDPARTY}
                            ${INCLUDE_FRUSA_UTILITY})
 
-### Link the library to utils to make sure we have access to all of the 
+### Link the library to utils to make sure we have access to all of the
 ### helper functions
 target_link_libraries(geometry_library PRIVATE utils_library)
 
-### Make sure that the compiler flags are the same for all libraries by 
-### linking them to compiler_flags 
+### Make sure that the compiler flags are the same for all libraries by
+### linking them to compiler_flags
 target_link_libraries(geometry_library PRIVATE compiler_flags)

@@ -5,12 +5,16 @@
 #define IO_VECTOR_HEADER_H
 
 #include <vector>
+#include <array>
 
 typedef std::vector<int> vec1i;
 typedef std::vector<double> vec1d;
 typedef std::vector<std::vector<int>> vec2i;
 typedef std::vector<std::vector<double>> vec2d;
 typedef std::vector<std::vector<std::vector<double>>> vec3d;
+
+template <int M, int N>
+using arr2i = std::array<std::array<int, N>,M>;
 
 namespace array_space{
   /*

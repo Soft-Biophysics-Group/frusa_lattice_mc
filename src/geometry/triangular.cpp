@@ -1,5 +1,0 @@
-#include "triangular.h"
-
-namespace  {
-  
-} // 

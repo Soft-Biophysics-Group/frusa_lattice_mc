@@ -4,6 +4,6 @@
 *.json
 
 /build*/
-/test*/
+/test/build*/
 /input*/
 

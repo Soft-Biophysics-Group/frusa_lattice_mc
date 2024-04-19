@@ -1,10 +1,10 @@
 {
-  "mcs_eq": 100,
+  "mcs_eq": 1000,
   "mcs_av": 1,
-  "cooling_schedule": "exponential",
-  "Ti": 0,
-  "Tf": -5,
-  "Nt": 10,
+  "cooling_schedule": "linear",
+  "Ti": 6,
+  "Tf": 1,
+  "Nt": 100,
   "checkpoint_option": false,
-  "final_structure_address": "./data/final_struct.dat"
+  "final_structure_address": "./"
 }

@@ -37,9 +37,9 @@ model_params["initialize_option"] = "random_fixed_particle_numbers"
 # rotate_enum,
 # mutate_enum,
 model_params["move_probas"] = [
-    1 / 4,  # swap_empty_full
+    1 / 2,  # swap_empty_full
     0,      # swap_full_full
-    1 / 4,  # rotate
+    1 / 2,  # rotate
     0,      # mutate
 ]
 
@@ -51,7 +51,7 @@ make_json_file(model_params, "../input/model_params.json")
 mc_params = {}
 
 # Number of MC steps used for equilibration
-mc_params["mcs_eq"] = 100
+mc_params["mcs_eq"] = 1000
 
 # Number of MC steps used for averaging
 mc_params["mcs_av"] = 1
@@ -67,7 +67,7 @@ mc_params["Ti"] = 6
 mc_params["Tf"] = 1
 
 # Number of annealing steps
-mc_params["Nt"] = 10
+mc_params["Nt"] = 100
 
 # Option to collect state checkpoints at the end of each temperature cycle
 mc_params["checkpoint_option"] = False

@@ -1,0 +1,5 @@
+#include "triangular.h"
+
+namespace  {
+  
+} // 

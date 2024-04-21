@@ -13,8 +13,10 @@ typedef std::vector<std::vector<int>> vec2i;
 typedef std::vector<std::vector<double>> vec2d;
 typedef std::vector<std::vector<std::vector<double>>> vec3d;
 
+template <int N>
+using arr1i = std::array<int, N>;
 template <int M, int N>
-using arr2i = std::array<std::array<int, N>,M>;
+using arr2i = std::array<arr1i<N>,M>;
 
 namespace array_space{
   /*

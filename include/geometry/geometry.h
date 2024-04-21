@@ -23,16 +23,26 @@ public:
   Geometry(lattice_options lattice, int lx, int ly, int lz=1);
   int get_neighbour(const int site_ind, const int bond_ind) const;
   int get_bond(const int site_1_ind, const int site_2_ind) const;
-  int get_interaction_indices(const int site_1_ind, const int site_2_ind) const;
-  double get_interaction(const int site_1_ind, const int site_2_ind,
-                         const vec1d couplings) const;
+  template <int N>
+    arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind) const;
+  int get_interaction_index(const int site_1_orientation, const int site_1_ind,
+                            const int site_2_orientation,
+                            const int site_2_ind) const;
+  double get_interaction(const int site_1_orientation, const int site_1_ind,
+                         const int site_2_orientation, const int site_2_ind,
+                         const vec1d flat_interaction_matrix) const;
+
 private:
   lattice_options lattice_m {lattice_options::one_dimension};
   int lx_m {1};
   int ly_m {1};
   int lz_m {1};
-  int n_neighbours {2};
+  int n_neighbours_m {2};
+  int n_orientations_m {2};
 };
+
+int get_interaction_index(const int face_1, const int face_2,
+                          const int n_orientations);
 
 } // namespace geometry_space
 #endif

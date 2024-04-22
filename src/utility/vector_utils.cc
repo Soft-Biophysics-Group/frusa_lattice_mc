@@ -5,20 +5,20 @@
 
 namespace array_space{
 
-  void ij_to_r(int &r, int i, int j, int Lx, int Ly){
+  void ij_to_r(int &r, int i, int j, int Lx, [[maybe_unused]] int Ly){
     r = i + Lx*j;
   }
 
-  void r_to_ij(int r, int &i, int &j, int Lx, int Ly){
+  void r_to_ij(int r, int &i, int &j, int Lx, [[maybe_unused]] int Ly){
     j = r/Lx;
     i = r-Lx*j;
   }
 
-  void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz){
+  void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, [[maybe_unused]] int Lz){
     r = i + Lx*j + Lx*Ly*k;
   }
 
-  void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly, int Lz){
+  void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly, [[maybe_unused]] int Lz){
     k = r/(Lx*Ly);
     j = (r-Lx*Ly*k)/Lx;
     i = r-Lx*j-Lx*Ly*k;

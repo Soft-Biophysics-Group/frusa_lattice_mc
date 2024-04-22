@@ -2,7 +2,7 @@
 #define GEOMETRY_TRIANGULAR_H
 
 #include "vector_utils.h"
-#include <unordered_map>
+#include <map>
 namespace geometry_space {
 namespace triangular_space {
 struct bond_permutation_struct {
@@ -12,8 +12,8 @@ struct bond_permutation_struct {
                                                   {3, 4, 5, 0, 1, 2},
                                                   {2, 3, 4, 5, 0, 1},
                                                   {1, 2, 3, 4, 5, 0}}};
-  static constexpr arr2i<6,6> orientation_permutations = bond_permutations;
-  static inline const std::unordered_map<vec1i, int> bond_indices{
+  //static inline const std::unordered_map<vec1i, int> bond_indices{
+  std::map<std::array<int,2>, int> bond_directions{
       {{1, 0}, 0},  {{1, 1}, 1},   {{-1, 1}, 2},
       {{-1, 0}, 3}, {{-1, -1}, 4}, {{1, -1}, 5}};
 };

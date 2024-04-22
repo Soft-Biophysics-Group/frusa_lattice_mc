@@ -1,6 +1,6 @@
 #include "particles_parameters.h"
 
-namespace lattice_particles_space {
+namespace particles_space {
 
 model_parameters_struct::model_parameters_struct(
     const std::string &input_file) {
@@ -14,31 +14,21 @@ model_parameters_struct::model_parameters_struct(
   json json_model_params = json::parse(model_input_f);
 
   n_types = json_model_params["n_types"].template get<int>();
-  n_orientations = json_model_params["n_orientations"].template get<int>();
-  lx = json_model_params["lx"].template get<int>();
-  ly = json_model_params["ly"].template get<int>();
-  lz = json_model_params["lz"].template get<int>();
   n_particles = json_model_params["n_particles"].template get<vec1i>();
   couplings = json_model_params["couplings"].template get<vec1d>();
+  std::random_device dev;
+  EngineType engine(dev());
+  rng = engine;
   initialize_option =
       json_model_params["initialize_option"].template get<std::string>();
   if (initialize_option == "from_file") {
     state_input = json_model_params["state_input"].template get<std::string>();
   }
-  std::random_device dev;
-  EngineType engine(dev());
-  rng = engine;
   move_probas = get_move_probas(input_file);
 }
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {
   out << "Printing the parameters for this simulation\n\n";
-  out << "Number of particle types:" << params.n_types << '\n';
-  out << "Number of possible particle orientations:" << params.n_orientations
-      << '\n';
-  out << "Lattice dimensions:" << '(' << params.lx << ", " << params.ly << ", "
-      << params.lz << ")\n";
-  out << "Number of particles of each type:" << '[';
   array_space::print_vector(out, params.n_particles);
   out << "]\n";
   out << "Flattened couplings matrix: [";

@@ -31,6 +31,11 @@ public:
   Geometry() = default;
   Geometry(lattice_options lattice, int lx, int ly, int lz=1);
   Geometry(std::string& geometry_input);
+  // Simple getters
+  int get_n_orientations() const { return n_orientations_m; };
+  int get_n_sites() const { return n_sites_m; };
+  int get_n_neighbours() const { return n_neighbours_m; };
+  // More involved functions
   int get_neighbour(const int site_ind, const int bond_ind) const;
   int get_bond(const int site_1_ind, const int site_2_ind) const;
   template <int N>
@@ -40,7 +45,9 @@ public:
                             const int site_2_ind) const;
   double get_interaction(const int site_1_orientation, const int site_1_ind,
                          const int site_2_orientation, const int site_2_ind,
-                         const vec1d flat_interaction_matrix) const;
+                         const vec1d& flat_interaction_matrix) const;
+  bool are_neighbours(const int site_1_ind, const int site_2_ind);
+  friend std::ostream& operator<< (std::ostream& out, Geometry& geometry);
 
 private:
   lattice_options lattice_m {lattice_options::one_dimension};
@@ -49,6 +56,7 @@ private:
   int lz_m {1};
   int n_neighbours_m {2};
   int n_orientations_m {2};
+  int n_sites_m {1};
   void set_lattice_properties();
 };
 

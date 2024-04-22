@@ -18,6 +18,14 @@ lattice_options get_lattice_from_str(std::string& lattice_str) {
 
 Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
     : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz}, n_sites_m {lx*ly*lz} {
+  switch (lattice_m) {
+    case lattice_options::triangular:
+      bond_permutations_m =
+          triangular_space::bond_permutation_struct::bond_permutations;
+      bond_directions_m = triangular_space::bond_permutation_struct::bond_directions;
+    default:
+      throw(std::runtime_error("Invalid lattice option"));
+  }
   set_lattice_properties();
 }
 
@@ -41,23 +49,33 @@ Geometry::Geometry(std::string& geometry_input)
 }
 
 int Geometry::get_neighbour(const int site_ind, const int bond_ind) const {
-  switch (lattice_m) {
-  case lattice_options::triangular:
-    return triangular_space::get_neighbour_triangular(site_ind, bond_ind, lx_m,
-                                                      ly_m);
-  default:
-    throw(std::runtime_error("Invalid lattice option"));
-  }
+  // Found at https://stackoverflow.com/a/26282004
+    int i{};
+    int j{};
+    int k{};
+    array_space::r_to_ijk(site_ind, i, j, k, lx_m, ly_m, lz_m);
+
+    std::size_t u_bond_ind {static_cast<std::size_t>(bond_ind)};
+    const vec1i& bond_direction {bond_directions_m[u_bond_ind]};
+    int i_neigh{i+bond_direction[0]};
+    int j_neigh{j+bond_direction[1]};
+    int k_neigh{k+bond_direction[2]};
+
+    int neigh_ind{0};
+    array_space::ijk_to_r(neigh_ind, i_neigh, j_neigh, k_neigh, lx_m, ly_m,
+                          lz_m);
+    return neigh_ind;
 }
 
 int Geometry::get_bond(const int site_1_ind, const int site_2_ind) const {
-  switch (lattice_m) {
-  case lattice_options::triangular:
-    return triangular_space::get_bond_triangular(site_1_ind, site_2_ind, lx_m,
-                                                 ly_m);
-  default:
-    throw(std::runtime_error("Invalid lattice option"));
+  for (int bond_index{0}; bond_index < n_neighbours_m; bond_index++) {
+    int neighbour_of_bond{get_neighbour(site_1_ind, bond_index)};
+    if (neighbour_of_bond == site_2_ind) {
+      return bond_index;
+    }
   }
+  // If not neighbours:
+  return n_neighbours_m;
 }
 
 bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
@@ -78,20 +96,26 @@ bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
   //}
 //}
 
+int Geometry::get_interaction_coeff(const int site_orientation, const int bond) const {
+  std::size_t u_orientation{static_cast<std::size_t>(site_orientation)};
+  const vec1i &permutation_table{bond_permutations_m[u_orientation]};
+
+  std::size_t u_bond {static_cast<std::size_t>(bond)};
+  return permutation_table[u_bond];
+}
+
 int Geometry::get_interaction_index(const int site_1_orientation,
                                     const int site_1_ind,
                                     const int site_2_orientation,
                                     const int site_2_ind) const {
-  switch (lattice_m) {
-  case lattice_options::triangular: {
-    int bond{triangular_space::get_bond_triangular(site_1_ind, site_2_ind, lx_m,
-                                                   ly_m)};
-    return triangular_space::get_interaction_index(
-        site_1_orientation, site_2_orientation, bond, n_orientations_m);
-  }
-  default:
-    throw(std::runtime_error("Invalid lattice option"));
-  }
+  int bond{get_bond(site_1_ind, site_2_ind)};
+  int coeff_1{get_interaction_coeff(site_1_orientation, bond)};
+  int coeff_2{get_interaction_coeff(site_2_orientation, bond)};
+
+  //Hash into a single coefficient for flattened vector
+  int interaction_index{};
+  array_space::ij_to_r(interaction_index, coeff_1, coeff_2, n_orientations_m, 1);
+  return interaction_index;
 }
 
 double Geometry::get_interaction(const int site_1_orientation,
@@ -123,18 +147,4 @@ void Geometry::set_lattice_properties() {
   }
 }
 
-int get_interaction_index(const int face_1, const int face_2,
-                          const int n_orientations) {
-  int interaction_index{};
-  // Interaction atrix is encoded into 1D vector as upper-triangular
-  // coefficients
-  // Hijacking the hashing function Andrey already wrote
-  if (face_1 <= face_2) {
-    array_space::ij_to_r(interaction_index, face_1, face_2, n_orientations, 1);
-  } else {
-    array_space::ij_to_r(interaction_index, face_2, face_1, n_orientations, 1);
-  }
-
-  return interaction_index;
-}
 } // namespace geometry_space

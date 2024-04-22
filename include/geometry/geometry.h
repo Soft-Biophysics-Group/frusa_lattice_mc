@@ -38,8 +38,9 @@ public:
   // More involved functions
   int get_neighbour(const int site_ind, const int bond_ind) const;
   int get_bond(const int site_1_ind, const int site_2_ind) const;
-  template <int N>
-    arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind) const;
+  //template <int N>
+    //arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind) const;
+  int get_interaction_coeff(const int site_orientation, const int bond) const;
   int get_interaction_index(const int site_1_orientation, const int site_1_ind,
                             const int site_2_orientation,
                             const int site_2_ind) const;
@@ -57,11 +58,10 @@ private:
   int n_neighbours_m {2};
   int n_orientations_m {2};
   int n_sites_m {1};
+  vec2i bond_permutations_m{};
+  vec2i bond_directions_m{};
   void set_lattice_properties();
 };
-
-int get_interaction_index(const int face_1, const int face_2,
-                          const int n_orientations);
 
 } // namespace geometry_space
 #endif

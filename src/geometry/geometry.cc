@@ -1,10 +1,27 @@
 #include "geometry.h"
 #include "triangular.h"
+#include "vector_utils.h"
 #include <stdexcept>
 
 using json = nlohmann::json;
 
 namespace geometry_space {
+
+bond_struct::bond_struct(lattice_options lattice) {
+  switch (lattice) {
+    case triangular:
+      bond_permutation =
+          triangular_space::bond_struct::bond_permutation;
+      bond_array =
+          triangular_space::bond_struct::bond_array;
+      bond_index =
+          triangular_space::bond_struct::bond_index;
+      break;
+    default:
+      throw(std::runtime_error(
+          "Wrong lattice option received duting bond_structure creation"));
+  }
+}
 
 lattice_options get_lattice_from_str(std::string& lattice_str) {
   for (std::size_t i {0}; i < lattice_options::n_lattices; ++i) {
@@ -17,15 +34,8 @@ lattice_options get_lattice_from_str(std::string& lattice_str) {
 }
 
 Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
-    : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz}, n_sites_m {lx*ly*lz} {
-  switch (lattice_m) {
-    case lattice_options::triangular:
-      bond_permutations_m =
-          triangular_space::bond_permutation_struct::bond_permutations;
-      bond_directions_m = triangular_space::bond_permutation_struct::bond_directions;
-    default:
-      throw(std::runtime_error("Invalid lattice option"));
-  }
+    : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz}, n_sites_m{lx * ly * lz},
+      bond_struct_m{bond_struct(lattice)} {
   set_lattice_properties();
 }
 
@@ -56,7 +66,7 @@ int Geometry::get_neighbour(const int site_ind, const int bond_ind) const {
     array_space::r_to_ijk(site_ind, i, j, k, lx_m, ly_m, lz_m);
 
     std::size_t u_bond_ind {static_cast<std::size_t>(bond_ind)};
-    const vec1i& bond_direction {bond_directions_m[u_bond_ind]};
+    const vec1i& bond_direction {bond_struct_m.bond_array[u_bond_ind]};
     int i_neigh{i+bond_direction[0]};
     int j_neigh{j+bond_direction[1]};
     int k_neigh{k+bond_direction[2]};
@@ -68,12 +78,31 @@ int Geometry::get_neighbour(const int site_ind, const int bond_ind) const {
 }
 
 int Geometry::get_bond(const int site_1_ind, const int site_2_ind) const {
-  for (int bond_index{0}; bond_index < n_neighbours_m; bond_index++) {
-    int neighbour_of_bond{get_neighbour(site_1_ind, bond_index)};
-    if (neighbour_of_bond == site_2_ind) {
-      return bond_index;
-    }
+  // TODO Use the bond index array maybe?
+  arr1i<3> site_1_ijk {0, 0, 0};
+  array_space::r_to_ijk(site_1_ind, site_1_ijk[0], site_1_ijk[1], site_1_ijk[2],
+                        lx_m, ly_m, lz_m);
+  arr1i<3> site_2_to_site_1_ijk{0, 0, 0};
+  array_space::r_to_ijk(site_2_ind, site_2_to_site_1_ijk[0],
+                        site_2_to_site_1_ijk[1], site_2_to_site_1_ijk[2], lx_m,
+                        ly_m, lz_m);
+  for (std::size_t ind{0}; ind < 3; ind++) {
+    site_2_to_site_1_ijk[ind] -= site_1_ijk[ind];
   }
+
+  bool diff_found{bond_struct_m.bond_index.find(site_2_to_site_1_ijk) !=
+                  bond_struct_m.bond_index.end()};
+  if (diff_found) {
+    return bond_struct_m.bond_index.at(site_2_to_site_1_ijk);
+  }
+  // Other implementation, based on comparing with neighbours
+  // TODO See which one goes faster
+  //for (int bond_index{0}; bond_index < n_neighbours_m; bond_index++) {
+    //int neighbour_of_bond{get_neighbour(site_1_ind, bond_index)};
+    //if (neighbour_of_bond == site_2_ind) {
+      //return bond_index;
+    //}
+  //}
   // If not neighbours:
   return n_neighbours_m;
 }
@@ -97,11 +126,11 @@ bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
 //}
 
 int Geometry::get_interaction_coeff(const int site_orientation, const int bond) const {
-  std::size_t u_orientation{static_cast<std::size_t>(site_orientation)};
-  const vec1i &permutation_table{bond_permutations_m[u_orientation]};
-
   std::size_t u_bond {static_cast<std::size_t>(bond)};
-  return permutation_table[u_bond];
+  const vec1i &permutation_table{bond_struct_m.bond_permutation[u_bond]};
+
+  std::size_t u_orientation{static_cast<std::size_t>(site_orientation)};
+  return permutation_table[u_orientation];
 }
 
 int Geometry::get_interaction_index(const int site_1_orientation,
@@ -139,8 +168,8 @@ std::ostream &operator<<(std::ostream &out, Geometry &geometry) {
 void Geometry::set_lattice_properties() {
   switch (lattice_m) {
   case lattice_options::triangular:
-    n_neighbours_m = 6;
-    n_orientations_m = 6;
+    n_neighbours_m = triangular_space::n_neighbours;
+    n_orientations_m = triangular_space::n_orientations;
     break;
   default:
     throw(std::runtime_error("Invalid lattice option"));

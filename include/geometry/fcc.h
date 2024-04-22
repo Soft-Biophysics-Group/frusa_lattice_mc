@@ -4,17 +4,18 @@
 #ifndef FCC_GEOMETRY_HEADER_H
 #define FCC_GEOMETRY_HEADER_H
 
+#include "vector_utils.h"
 #include <iostream>
+#include <map>
 
+using BondIndexMap = std::map<std::array<int,3> , unsigned int>;
 namespace geometry_space {
   namespace fcc_space {
-  
-    struct bond_structure {
-      bond_structure();
 
-      constexpr unsigned int bond_permutation[12][12] = {
+    struct bond_structure {
+      static inline const vec2i bond_permutation = {
         // We group bonds/faces into triangles, which do not share vertices,
-        // and define permutations using the 8 C_3 [111] rotations and 
+        // and define permutations using the 8 C_3 [111] rotations and
         // 3 C_2 [100] rotations.
         {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11 }, // E
         {  2,  0,  1,  8,  6,  7, 11,  9, 10,  5,  3,  4 }, // C_3(1)
@@ -30,7 +31,7 @@ namespace geometry_space {
         {  6,  7,  8,  9, 10, 11,  0,  1,  2,  3,  4,  5 }  // C_2(3)
       }; // bond_permutation
 
-      constexpr int bond_array[12][3] = {
+      static inline const vec2i bond_array {
         {  1,  0,  0 },
         {  0,  1,  0 },
         {  0,  0,  1 },
@@ -45,7 +46,7 @@ namespace geometry_space {
         {  1, -1,  0 },
       }; // bond_array
 
-      std::map<int[3], unsigned int> bond_index {
+      static inline const BondIndexMap bond_index {
         { {  1,  0,  0 }, 0 },
         { {  0,  1,  0 }, 1 },
         { {  0,  0,  1 }, 2 },
@@ -68,5 +69,5 @@ namespace geometry_space {
 
   } // fcc_space
 } // geometry_space
- 
+
 #endif // FCC_GEOMETRY_HEADER_H

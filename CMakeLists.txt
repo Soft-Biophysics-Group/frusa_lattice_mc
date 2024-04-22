@@ -1,5 +1,6 @@
 ### CMake Version ##############################################################
 
+#variable_watch(INCLUDE_FRUSA_GEOMETRY)
 cmake_minimum_required(VERSION 3.16...3.22)
 
 ################################################################################
@@ -25,7 +26,7 @@ set(META_VERSION       "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSI
 
 message( STATUS ">> Building ${META_PROJECT_NAME} executable v${META_VERSION}")
 
-project(${META_PROJECT_NAME} 
+project(${META_PROJECT_NAME}
         VERSION ${META_VERSION}
         DESCRIPTION ${META_DESCRIPTION}
         LANGUAGES CXX)
@@ -47,7 +48,7 @@ set (CMAKE_CXX_STANDARD 20)
 
 ################################################################################
 
-set(MODEL_TYPE 
+set(MODEL_TYPE
     "default" CACHE STRING
     "User-defined option for model library")
 

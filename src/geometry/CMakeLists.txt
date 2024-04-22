@@ -7,9 +7,9 @@ set(SOURCE_GEOMETRY
 ### Create the geometry library and include the header directories
 add_library(geometry_library
             ${SOURCE_GEOMETRY}
-            ${HEADER_GEOMETRY}
-            ${HEADER_THIRDPARTY}
-            ${HEADER_UTILITY})
+            ${HEADER_FRUSA_GEOMETRY}
+            ${HEADER_FRUSA_THIRDPARTY}
+            ${HEADER_FRUSA_UTILITY})
 
 target_include_directories(geometry_library PUBLIC
                            ${INCLUDE_FRUSA_GEOMETRY}

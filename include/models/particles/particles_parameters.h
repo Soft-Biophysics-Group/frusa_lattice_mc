@@ -13,11 +13,11 @@ typedef std::mt19937 EngineType;
 
 using json = nlohmann::json;
 
-namespace lattice_particles_space {
+namespace particles_space {
 
 // Specific type alias for the contact map/couplings, in case we want to change
 // it down the line
-using ContactMap = vec1d;
+// TODO Remove this type
 
 // Enum for the different types of possible particle moves.
 enum mc_moves {
@@ -59,12 +59,8 @@ struct model_parameters_struct {
   model_parameters_struct()
       : model_parameters_struct("./input/model_params.json"){};
   int n_types{};
-  int n_orientations{};
-  int lx{};
-  int ly{};
-  int lz{};
   vec1i n_particles{};
-  ContactMap couplings{};
+  vec1d couplings{};
   EngineType rng{};
   std::string initialize_option{};
   std::string state_input{};

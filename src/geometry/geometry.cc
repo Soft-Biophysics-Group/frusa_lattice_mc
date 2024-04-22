@@ -2,17 +2,41 @@
 #include "triangular.h"
 #include <stdexcept>
 
+using json = nlohmann::json;
+
 namespace geometry_space {
+
+lattice_options get_lattice_from_str(std::string& lattice_str) {
+  for (std::size_t i {0}; i < lattice_options::n_lattices; ++i) {
+    if (lattice_str == lattice_str_arr[i]) {
+      return static_cast<lattice_options>(i);
+    }
+  }
+  throw(std::runtime_error("Invalid lattice name provided.\nOptions are: "
+                           "chain, square, triangular, cubic, bcc, fcc"));
+}
+
 Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
     : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz} {
-  switch (lattice_m) {
-  case lattice_options::triangular:
-    n_neighbours_m = 6;
-    n_orientations_m = 6;
-    break;
-  default:
-    throw(std::runtime_error("Invalid lattice option"));
+  set_lattice_properties();
+}
+
+Geometry::Geometry(std::string& geometry_input)
+{
+  std::ifstream geometry_input_f{geometry_input};
+  if (!geometry_input_f) {
+    std::cerr << "Could not open geometry model parameters file" << '\n';
+    exit(1);
   }
+
+  json json_geometry = json::parse(geometry_input_f);
+
+  std::string lattice_str{
+      json_geometry["lattice_name"].template get<std::string>()};
+  lattice_m = get_lattice_from_str(lattice_str);
+  lx_m = json_geometry["lx"].template get<int>();
+  ly_m = json_geometry["ly"].template get<int>();
+  lz_m = json_geometry["lz"].template get<int>();
 }
 
 int Geometry::get_neighbour(const int site_ind, const int bond_ind) const {
@@ -75,6 +99,17 @@ double Geometry::get_interaction(const int site_1_orientation,
       )};
   return flat_interaction_matrix[interaction_index];
   }
+
+void Geometry::set_lattice_properties() {
+  switch (lattice_m) {
+  case lattice_options::triangular:
+    n_neighbours_m = 6;
+    n_orientations_m = 6;
+    break;
+  default:
+    throw(std::runtime_error("Invalid lattice option"));
+  }
+}
 
 int get_interaction_index(const int face_1, const int face_2,
                           const int n_orientations) {

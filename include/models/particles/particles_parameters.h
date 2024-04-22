@@ -8,6 +8,7 @@
 #include <json.hpp>
 
 #include "vector_utils.h"
+#include "geometry.h"
 
 typedef std::mt19937 EngineType;
 
@@ -17,6 +18,7 @@ namespace lattice_particles_space {
 
 // Specific type alias for the contact map/couplings, in case we want to change
 // it down the line
+// TODO Remove this type
 using ContactMap = vec1d;
 
 // Enum for the different types of possible particle moves.
@@ -59,16 +61,13 @@ struct model_parameters_struct {
   model_parameters_struct()
       : model_parameters_struct("./input/model_params.json"){};
   int n_types{};
-  int n_orientations{};
-  int lx{};
-  int ly{};
-  int lz{};
   vec1i n_particles{};
   ContactMap couplings{};
   EngineType rng{};
   std::string initialize_option{};
   std::string state_input{};
   move_probas_arr move_probas{};
+  Geometry geometry{};
   // TODO Add code to get option from json; understand what these do
   bool e_av_option {true};
   bool e_av_output {true};

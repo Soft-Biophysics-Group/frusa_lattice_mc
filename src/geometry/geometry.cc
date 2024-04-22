@@ -17,7 +17,7 @@ lattice_options get_lattice_from_str(std::string& lattice_str) {
 }
 
 Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
-    : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz} {
+    : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz}, n_sites_m {lx*ly*lz} {
   set_lattice_properties();
 }
 
@@ -37,6 +37,7 @@ Geometry::Geometry(std::string& geometry_input)
   lx_m = json_geometry["lx"].template get<int>();
   ly_m = json_geometry["ly"].template get<int>();
   lz_m = json_geometry["lz"].template get<int>();
+  n_sites_m = lx_m * ly_m * lz_m;
 }
 
 int Geometry::get_neighbour(const int site_ind, const int bond_ind) const {
@@ -57,6 +58,12 @@ int Geometry::get_bond(const int site_1_ind, const int site_2_ind) const {
   default:
     throw(std::runtime_error("Invalid lattice option"));
   }
+}
+
+bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
+  // We have encoded two non-neghbour sites as having n_neighbours+1
+  // orientations
+  return (get_bond(site_1_ind, site_2_ind) != n_neighbours_m);
 }
 
 // TODO Uncomment if necessary, delete otherwise
@@ -91,14 +98,19 @@ double Geometry::get_interaction(const int site_1_orientation,
                                  const int site_1_ind,
                                  const int site_2_orientation,
                                  const int site_2_ind,
-                                 const vec1d flat_interaction_matrix) const {
-  std::size_t interaction_index{
-    static_cast<std::size_t>(
-      get_interaction_index(
-        site_1_orientation, site_1_ind, site_2_orientation, site_2_ind)
-      )};
+                                 const vec1d& flat_interaction_matrix) const {
+  std::size_t interaction_index{static_cast<std::size_t>(get_interaction_index(
+      site_1_orientation, site_1_ind, site_2_orientation, site_2_ind))};
   return flat_interaction_matrix[interaction_index];
-  }
+}
+
+std::ostream &operator<<(std::ostream &out, Geometry &geometry) {
+  out << "Number of possible particle orientations:"
+      << geometry.n_orientations_m << '\n';
+  out << "Lattice dimensions:" << '(' << geometry.lx_m << ", " << geometry.ly_m
+      << ", " << geometry.lz_m << ")\n";
+  return out;
+}
 
 void Geometry::set_lattice_properties() {
   switch (lattice_m) {

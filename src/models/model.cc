@@ -4,6 +4,14 @@
 #include "model.h"
 
 namespace model_space{
+  model_parameters_struct::model_parameters_struct(model_options model) {
+    switch (model) {
+      case fields:
+          ;
+      default:
+          ;
+    }
+  }
   model::model(){
     /*
      * Initialize the system of particles and calculate the initial energy

@@ -3,20 +3,42 @@
 
 #include "vector_utils.h"
 #include <map>
+using BondIndexMap = std::map<std::array<int,3> , int>;
+
 namespace geometry_space {
 namespace triangular_space {
-struct bond_permutation_struct {
-  static inline vec2i bond_permutations{{{0, 1, 2, 3, 4, 5},
-                                         {1, 2, 3, 4, 5, 0},
-                                         {2, 3, 4, 5, 0, 1},
-                                         {3, 4, 5, 0, 1, 2},
-                                         {4, 5, 0, 1, 2, 3},
-                                         {5, 0, 1, 2, 3, 4}}};
+struct bond_struct {
+  static inline const vec2i bond_permutation{{
+      {0, 1, 2, 3, 4, 5},
+      {1, 2, 3, 4, 5, 0},
+      {2, 3, 4, 5, 0, 1},
+      {3, 4, 5, 0, 1, 2},
+      {4, 5, 0, 1, 2, 3},
+      {5, 0, 1, 2, 3, 4},
+  }}; //bond_permutation
+
   //static inline const std::unordered_map<vec1i, int> bond_indices{
-  static inline vec2i bond_directions{{1, 0, 0},  {1, 1, 0},   {-1, 1, 0},
-                                      {-1, 0, 0}, {-1, -1, 0}, {1, -1, 0}};
+  static inline const vec2i bond_array{
+    { 1,  0, 0},
+    { 1,  1, 0},
+    {-1,  1, 0},
+    {-1,  0, 0},
+    {-1, -1, 0},
+    { 1, -1, 0},
+  }; //bond_directions
+
+  static inline const BondIndexMap bond_index{
+    { { 1,  0, 0}, 0 },
+    { { 1,  1, 0}, 1 },
+    { {-1,  1, 0}, 2 },
+    { {-1,  0, 0}, 3 },
+    { {-1, -1, 0}, 4 },
+    { { 1, -1, 0}, 5 },
+  }; //bond_index
 };
-} // namespace triangular_space
+static constexpr int n_neighbours{6};
+static constexpr int n_orientations{6};
+} // triangular_space
 } // namespace geometry_space
 
 #endif

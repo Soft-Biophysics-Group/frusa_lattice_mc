@@ -8,6 +8,8 @@
 #include <array>
 #include <string>
 
+using BondIndexMap = std::map<std::array<int,3> , int>;
+
 namespace geometry_space {
 // Vectors of vectors giving the permutation indices for all the possible bond
 // orientations.
@@ -26,9 +28,26 @@ static const inline std::array<std::string, lattice_options::n_lattices>
 
 lattice_options get_lattice_from_str(std::string& lattice_str);
 
+struct bond_struct{
+  // TODO Write this constructor with switch cases
+  bond_struct() = default;
+  bond_struct(lattice_options lattice);
+  vec2i bond_permutation{};
+  vec2i bond_array{};
+  BondIndexMap bond_index{};
+};
+
+
+//struct bond_structure {
+  //// TODO Write this constructor with switch cases
+  //bond_structure(lattice_options lattice);
+  //vec2i bond_permutation{};
+  //vec2i bond_array{};
+  //std::map<int[3], unsigned int> bond_index{};
+//};
+
 class Geometry {
 public:
-  Geometry() = default;
   Geometry(lattice_options lattice, int lx, int ly, int lz=1);
   Geometry(std::string& geometry_input);
   // Simple getters
@@ -58,8 +77,7 @@ private:
   int n_neighbours_m {2};
   int n_orientations_m {2};
   int n_sites_m {1};
-  vec2i bond_permutations_m{};
-  vec2i bond_directions_m{};
+  bond_struct bond_struct_m;
   void set_lattice_properties();
 };
 

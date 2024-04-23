@@ -39,8 +39,7 @@ Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
   set_lattice_properties();
 }
 
-Geometry::Geometry(std::string& geometry_input)
-{
+Geometry::Geometry(const std::string &geometry_input) {
   std::ifstream geometry_input_f{geometry_input};
   if (!geometry_input_f) {
     std::cerr << "Could not open geometry model parameters file" << '\n';

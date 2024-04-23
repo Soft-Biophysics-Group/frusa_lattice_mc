@@ -130,7 +130,7 @@ void print_state(state_struct &state);
 // Save the state of the lattice to a file "state_output"
 // First line of the file is a list of all the sites' particle types
 // Second line is the list of particle orientations
-void save_state(state_struct &state, std::string state_output);
+void save_state(state_struct &state, std::string& state_output);
 
 /*
  * End of the required definitions for the model class

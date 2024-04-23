@@ -26,7 +26,7 @@ void initialize_state(state_struct &state,
   state.full_empty_sites = FullEmptySites(state);
 }
 
-void save_state(state_struct &state, std::string state_output) {
+void save_state(state_struct &state, std::string& state_output) {
   std::ofstream state_f;
   state_f.open(state_output);
   if (!state_f) {

@@ -45,6 +45,9 @@ private:
    * Private variables
    */
 
+  // Geometry of the lattice
+  geometry_space::Geometry geometry;
+
   // Parameters from the input file
   particles_space::model_parameters_struct parameters;
 
@@ -71,7 +74,7 @@ public:
   void print_model_state();
 
   // Save the current state of the system to a file "state_output"
-  void save_model_state(std::string state_output);
+  void save_model_state(std::string& state_output);
 
   // Print the information about interactions in the current state of the
   // system

@@ -49,7 +49,7 @@ struct bond_struct{
 class Geometry {
 public:
   Geometry(lattice_options lattice, int lx, int ly, int lz=1);
-  Geometry(std::string& geometry_input);
+  Geometry(const std::string& geometry_input="input/model_params.json");
   // Simple getters
   int get_n_orientations() const { return n_orientations_m; };
   int get_n_sites() const { return n_sites_m; };

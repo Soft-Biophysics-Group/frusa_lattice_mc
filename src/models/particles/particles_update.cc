@@ -53,23 +53,26 @@ double attempt_swap_sites(int index1, int index2, state_struct &state,
                           interactions_struct &interactions,
                           geometry_space::Geometry geometry, double T) {
   double energy_change{0.0};
-  bool sites_are_neighbours{geometry.are_neighbours(index1, index2)};
+  int bond {geometry.get_bond(index1, index2)};
+  int site_1_orientation{state.lattice_sites.get_orientation(index1)};
+  int site_2_orientation{state.lattice_sites.get_orientation(index2)};
+  bool sites_are_neighbours{geometry.are_neighbours(bond)};
   //std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
   // Initial energy, possibly including neighbour correction
   energy_change -= get_site_energy(state, interactions, geometry, index1) +
                    get_site_energy(state, interactions, geometry, index2);
   // If the sites are neighbours, we need to avoid double counting
   if (sites_are_neighbours) {
-    energy_change +=
-        get_contact_energy(state, index1, index2, interactions, geometry);
+    energy_change += geometry.get_interaction(
+        site_1_orientation, site_2_orientation, bond, interactions.couplings);
   }
   // Make move and calculate energy after
   swap_sites(state, index1, index2);
   energy_change += get_site_energy(state, interactions, geometry, index1) +
                    get_site_energy(state, interactions, geometry, index2);
   if (sites_are_neighbours) {
-    energy_change -=
-        get_contact_energy(state, index1, index2, interactions, geometry);
+    energy_change -= geometry.get_interaction(
+        site_1_orientation, site_2_orientation, bond, interactions.couplings);
   }
   //std::cout << "Energy change is: " << energy_change << '\n' ;
   // Accept or reject move

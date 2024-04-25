@@ -37,19 +37,12 @@ struct bond_struct{
   BondIndexMap bond_index{};
 };
 
-
-//struct bond_structure {
-  //// TODO Write this constructor with switch cases
-  //bond_structure(lattice_options lattice);
-  //vec2i bond_permutation{};
-  //vec2i bond_array{};
-  //std::map<int[3], unsigned int> bond_index{};
-//};
+std::ostream& operator<< (std::ostream& out, bond_struct& bonds);
 
 class Geometry {
 public:
-  Geometry(lattice_options lattice, int lx, int ly, int lz=1);
-  Geometry(const std::string& geometry_input="input/model_params.json");
+  Geometry(lattice_options lattice, int lx, int ly, int lz = 1);
+  Geometry(const std::string &geometry_input = "input/model_params.json");
   // Simple getters
   int get_n_orientations() const { return n_orientations_m; };
   int get_n_sites() const { return n_sites_m; };
@@ -57,15 +50,29 @@ public:
   // More involved functions
   int get_neighbour(const int site_ind, const int bond_ind) const;
   int get_bond(const int site_1_ind, const int site_2_ind) const;
-  //template <int N>
-    //arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind) const;
+  // template <int N>
+  // arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind)
+  // const;
   int get_interaction_coeff(const int site_orientation, const int bond) const;
+  int get_interaction_index(const int site_1_orientation,
+                            const int site_2_orientation, const int bond) const;
   int get_interaction_index(const int site_1_orientation, const int site_1_ind,
                             const int site_2_orientation,
-                            const int site_2_ind) const;
+                            const int site_2_ind) const {
+    return get_interaction_index(site_1_orientation, site_2_orientation,
+                                 get_bond(site_1_ind, site_2_ind));
+  };
+  double get_interaction(const int site_1_orientation,
+                         const int site_2_orientation, const int bond,
+                         const vec1d &flat_interaction_matrix) const;
   double get_interaction(const int site_1_orientation, const int site_1_ind,
                          const int site_2_orientation, const int site_2_ind,
-                         const vec1d& flat_interaction_matrix) const;
+                         const vec1d &flat_interaction_matrix) const {
+    return get_interaction(site_1_orientation, site_2_orientation,
+                           get_bond(site_1_ind, site_2_ind),
+                           flat_interaction_matrix);
+  }
+  bool are_neighbours(const int bond_index);
   bool are_neighbours(const int site_1_ind, const int site_2_ind);
   friend std::ostream& operator<< (std::ostream& out, Geometry& geometry);
 

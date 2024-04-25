@@ -6,6 +6,7 @@
 
 #include <array>
 #include <vector>
+#include <iostream>
 
 typedef std::vector<int> vec1i;
 typedef std::vector<double> vec1d;
@@ -46,15 +47,34 @@ int mod(int a, int b);
 
 template <typename T>
 void print_vector(std::ostream &out, const std::vector<T> &vec) {
-  for (T elem : vec)
-    out << elem << ',';
+  out << '{';
+  for (T coeff : vec) {
+    out << coeff << ", ";
+  }
+  out << "}";
 }
 
-template <typename T, int N>
-void print_array(std::ostream &out, const std::array<T, N> &vec) {
-  for (T elem : vec)
-    out << elem << ',';
+
+template <typename T>
+void print_vector_2d(std::ostream &out, const std::vector<std::vector<T>> &vec_vec) {
+  out << "{\n";
+  for (const vec1i& vec : vec_vec) {
+    print_vector<T>(out, vec);
+    out << ",\n";
+  }
+  out << "}";
 }
+
+template <typename T, std::size_t N>
+void print_array(std::ostream &out, const std::array<T, N> &vec) {
+  out << '{';
+  for (T coeff : vec) {
+    out << coeff << ", ";
+  }
+  out << "}";
+}
+
+
 } // namespace array_space
 
 #endif

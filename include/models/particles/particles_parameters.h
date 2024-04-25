@@ -21,11 +21,20 @@ namespace particles_space {
 
 // Enum for the different types of possible particle moves.
 enum mc_moves {
-  swap_empty_full_enum,
-  swap_full_full_enum,
-  rotate_enum,
-  mutate_enum,
+  swap_empty_full,
+  swap_full_full,
+  rotate,
+  mutate,
+  rotate_and_move,
   n_enum_moves
+};
+
+static const inline std::array<std::string, n_enum_moves> mc_moves_str{
+    "swap_empty_full",
+    "swap_full_full",
+    "rotate",
+    "mutate",
+    "rotate_and_move"
 };
 
 // User-supplied array of probabilities of selecting each type of move during

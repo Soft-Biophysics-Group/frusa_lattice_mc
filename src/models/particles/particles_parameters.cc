@@ -1,4 +1,5 @@
 #include "particles_parameters.h"
+#include "vector_utils.h"
 
 namespace particles_space {
 
@@ -57,8 +58,19 @@ move_probas_arr get_move_probas(const std::string &model_input_file) {
     exit(1);
   }
   json mc_json{json::parse(mc_json_f)};
-  move_probas_arr move_probas{
-      mc_json["move_probas"].template get<move_probas_arr>()};
+  std::map<std::string, double> move_map{
+      mc_json["move_probas"].template get<std::map<std::string, double>>()};
+  // Initialize array of move probabilities filled with zeros
+  move_probas_arr move_probas{};
+  move_probas.fill(0.0);
+  for (std::size_t move{0}; move < mc_moves::n_enum_moves; move++) {
+    const std::string &move_name{mc_moves_str[move]};
+    // look for entry with the name of the move and assign the right
+    // probability if it exists
+    if (move_map.contains(move_name)) {
+      move_probas[move] = move_map[move_name];
+    }
+  }
   // Move probabilities have to sum to 1
   if ((std::accumulate(move_probas.begin(), move_probas.end(), 0.) != 1.0)) {
     throw std::runtime_error("Move probabilities do not sum to 1!");

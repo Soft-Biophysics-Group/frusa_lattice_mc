@@ -12,19 +12,19 @@ void update_system(state_struct &state, interactions_struct &interactions,
     mc_moves chosen_move{pick_random_move(parameters)};
     //std::cout << chosen_move << '\n';
     switch (chosen_move) {
-    case mc_moves::swap_empty_full_enum:
+    case mc_moves::swap_empty_full:
       interactions.energy +=
           attempt_swap_empty_full(state, parameters, interactions, geometry, T);
       break;
-    case mc_moves::swap_full_full_enum:
+    case mc_moves::swap_full_full:
       interactions.energy +=
           attempt_swap_full_full(state, parameters, interactions, geometry, T);
       break;
-    case mc_moves::rotate_enum:
+    case mc_moves::rotate:
       interactions.energy +=
           attempt_rotate(state, parameters, interactions, geometry, T);
       break;
-    case mc_moves::mutate_enum:
+    case mc_moves::mutate:
       interactions.energy +=
           attempt_mutate(state, parameters, interactions, geometry, T);
       break;

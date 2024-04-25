@@ -2,11 +2,21 @@
 
 ## Future
 
+* Next: Change the geometry class to accept user input
+* Next: Change the geometry class to take into account full 3D geometry (not just face-face
+  contacts)
+* Next: Implement Python classes to generate the interaction matrix
+
 ### General
 
 * Documentation (priority)
 * Geometry class (priority)
 * Write an interface for running jobs
+
+### Testing
+
+* V: I have for now added a `test/test_geometry.cc` file, the contents of which can be
+  copy-pasted into `app/main.cc` in order to test the Geometry class we have written.
 
 ### `fields` model on branch `fields_dev`
 
@@ -18,9 +28,9 @@
 
 ### JSON
 
-The relevant header for `nlohmann::json` c++ library is located 
-in `include/thirdparty/`. 
-The python `json` library is a built-in module. 
+The relevant header for `nlohmann::json` c++ library is located
+in `include/thirdparty/`.
+The python `json` library is a built-in module.
 
 
 ## Building using cmake
@@ -39,7 +49,7 @@ Currently, the available `<MODEL_NAME>` options are:
 
 * `default` - two-state system (__stable__)
 * `fields_chain` - concentration fields on a 1D lattice
-* `fields_square` - concentration fields on a 2d square lattice 
+* `fields_square` - concentration fields on a 2d square lattice
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
 
 ### Creating a custom `model` class

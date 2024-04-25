@@ -12,15 +12,19 @@
 int main(){
   std::cout << "Program runs!\n";
 
-  model_space::model new_model;
+  particles_space::move_probas_arr test{
+      particles_space::get_move_probas("input/model_params.json")};
+  array_space::print_array(std::cout, test);
 
-  new_model.print_model_state();
-  new_model.print_model_interactions();
+  //model_space::model new_model;
 
-  simulation_space::mc annealing;
-  annealing.print_mc_parameters();
+  //new_model.print_model_state();
+  //new_model.print_model_interactions();
 
-  annealing.t_scan(new_model);
+  //simulation_space::mc annealing;
+  //annealing.print_mc_parameters();
+
+  //annealing.t_scan(new_model);
 
   return 0;
 }

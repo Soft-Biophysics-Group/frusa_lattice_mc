@@ -28,6 +28,10 @@ void update_system(state_struct &state, interactions_struct &interactions,
       interactions.energy +=
           attempt_mutate(state, parameters, interactions, geometry, T);
       break;
+    case mc_moves::rotate_and_swap_w_empty:
+      interactions.energy += attempt_rotate_and_swap_w_empty(
+          state, parameters, interactions, geometry, T);
+      break;
     default:
       throw std::runtime_error("Something went wrong in the move selection");
     }
@@ -48,32 +52,59 @@ mc_moves pick_random_move(model_parameters_struct &parameters) {
   return static_cast<mc_moves>(move_index);
 }
 
+
+// Function specifically to perform random rotations to avoid code reuse
+int perform_random_rotation(state_struct &state,
+                            model_parameters_struct &parameters,
+                            int site_index) {
+  int_dist rot_dist{0, state.n_orientations-1};
+  int new_orientation{rot_dist(parameters.rng)};
+  int old_orientation{state.lattice_sites.get_orientation(site_index)};
+  // Let's avoid doing a rotation to the same orientation as before
+  while (new_orientation == old_orientation)
+    new_orientation = rot_dist(parameters.rng);
+  //std::cout << "Attempting rotation of site " << site_index
+            //<< " with orientation " << old_orientation << " to "
+            //<< new_orientation << '\n';
+  state.lattice_sites.set_orientation(site_index, new_orientation);
+
+  return old_orientation;
+}
+
+double measure_pair_energy(int index1, int index2, int bond,
+                           state_struct &state,
+                           interactions_struct &interactions,
+                           geometry_space::Geometry &geometry) {
+  double energy {0.0};
+  int site_1_orientation{state.lattice_sites.get_orientation(index1)};
+  int site_2_orientation{state.lattice_sites.get_orientation(index2)};
+  bool sites_are_neighbours{geometry.are_neighbours(bond)};
+  energy += get_site_energy(state, interactions, geometry, index1) +
+            get_site_energy(state, interactions, geometry, index2);
+
+  if (sites_are_neighbours) {
+    energy += geometry.get_interaction(site_1_orientation, site_2_orientation,
+                                       bond, interactions.couplings);
+  }
+
+  return energy;
+}
+
 double attempt_swap_sites(int index1, int index2, state_struct &state,
                           model_parameters_struct &parameters,
                           interactions_struct &interactions,
                           geometry_space::Geometry geometry, double T) {
   double energy_change{0.0};
   int bond {geometry.get_bond(index1, index2)};
-  int site_1_orientation{state.lattice_sites.get_orientation(index1)};
-  int site_2_orientation{state.lattice_sites.get_orientation(index2)};
-  bool sites_are_neighbours{geometry.are_neighbours(bond)};
   //std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
   // Initial energy, possibly including neighbour correction
-  energy_change -= get_site_energy(state, interactions, geometry, index1) +
-                   get_site_energy(state, interactions, geometry, index2);
+  energy_change -=
+      measure_pair_energy(index1, index2, bond, state, interactions, geometry);
   // If the sites are neighbours, we need to avoid double counting
-  if (sites_are_neighbours) {
-    energy_change += geometry.get_interaction(
-        site_1_orientation, site_2_orientation, bond, interactions.couplings);
-  }
   // Make move and calculate energy after
   swap_sites(state, index1, index2);
-  energy_change += get_site_energy(state, interactions, geometry, index1) +
-                   get_site_energy(state, interactions, geometry, index2);
-  if (sites_are_neighbours) {
-    energy_change -= geometry.get_interaction(
-        site_1_orientation, site_2_orientation, bond, interactions.couplings);
-  }
+  energy_change +=
+      measure_pair_energy(index1, index2, bond, state, interactions, geometry);
   //std::cout << "Energy change is: " << energy_change << '\n' ;
   // Accept or reject move
   if (is_move_accepted(energy_change, T, parameters)) {
@@ -121,18 +152,7 @@ double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
   int site_index{state.full_empty_sites.get_random_full_site(parameters)};
   double energy_change{-get_site_energy(state, interactions, geometry, site_index)};
 
-  // Lower bound for orientation is 1, as orientation 0 corresponds
-  // to an empty site
-  int_dist rot_dist{0, state.n_orientations-1};
-  int new_orientation{rot_dist(parameters.rng)};
-  int old_orientation{state.lattice_sites.get_orientation(site_index)};
-  // Let's avoid doing a rotation to the same orientation as before
-  while (new_orientation == old_orientation)
-    new_orientation = rot_dist(parameters.rng);
-  //std::cout << "Attempting rotation of site " << site_index
-            //<< " with orientation " << old_orientation << " to "
-            //<< new_orientation << '\n';
-  state.lattice_sites.set_orientation(site_index, new_orientation);
+  int old_orientation{perform_random_rotation(state, parameters, site_index)};
   energy_change += get_site_energy(state, interactions, geometry, site_index);
   //std::cout << "Energy change is: " << energy_change << '\n' ;
   if (is_move_accepted(energy_change, T, parameters)) {
@@ -171,6 +191,40 @@ double attempt_mutate(state_struct &state, model_parameters_struct &parameters,
   } else {
     //std::cout << "Move rejected!\n";
     state.lattice_sites.set_type(site_index, old_type);
+    return 0.0;
+  }
+}
+
+double attempt_rotate_and_swap_w_empty(state_struct &state,
+                                       model_parameters_struct &parameters,
+                                       interactions_struct &interactions,
+                                       geometry_space::Geometry geometry,
+                                       double T) {
+  int full_site_index{state.full_empty_sites.get_random_full_site(parameters)};
+  int empty_site_index{
+      state.full_empty_sites.get_random_empty_site(parameters)};
+  int old_full_orientation{
+      perform_random_rotation(state, parameters, full_site_index)};
+  // BOOOOOOOO! Code reuse is bad, I need to do better than this!!!
+  double energy_change{0.0};
+  int bond{geometry.get_bond(full_site_index, empty_site_index)};
+  // std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
+  //  Initial energy, possibly including neighbour correction
+  energy_change -= measure_pair_energy(full_site_index, empty_site_index, bond,
+                                       state, interactions, geometry);
+  // If the sites are neighbours, we need to avoid double counting
+  // Make move and calculate energy after
+  swap_sites(state, full_site_index, empty_site_index);
+  energy_change += measure_pair_energy(full_site_index, empty_site_index, bond,
+                                       state, interactions, geometry);
+  // std::cout << "Energy change is: " << energy_change << '\n' ;
+  //  Accept or reject move
+  if (is_move_accepted(energy_change, T, parameters)) {
+    // std::cout << "Move accepted!\n" ;
+    return energy_change;
+  } else {
+    swap_sites(state, full_site_index, empty_site_index);
+    state.lattice_sites.set_orientation(full_site_index, old_full_orientation);
     return 0.0;
   }
 }

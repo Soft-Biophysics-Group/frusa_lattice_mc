@@ -23,7 +23,6 @@ void update_system(state_struct &state, interactions_struct &interactions,
                    model_parameters_struct &parameters,
                    geometry_space::Geometry geometry, double T);
 
-
 /*
  * End of the required definitions for the model class
  */
@@ -43,6 +42,16 @@ std::size_t select_random_full_index(state_struct &state,
 std::size_t select_random_empty_index(state_struct &state,
                                       model_parameters_struct &parameters);
 
+// Function specifically to perform random rotations to avoid code reuse
+// Returns the orientation of the particle before rotation
+int perform_random_rotation(state_struct &state,
+                            model_parameters_struct &parameters,
+                            int site_index);
+
+double measure_pair_energy(int index1, int index2, int bond,
+                           state_struct &state,
+                           interactions_struct &interactions,
+                           geometry_space::Geometry &geometry);
 /*
  * The following functions perform a MC move and return the corresponding energy
  * difference.
@@ -65,6 +74,11 @@ double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
 double attempt_mutate(state_struct &state, model_parameters_struct &parameters,
                       interactions_struct &interactions,
                       geometry_space::Geometry geometry, double T);
+double attempt_rotate_and_swap_w_empty(state_struct &state,
+                                       model_parameters_struct &parameters,
+                                       interactions_struct &interactions,
+                                       geometry_space::Geometry geometry,
+                                       double T);
 
 // Accept or reject a move associated with energy delta_e at temperature T
 // according to the Metropolis-Hastings rule

@@ -3,9 +3,9 @@
 ## Future
 
 * Next: Change the geometry class to accept user input
-* Next: Change the geometry class to take into account full 3D geometry (not just face-face
-  contacts)
 * Next: Implement Python classes to generate the interaction matrix
+* When time: perform small refactor of the particles.update library, which is particularly
+  ugly and reuses code
 
 ### General
 

@@ -9,14 +9,40 @@ namespace geometry_space {
 namespace cubic_space {
 struct bond_struct {
   // See notes from 25/04, to be put cleaner
+  //static inline const vec2i bond_permutation{{
+    //{0, 1, 2, 3, 4, 5}, //E
+    //{1, 6, 2, 3, 0, 4}, // C4(z)-
+    //{2, 1, 5, 0, 4, 3}, // C4(y)+
+    //{3, 1, 0, 5, 4, 3}, // C4(y)-
+    //{4, 0, 2, 3, 5, 1}, // C4(x)+
+    //{5, 1, 3, 2, 4, 0}, // C4(y)+^2
+  //}}; //bond_permutation
   static inline const vec2i bond_permutation{{
-    {0, 1, 2, 3, 4, 5}, //E
-    {1, 6, 2, 3, 0, 4}, // C4(z)-
-    {2, 1, 5, 0, 4, 3}, // C4(y)+
-    {3, 1, 0, 5, 4, 3}, // C4(y)-
-    {4, 0, 2, 3, 5, 1}, // C4(x)+
-    {5, 1, 3, 2, 4, 0}, // C4(y)+^2
-  }}; //bond_permutation
+      {
+          0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+          12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+      }, // E
+      {
+          4,  5,  6,  7,  20, 21, 22, 23, 8,  9,  10, 11,
+          12, 13, 14, 15, 0,  1,  2,  3,  16, 17, 18, 19,
+      }, // C4(z)-
+      {
+          8, 9, 10, 11, 4,  5,  6,  7,  20, 21, 22, 23,
+          0, 1, 2,  3,  16, 17, 18, 19, 12, 13, 14, 15,
+      }, // C4(y)+
+      {
+          12, 13, 14, 15, 4,  5,  6,  7,  0,  1, 2,
+          3,  20, 21, 22, 23, 16, 17, 18, 19, 3,
+      }, // C4(y)-
+      {
+          16, 17, 18, 19, 0,  1,  2,  3,  8, 9, 10, 11,
+          12, 13, 14, 15, 20, 21, 22, 23, 4, 5, 6,  7,
+      }, // C4(x)+
+      {
+          20, 21, 22, 23, 4,  5,  6,  7,  12, 13, 14, 15,
+          8,  9,  10, 11, 16, 17, 18, 19, 0,  1,  2,  3,
+      }, // C4(y)+^2
+  }}; // bond_permutation
 
   //static inline const std::unordered_map<vec1i, int> bond_indices{
   static inline const vec2i bond_array{
@@ -36,7 +62,7 @@ struct bond_struct {
     { { 0, -1,  0}, 4 },
     { {-1,  0,  0}, 5 },
   }; //bond_index
-};
+}; // bond_structure
 static constexpr int n_neighbours{6};
 static constexpr int n_orientations{6};
 } // namespace cubic_space

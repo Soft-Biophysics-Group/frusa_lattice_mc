@@ -25,7 +25,7 @@ enum mc_moves {
   swap_full_full,
   rotate,
   mutate,
-  rotate_and_move,
+  rotate_and_swap_w_empty,
   n_enum_moves
 };
 
@@ -34,7 +34,7 @@ static const inline std::array<std::string, n_enum_moves> mc_moves_str{
     "swap_full_full",
     "rotate",
     "mutate",
-    "rotate_and_move"
+    "rotate_and_swap_w_empty"
 };
 
 // User-supplied array of probabilities of selecting each type of move during

@@ -27,9 +27,12 @@ double get_contact_energy(state_struct &state, int site1, int site2,
 
   int site_1_orientation {state.lattice_sites.get_orientation(site1)};
   int site_2_orientation {state.lattice_sites.get_orientation(site2)};
+  int site_1_type {state.lattice_sites.get_type(site1)};
+  int site_2_type {state.lattice_sites.get_type(site2)};
 
-  return geometry.get_interaction(site_1_orientation, site1, site_2_orientation,
-                                  site2, interactions.couplings);
+  return geometry.get_interaction(site_1_orientation, site_1_type, site1,
+                                  site_2_orientation, site_2_type, site2,
+                                  interactions.couplings);
 }
 
 double get_site_energy(state_struct &state, interactions_struct &interactions,

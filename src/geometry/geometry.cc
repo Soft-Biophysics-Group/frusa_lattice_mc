@@ -146,19 +146,22 @@ bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
   //}
 //}
 
-int Geometry::get_interaction_coeff(const int site_orientation, const int bond) const {
+int Geometry::get_interaction_coeff(const int site_orientation,
+                                    const int site_type, const int bond) const {
   std::size_t u_bond {static_cast<std::size_t>(bond)};
   const vec1i &permutation_table{bond_struct_m.bond_permutation[u_bond]};
 
   std::size_t u_orientation{static_cast<std::size_t>(site_orientation)};
-  return permutation_table[u_orientation];
+  return permutation_table[u_orientation] * (site_type+1);
 }
 
 int Geometry::get_interaction_index(const int site_1_orientation,
+                                    const int site_1_type,
                                     const int site_2_orientation,
+                                    const int site_2_type,
                                     const int bond) const {
-  int coeff_1{get_interaction_coeff(site_1_orientation, bond)};
-  int coeff_2{get_interaction_coeff(site_2_orientation, bond)};
+  int coeff_1{get_interaction_coeff(site_1_orientation, site_1_type, bond)};
+  int coeff_2{get_interaction_coeff(site_2_orientation, site_2_type, bond)};
   int interaction_index{};
   array_space::ij_to_r(interaction_index, coeff_1, coeff_2, n_orientations_m,
                        1);
@@ -166,10 +169,12 @@ int Geometry::get_interaction_index(const int site_1_orientation,
 }
 
 double Geometry::get_interaction(const int site_1_orientation,
-                                 const int site_2_orientation, const int bond,
+                                 const int site_1_type,
+                                 const int site_2_orientation,
+                                 const int site_2_type, const int bond,
                                  const vec1d &flat_interaction_matrix) const {
-  std::size_t interaction_index{static_cast<std::size_t>(
-      get_interaction_index(site_1_orientation, site_2_orientation, bond))};
+  std::size_t interaction_index{static_cast<std::size_t>(get_interaction_index(
+      site_1_orientation, site_1_type, site_2_orientation, site_2_type, bond))};
   return flat_interaction_matrix[interaction_index];
 }
 

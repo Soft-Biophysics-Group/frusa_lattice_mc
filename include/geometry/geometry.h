@@ -53,23 +53,29 @@ public:
   // template <int N>
   // arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind)
   // const;
-  int get_interaction_coeff(const int site_orientation, const int bond) const;
+  int get_interaction_coeff(const int site_orientation, const int site_type,
+                            const int bond) const;
   int get_interaction_index(const int site_1_orientation,
-                            const int site_2_orientation, const int bond) const;
-  int get_interaction_index(const int site_1_orientation, const int site_1_ind,
+                            const int site_1_type,
                             const int site_2_orientation,
-                            const int site_2_ind) const {
-    return get_interaction_index(site_1_orientation, site_2_orientation,
+                            const int site_2_type, const int bond) const;
+  int get_interaction_index(const int site_1_orientation, const int site_1_type,
+                            const int site_1_ind, const int site_2_orientation,
+                            const int site_2_type, const int site_2_ind) const {
+    return get_interaction_index(site_1_orientation, site_1_type,
+                                 site_2_orientation, site_2_type,
                                  get_bond(site_1_ind, site_2_ind));
   };
-  double get_interaction(const int site_1_orientation,
-                         const int site_2_orientation, const int bond,
+  double get_interaction(const int site_1_orientation, const int site_1_type,
+                         const int site_2_orientation, const int site_2_type,
+                         const int bond,
                          const vec1d &flat_interaction_matrix) const;
-  double get_interaction(const int site_1_orientation, const int site_1_ind,
-                         const int site_2_orientation, const int site_2_ind,
+  double get_interaction(const int site_1_orientation, const int site_1_type,
+                         const int site_1_ind, const int site_2_orientation,
+                         const int site_2_type, const int site_2_ind,
                          const vec1d &flat_interaction_matrix) const {
-    return get_interaction(site_1_orientation, site_2_orientation,
-                           get_bond(site_1_ind, site_2_ind),
+    return get_interaction(site_1_orientation, site_1_type, site_2_orientation,
+                           site_2_type, get_bond(site_1_ind, site_2_ind),
                            flat_interaction_matrix);
   }
   bool are_neighbours(const int bond_index);

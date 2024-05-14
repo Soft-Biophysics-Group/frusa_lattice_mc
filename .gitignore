@@ -8,3 +8,4 @@
 /test/build*/
 /input*/
 .cache/
+__pycache__/

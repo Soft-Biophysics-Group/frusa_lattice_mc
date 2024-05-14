@@ -19,8 +19,7 @@ void initialize_state(state_struct &state,
   state.n_orientations = geometry.get_n_orientations();
   state.n_particles = parameters.n_particles;
   state.n_states = state.n_types * state.n_orientations;
-  int total_n_particles{
-      std::accumulate(state.n_particles.begin(), state.n_particles.end(), 0)};
+  state.n_sites = geometry.get_n_sites();
   std::string option = parameters.initialize_option;
   state.lattice_sites = SiteVector(option, state, parameters);
   state.full_empty_sites = FullEmptySites(state);
@@ -37,6 +36,7 @@ void save_state(state_struct &state, std::string& state_output) {
   for (int i{0}; i < state.n_sites; i++) {
     state_f << state.lattice_sites.get_type(i) << ' ';
   }
+
   state_f << '\n';
   // And the particle orientations on line 2
   for (int i{0}; i < state.n_sites; i++) {
@@ -87,7 +87,7 @@ void initialize_state_random_fixed_particle_numbers(
     vec1i &types, vec1i &orientations, state_struct &state,
     model_parameters_struct &parameters) {
   // Orientation has to start at 1 so that the site is not empty
-  int_dist orientation_dist(1, state.n_orientations);
+  int_dist orientation_dist(0, state.n_orientations-1);
   // Fill the state until we get to the right number of particles of each
   // type
   std::size_t site_index{0};
@@ -121,7 +121,8 @@ void initialize_state_random_fixed_particle_numbers(
  *----------------------------------*/
 
 SiteVector::SiteVector(std::string &option, state_struct &state,
-                       model_parameters_struct &parameters) : n_orientations_m(state.n_orientations) {
+                       model_parameters_struct &parameters)
+    : n_orientations_m(state.n_orientations) {
   try {
     if (option == "from_file") {
       initialize_state_from_file(types_m, orientations_m, parameters);
@@ -164,7 +165,8 @@ int SiteVector::get_state(const int site_index) const {
 FullEmptySites::FullEmptySites(state_struct &state) {
   site_inds_to_full_empty_m =
       vec1s(static_cast<std::size_t>(state.n_sites));
-  for (int i{0}; i < state.n_sites; ++i) {
+    std::cout << state.n_sites << "\n" ;
+  for (int i{0}; i < state.n_sites; i++) {
     std::size_t u_i{static_cast<std::size_t>(i)};
     if (state.lattice_sites.is_empty(i)) {
       empty_sites_indices_m.push_back(u_i);
@@ -178,7 +180,7 @@ FullEmptySites::FullEmptySites(state_struct &state) {
 
 int FullEmptySites::get_random_full_site(model_parameters_struct &parameters) {
   int n_full_sites{static_cast<int>(full_sites_indices_m.size())};
-  int_dist full_sites_dist(0, n_full_sites);
+  int_dist full_sites_dist(0, n_full_sites-1);
   return static_cast<int>(full_sites_indices_m[static_cast<std::size_t>(
       full_sites_dist(parameters.rng))]);
 }
@@ -191,34 +193,36 @@ int FullEmptySites::get_random_empty_site(model_parameters_struct &parameters) {
 }
 
 // TODO Check I got the right indices
-void FullEmptySites::update_after_swap(const int initially_full_index,
-                                       const int initially_empty_index) {
-  const std::size_t u_initially_empty_index{
-      static_cast<std::size_t>(initially_empty_index)};
-  const std::size_t u_initially_full_index{
-      static_cast<std::size_t>(initially_full_index)};
+void FullEmptySites::update_after_swap(const int initially_full_site,
+                                       const int initially_empty_site) {
+  const std::size_t u_initially_empty_site{
+      static_cast<std::size_t>(initially_empty_site)};
+  const std::size_t u_initially_full_site{
+      static_cast<std::size_t>(initially_full_site)};
 
   // Fetch the indices where empty and full arrays store full_index and
   // empty_index
-  std::size_t empty_array_index{
-      site_inds_to_full_empty_m[u_initially_empty_index]};
-  std::size_t full_array_index{
-      site_inds_to_full_empty_m[u_initially_full_index]};
+  std::size_t index_in_empty_arr{
+      site_inds_to_full_empty_m[u_initially_empty_site]};
+  std::size_t index_in_full_arr{
+      site_inds_to_full_empty_m[u_initially_full_site]};
   // Update the corresponding locations in the arrays of full and empty site
   // indices
-  empty_sites_indices_m[empty_array_index] = u_initially_full_index;
-  full_sites_indices_m[full_array_index] = u_initially_empty_index;
+  empty_sites_indices_m[index_in_empty_arr] = u_initially_full_site;
+  full_sites_indices_m[index_in_full_arr] = u_initially_empty_site;
   // TODO Doable with std::swap?
-  site_inds_to_full_empty_m[u_initially_empty_index] = full_array_index;
-  site_inds_to_full_empty_m[u_initially_full_index] = empty_array_index;
+  site_inds_to_full_empty_m[u_initially_empty_site] = index_in_full_arr;
+  site_inds_to_full_empty_m[u_initially_full_site] = index_in_empty_arr;
 }
 
 void swap_sites(state_struct &state, int site_1_index, int site_2_index) {
   state.lattice_sites.swap_sites(site_1_index, site_2_index);
   if (state.lattice_sites.is_empty(site_1_index)) {
-    state.full_empty_sites.update_after_swap(site_2_index, site_1_index);
-  } else if (state.lattice_sites.is_empty(site_2_index)) {
+    //state.full_empty_sites.update_after_swap(site_2_index, site_1_index);
     state.full_empty_sites.update_after_swap(site_1_index, site_2_index);
+  } else if (state.lattice_sites.is_empty(site_2_index)) {
+    //state.full_empty_sites.update_after_swap(site_1_index, site_2_index);
+    state.full_empty_sites.update_after_swap(site_2_index, site_1_index);
   }
 }
 

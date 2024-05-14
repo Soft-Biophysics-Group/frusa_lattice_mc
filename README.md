@@ -4,6 +4,7 @@
 
 * Next: Change the geometry class to accept user input
 * Next: Implement Python classes to generate the interaction matrix
+* Next: Implement 1D lattice geometry and test the simulation on it first
 * When time: perform small refactor of the particles.update library, which is particularly
   ugly and reuses code
 

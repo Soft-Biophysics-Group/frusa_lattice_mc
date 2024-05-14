@@ -14,7 +14,7 @@ namespace geometry_space {
 // Vectors of vectors giving the permutation indices for all the possible bond
 // orientations.
 enum lattice_options {
-  one_dimension,
+  chain,
   square,
   triangular,
   cubic,
@@ -83,7 +83,7 @@ public:
   friend std::ostream& operator<< (std::ostream& out, Geometry& geometry);
 
 private:
-  lattice_options lattice_m {lattice_options::one_dimension};
+  lattice_options lattice_m {lattice_options::chain};
   int lx_m {1};
   int ly_m {1};
   int lz_m {1};

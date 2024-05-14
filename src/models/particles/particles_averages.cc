@@ -37,7 +37,7 @@ namespace particles_space {
       averages.e2_av/= mcs_av;
       vec1d output_vec = {T, averages.e_av, averages.e2_av};
       std::string output_file =
-          std::to_string(static_cast<int>(parameters.e_av_output)) +
+          parameters.e_av_output +
           "esf_av_T_" + std::to_string(T) + ".dat";
       io_space::save_vector(output_vec,7,output_file);
     }

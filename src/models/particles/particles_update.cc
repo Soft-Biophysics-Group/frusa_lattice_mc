@@ -10,6 +10,8 @@ void update_system(state_struct &state, interactions_struct &interactions,
   // Pick the kind of move we'll be making
   for (int i{0}; i < state.n_sites; i++) {
     mc_moves chosen_move{pick_random_move(parameters)};
+    std::cout << "\n\nChosen move:" << mc_moves_str[chosen_move] << '\n'
+              << "Orientations before move:" << state << '\n';
     //std::cout << chosen_move << '\n';
     switch (chosen_move) {
     case mc_moves::swap_empty_full:
@@ -35,6 +37,7 @@ void update_system(state_struct &state, interactions_struct &interactions,
     default:
       throw std::runtime_error("Something went wrong in the move selection");
     }
+  std::cout << "Orientation after move:" << state << '\n';
   }
 }
 

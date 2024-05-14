@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
-from pathlib import Path
 import numpy as np
 from json_dump import *
 import contact_utils as cu
+import config as cfg
 
 ### Define model parameters
 
@@ -12,7 +12,7 @@ model_params = {}
 
 # Options:
 # "chain", "square", "triangular", "cubic", "bcc", "fcc"
-model_params["lattice"] = "chain"
+model_params["lattice_name"] = "chain"
 
 # Lattice dimensions
 model_params["lx"] = 100
@@ -48,17 +48,13 @@ model_params["initialize_option"] = "random"
 model_params["state_av_option"] = True
 model_params["e_av_option"] = True
 
-data_path = Path("../data")
-averages_path = data_path/"average_state"
 if model_params["state_av_option"]:
-    averages_path.mkdir(parents=True,exist_ok=True)
-    model_params["state_av_output"] = str(averages_path)
+    cfg.averages_path.mkdir(parents=True,exist_ok=True)
+    model_params["state_av_output"] = str(cfg.averages_path)+"/"
 
-data_path = Path("../data")
-energy_path = data_path/"energy_moments"
 if model_params["e_av_option"]:
-    energy_path.mkdir(parents=True, exist_ok=True)
-    model_params["e_av_output"] = "./data/energy_moments/"
+    cfg.energy_path.mkdir(parents=True, exist_ok=True)
+    model_params["e_av_output"] = str(cfg.energy_path)+"/"
 
 # Pick the probabilities of different moves
 # Options:
@@ -77,7 +73,8 @@ moves_dict["rotate_and_swap_w_empty"] = 1/3
 
 model_params["move_probas"] = moves_dict
 
-make_json_file(model_params,"../input/model_params.json")
+print(cfg.input_path)
+make_json_file(model_params, cfg.input_path/"model_params.json")
 
 ### Define mc parameters
 
@@ -102,14 +99,15 @@ mc_params["Tf"] = -5
 mc_params["Nt"] = 10
 
 # Option to collect state checkpoints at the end of each temperature cycle
-mc_params["checkpoint_option"] = False
+mc_params["checkpoint_option"] = True
 
 # If checkpoint is True, we need to provide the output address for the 
 # checkpoint files
+print(cfg.structures_path)
 if mc_params["checkpoint_option"]:
-    mc_params["checkpoint_address"] = ""
+    mc_params["checkpoint_address"] = str(cfg.structures_path)+"/"
 
 # Output location of the final state configuration (must end with "/")
-mc_params["final_structure_address"] = "./"
+mc_params["final_structure_address"] = str(cfg.structures_path)+"/"
 
-make_json_file(mc_params,"../input/mc_params.json")
+make_json_file(mc_params, cfg.input_path/"mc_params.json")

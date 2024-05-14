@@ -26,6 +26,10 @@ model_parameters_struct::model_parameters_struct(
     state_input = json_model_params["state_input"].template get<std::string>();
   }
   move_probas = get_move_probas(input_file);
+  e_av_option = json_model_params["e_av_option"].template get<bool>();
+  e_av_output = json_model_params["e_av_output"].template get<std::string>();
+  state_av_option = json_model_params["state_av_option"].template get<bool>();
+  state_av_output = json_model_params["state_av_output"].template get<std::string>();
 }
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {

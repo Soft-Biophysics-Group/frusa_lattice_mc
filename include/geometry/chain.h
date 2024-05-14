@@ -37,8 +37,8 @@ namespace geometry_space {
     //void get_neighbour();
     //void get_interaction();
     //void get_interaction_indices();
-    static constexpr int n_neighbours{6};
-    static constexpr int n_orientations{6};
+    static constexpr int n_neighbours{2};
+    static constexpr int n_orientations{2};
 
   } // chain_space
 } // geometry_space

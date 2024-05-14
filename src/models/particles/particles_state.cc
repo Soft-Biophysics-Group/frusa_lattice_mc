@@ -125,7 +125,7 @@ SiteVector::SiteVector(std::string &option, state_struct &state,
   try {
     if (option == "from_file") {
       initialize_state_from_file(types_m, orientations_m, parameters);
-    } else if (option == "random_fixed_particle_numbers") {
+    } else if (option == "random") {
       initialize_state_random_fixed_particle_numbers(
           types_m, orientations_m, state, parameters);
     } else {

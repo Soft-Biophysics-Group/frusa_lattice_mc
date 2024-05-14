@@ -1,5 +1,6 @@
 #include "geometry.h"
 #include "triangular.h"
+#include "chain.h"
 #include "vector_utils.h"
 #include <stdexcept>
 
@@ -9,6 +10,14 @@ namespace geometry_space {
 
 bond_struct::bond_struct(lattice_options lattice) {
   switch (lattice) {
+    case chain:
+      bond_permutation =
+          chain_space::bond_struct::bond_permutation;
+      bond_array =
+          chain_space::bond_struct::bond_array;
+      bond_index =
+          chain_space::bond_struct::bond_index;
+      break;
     case triangular:
       bond_permutation =
           triangular_space::bond_struct::bond_permutation;
@@ -192,6 +201,10 @@ std::ostream &operator<<(std::ostream &out, Geometry &geometry) {
 
 void Geometry::set_lattice_properties() {
   switch (lattice_m) {
+  case lattice_options::chain:
+    n_neighbours_m = chain_space::n_neighbours;
+    n_orientations_m = chain_space::n_orientations;
+    break;
   case lattice_options::triangular:
     n_neighbours_m = triangular_space::n_neighbours;
     n_orientations_m = triangular_space::n_orientations;

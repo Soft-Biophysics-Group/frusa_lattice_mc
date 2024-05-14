@@ -78,13 +78,16 @@ double measure_pair_energy(int index1, int index2, int bond,
   double energy {0.0};
   int site_1_orientation{state.lattice_sites.get_orientation(index1)};
   int site_2_orientation{state.lattice_sites.get_orientation(index2)};
+  int site_1_type{state.lattice_sites.get_type(index1)};
+  int site_2_type{state.lattice_sites.get_type(index2)};
   bool sites_are_neighbours{geometry.are_neighbours(bond)};
   energy += get_site_energy(state, interactions, geometry, index1) +
             get_site_energy(state, interactions, geometry, index2);
 
   if (sites_are_neighbours) {
     energy += geometry.get_interaction(site_1_orientation, site_2_orientation,
-                                       bond, interactions.couplings);
+                                       site_1_type, site_2_type, bond,
+                                       interactions.couplings);
   }
 
   return energy;

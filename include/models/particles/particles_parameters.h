@@ -76,7 +76,9 @@ struct model_parameters_struct {
   move_probas_arr move_probas{};
   // TODO Add code to get option from json; understand what these do
   bool e_av_option {true};
-  bool e_av_output {true};
+  std::string e_av_output {};
+  bool state_av_option {true};
+  std::string state_av_output {};
 };
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params);

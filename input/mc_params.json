@@ -1,10 +1,10 @@
 {
-  "mcs_eq": 1,
+  "mcs_eq": 100,
   "mcs_av": 1,
   "cooling_schedule": "exponential",
   "Ti": 0,
   "Tf": -5,
-  "Nt": 2,
+  "Nt": 10,
   "checkpoint_option": true,
   "checkpoint_address": "/Users/vincent/research/coding/projects/2404_frusa_lattice_mc/data/structures/",
   "final_structure_address": "/Users/vincent/research/coding/projects/2404_frusa_lattice_mc/data/structures/"

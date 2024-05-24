@@ -1,4 +1,7 @@
 #include "particles_update.h"
+#include "particles_interactions.h"
+#include "particles_state.h"
+#include <iterator>
 #include <ranges>
 #include <stdexcept>
 
@@ -60,9 +63,9 @@ mc_moves pick_random_move(model_parameters_struct &parameters) {
 int perform_random_rotation(state_struct &state,
                             model_parameters_struct &parameters,
                             int site_index) {
+  int old_orientation{state.lattice_sites.get_orientation(site_index)};
   int_dist rot_dist{0, state.n_orientations-1};
   int new_orientation{rot_dist(parameters.rng)};
-  int old_orientation{state.lattice_sites.get_orientation(site_index)};
   // Let's avoid doing a rotation to the same orientation as before
   while (new_orientation == old_orientation)
     new_orientation = rot_dist(parameters.rng);
@@ -78,7 +81,7 @@ double measure_pair_energy(int index1, int index2, int bond,
                            state_struct &state,
                            interactions_struct &interactions,
                            geometry_space::Geometry &geometry) {
-  double energy {0.0};
+  double energy{0.0};
   int site_1_orientation{state.lattice_sites.get_orientation(index1)};
   int site_2_orientation{state.lattice_sites.get_orientation(index2)};
   int site_1_type{state.lattice_sites.get_type(index1)};
@@ -87,12 +90,17 @@ double measure_pair_energy(int index1, int index2, int bond,
   energy += get_site_energy(state, interactions, geometry, index1) +
             get_site_energy(state, interactions, geometry, index2);
 
-  if (sites_are_neighbours) {
-    energy += geometry.get_interaction(site_1_orientation, site_2_orientation,
+  // Issues arise if we measure interaction energies with an empty site.
+  // We thus avoid to do so by ensuring both sites are full.
+  // TODO
+  // This is a bit hacky, and should be fixed in future versions of the program
+  /*if (sites_are_neighbours) {*/
+  if (sites_are_neighbours and !state.lattice_sites.is_empty(index1) and
+      !state.lattice_sites.is_empty(index2)) {
+    energy -= geometry.get_interaction(site_1_orientation, site_2_orientation,
                                        site_1_type, site_2_type, bond,
                                        interactions.couplings);
   }
-
   return energy;
 }
 
@@ -209,41 +217,37 @@ double attempt_rotate_and_swap_w_empty(state_struct &state,
   int full_site_index{state.full_empty_sites.get_random_full_site(parameters)};
   int empty_site_index{
       state.full_empty_sites.get_random_empty_site(parameters)};
-  int old_full_orientation{
-      perform_random_rotation(state, parameters, full_site_index)};
-  // BOOOOOOOO! Code reuse is bad, I need to do better than this!!!
-  double energy_change{0.0};
   int bond{geometry.get_bond(full_site_index, empty_site_index)};
-  // std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
-  //  Initial energy, possibly including neighbour correction
-  energy_change -= measure_pair_energy(full_site_index, empty_site_index, bond,
-                                       state, interactions, geometry);
-  // If the sites are neighbours, we need to avoid double counting
-  // Make move and calculate energy after
+
+
+  double delta_e{-measure_pair_energy(full_site_index, empty_site_index, bond,
+                                     state, interactions, geometry)};
+
+  int old_orientation{
+      perform_random_rotation(state, parameters, full_site_index)};
   swap_sites(state, full_site_index, empty_site_index);
-  energy_change += measure_pair_energy(full_site_index, empty_site_index, bond,
-                                       state, interactions, geometry);
-  // std::cout << "Energy change is: " << energy_change << '\n' ;
-  //  Accept or reject move
-  if (is_move_accepted(energy_change, T, parameters)) {
-    // std::cout << "Move accepted!\n" ;
-    return energy_change;
+
+  delta_e += measure_pair_energy(full_site_index, empty_site_index, bond, state,
+                                 interactions, geometry);
+
+  if (is_move_accepted(delta_e, T, parameters)) {
+    return delta_e;
   } else {
     swap_sites(state, full_site_index, empty_site_index);
-    state.lattice_sites.set_orientation(full_site_index, old_full_orientation);
+    state.lattice_sites.set_orientation(full_site_index, old_orientation);
     return 0.0;
   }
 }
 
-bool is_move_accepted(double delta_e, double T,
-                      model_parameters_struct &parameters) {
-  if (delta_e < 0) {
-    return true;
-  } else {
-    real_dist proba_dist(0, 1);
-    double boltzmann_factor{std::exp(-delta_e / T)};
-    return boltzmann_factor > proba_dist(parameters.rng);
-  }
+  bool is_move_accepted(double delta_e, double T,
+                        model_parameters_struct &parameters) {
+    if (delta_e < 0) {
+      return true;
+    } else {
+      real_dist proba_dist(0, 1);
+      double boltzmann_factor{std::exp(-delta_e / T)};
+      return boltzmann_factor > proba_dist(parameters.rng);
+    }
 }
 
 } // namespace lattice_particles_space

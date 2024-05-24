@@ -116,8 +116,9 @@ namespace simulation_space{
                              std::to_string(i) + ".dat"};
         simulation_model.save_model_state(save_loc);
       }
-      std::cout << "Energy at T = " << T << ":\n";
+      std::cout << "Energy at T = " << T << ": ";
       simulation_model.print_model_energy();
+      std::cout << '\n' ;
     }
     std::string final_state_save_loc{parameters.final_structure_address +
                                      "final_structure.dat"};

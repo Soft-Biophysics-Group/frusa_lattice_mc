@@ -8,9 +8,9 @@ def flatten_couplings(coupling_arr) -> list:
 
 # SINGLE-TYPE SYSTEMS
 
-
 def block_pauli_x(n: int):
-    """ Returns the block Pauli x matrix of size n """
+    """ Returns the block Pauli x matrix of size n.
+    Necessary for moving from face-based to orientation-based matrices """
     if n % 2 != 0:
         print("Dimension should be even!")
         return np.zeros(n)
@@ -42,6 +42,13 @@ def block_block_pauli_x(n_faces: int, n_types: int):
 
 
 def chain_LEL_1type(one_to_one, two_to_two, one_to_two):
+    """ 
+        Returns orientation-based 1D interaction matrix.
+        Parameters:
+        - one_to_one: face 1 to face 1 interaction
+        - two_to_two: face 2 to face 2 interaction
+        - one_to_two: face 1 to face 2 interaction
+    """
     face_mat = np.array([
         [one_to_one, one_to_two],
         [one_to_two, two_to_two]])
@@ -53,4 +60,16 @@ def chain_LEL_2types(mat_11, mat_21, mat_22):
         [mat_11,   mat_21],
         [mat_21.T, mat_22]
     ])
-    return block_block_pauli_x(2, 2).matmul(full_face_matrix)
+    return np.matmul(block_block_pauli_x(2, 2), full_face_matrix)
+
+# ---------- TRIANGULAR LATTICE FUNCTIONS ----------
+
+
+def uniform_interaction_tri(e):
+    """
+        Returns an interaction matrix for triangular lattices where all
+        coefficients are the same.
+        Parameters:
+        - e: interaction energy
+    """
+    return e * np.ones((6, 6))

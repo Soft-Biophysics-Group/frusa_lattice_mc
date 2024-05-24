@@ -3,9 +3,11 @@
 *.o
 *.swp
 *.json
+*.envrc
 
 /build*/
 /test/build*/
 /input*/
 .cache/
 __pycache__/
+.venv/

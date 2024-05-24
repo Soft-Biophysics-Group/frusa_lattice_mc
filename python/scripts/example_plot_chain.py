@@ -7,4 +7,4 @@ _, orientations = np.loadtxt(cfg.data_path/'structures/final_structure.dat',
                              dtype=int)
 fig, ax = plt.subplots()
 pc.plot_chain(orientations, ax)
-fig.show()
+plt.show()

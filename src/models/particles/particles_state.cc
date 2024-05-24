@@ -187,7 +187,7 @@ int FullEmptySites::get_random_full_site(model_parameters_struct &parameters) {
 
 int FullEmptySites::get_random_empty_site(model_parameters_struct &parameters) {
   int n_empty_sites{static_cast<int>(empty_sites_indices_m.size())};
-  int_dist empty_sites_dist(0, n_empty_sites);
+  int_dist empty_sites_dist(0, n_empty_sites-1);
   return static_cast<int>(empty_sites_indices_m[static_cast<std::size_t>(
       empty_sites_dist(parameters.rng))]);
 }

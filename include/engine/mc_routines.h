@@ -54,6 +54,7 @@ namespace simulation_space{
       void print_mc_parameters();
 
       // MC annealing
+      void extracted();
       void t_scan(model_space::model &simulation_system);
 
       // MC simmulation at a fixed temperature T

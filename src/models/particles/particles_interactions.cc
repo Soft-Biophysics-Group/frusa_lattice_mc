@@ -39,12 +39,15 @@ double get_site_energy(state_struct &state, interactions_struct &interactions,
                        geometry_space::Geometry geometry, int site_index) {
   // std::cout << "\nGetting energy of site " << site_index << '\n' ;
   double site_energy{0.0};
-  for (int bond{0}; bond < geometry.get_n_neighbours(); ++bond) {
-    // std::cout << "Checking neighbour " << neighbour_site << '\n' ;
-    //  TODO Check I'm looking at the right directions
-    int neighbour_site{geometry.get_neighbour(site_index, bond)};
-    site_energy += get_contact_energy(state, site_index, neighbour_site,
-                                      interactions, geometry);
+  if (state.lattice_sites.is_empty(site_index)) {
+    return 0.0;
+  } else {
+    for (int bond{0}; bond < geometry.get_n_neighbours(); ++bond) {
+      // std::cout << "Checking neighbour " << neighbour_site << '\n' ;
+      int neighbour_site{geometry.get_neighbour(site_index, bond)};
+      site_energy += get_contact_energy(state, site_index, neighbour_site,
+                                        interactions, geometry);
+    }
   }
   return site_energy;
 }

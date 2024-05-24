@@ -27,6 +27,21 @@
 
 ## Dependencies
 
+### Venv
+
+The python part of the code is developed as a package.
+To use it for the first time, go through the following steps in the `python` folder:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install requirements.txt
+```
+
+Every time you want to use the Python code, activate the virtual environment first with
+`source .venv/bin/activate`
+
+
 ### JSON
 
 The relevant header for `nlohmann::json` c++ library is located

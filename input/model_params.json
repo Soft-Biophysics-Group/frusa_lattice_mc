@@ -8,10 +8,10 @@
     20
   ],
   "couplings": [
-    0.0,
-    0.0,
-    0.0,
-    0.0
+    -10.0,
+    -10.0,
+    -10.0,
+    -10.0
   ],
   "initialize_option": "random",
   "state_av_option": true,

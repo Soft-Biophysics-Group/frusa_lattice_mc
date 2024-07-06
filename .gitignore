@@ -1,9 +1,13 @@
+*.dat
 *.sh
 *.o
 *.swp
 *.json
+*.envrc
 
 /build*/
-/test*/
+/test/build*/
 /input*/
-
+.cache/
+__pycache__/
+.venv/

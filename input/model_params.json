@@ -1,15 +1,26 @@
 {
-  "ns":2,
-  "Lx": 100,
-  "Ly": 1,
-  "Lz": 1,
-  "Np": 20,
-  "couplings": [
-    0.1,
-    -1,
-    0,
-    0,
-    -1
+  "lattice_name": "chain",
+  "lx": 100,
+  "ly": 1,
+  "lz": 1,
+  "n_types": 1,
+  "n_particles": [
+    20
   ],
-  "initialize_option":"uniform"
+  "couplings": [
+    -10.0,
+    -10.0,
+    -10.0,
+    -10.0
+  ],
+  "initialize_option": "random",
+  "state_av_option": true,
+  "e_av_option": true,
+  "state_av_output": "/Users/vincent/research/coding/projects/2404_frusa_lattice_mc/data/average_state/",
+  "e_av_output": "/Users/vincent/research/coding/projects/2404_frusa_lattice_mc/data/energy_moments/",
+  "move_probas": {
+    "swap_empty_full": 0.3333333333333333,
+    "rotate": 0.3333333333333333,
+    "rotate_and_swap_w_empty": 0.3333333333333333
+  }
 }

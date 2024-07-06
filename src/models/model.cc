@@ -4,35 +4,45 @@
 #include "model.h"
 
 namespace model_space{
+  model_parameters_struct::model_parameters_struct(model_options model) {
+    switch (model) {
+      case fields:
+          ;
+      default:
+          ;
+    }
+  }
   model::model(){
     /*
      * Initialize the system of particles and calculate the initial energy
      */
 
-    initialize_state(state,parameters);
-    
-    initialize_interactions(state,interactions,parameters);
-    
+    geometry = geometry_space::Geometry();
+
+    particles_space::initialize_state(state,parameters,geometry);
+
+    particles_space::initialize_interactions(state,interactions,parameters,geometry);
+
   }
 
   void model::print_model_state(){
-    print_state(state);
+    particles_space::print_state(state);
   }
 
-  void model::save_model_state(std::string state_output){
-    save_state(state, state_output);
+  void model::save_model_state(std::string& state_output){
+    particles_space::save_state(state, state_output);
   }
-  
+
   void model::print_model_interactions(){
-    print_interactions(state,interactions);
+    particles_space::print_interactions(interactions);
   }
 
   void model::print_model_energy(){
-    print_energy(state,interactions);
+    particles_space::print_energy(interactions);
   }
 
   void model::update_model_system(double T){
-    update_system(state,interactions,parameters,T);
+    particles_space::update_system(state,interactions,parameters,geometry,T);
   }
 
   void model::initialize_model_averages(){

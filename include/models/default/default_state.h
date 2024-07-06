@@ -23,7 +23,7 @@ namespace default_space{
 
   // Structure containing the characteristics of the state of the system:
   // N                  - number of particles
-  // average_occupation - average occupation number of the current state 
+  // average_occupation - average occupation number of the current state
   // occupation         - array of state occupations
   struct state_struct{
     int N;
@@ -31,9 +31,9 @@ namespace default_space{
     vec1i occupation;
   };
 
-  // Initialize the structural properties of the system, depending on the type 
+  // Initialize the structural properties of the system, depending on the type
   // of parameters.initialize_option
-  void initialize_state(state_struct &state, 
+  void initialize_state(state_struct &state,
                         model_parameters_struct &parameters);
 
   // Print the state properties of the system
@@ -41,7 +41,7 @@ namespace default_space{
 
   // Save the occupation numbers to a file "state_output"
   void save_state(state_struct &state, std::string state_output);
-  
+
   /*
    * End of the required definitions for the model class
    */
@@ -51,10 +51,10 @@ namespace default_space{
    */
 
   // Various methods for state initialization
-  void initialize_state_from_file(state_struct &state, 
+  void initialize_state_from_file(state_struct &state,
                                   model_parameters_struct &parameters);
 
-  void initialize_state_random(state_struct &state, 
+  void initialize_state_random(state_struct &state,
                                model_parameters_struct &parameters);
 
   void initialize_state_uniform(state_struct &state);

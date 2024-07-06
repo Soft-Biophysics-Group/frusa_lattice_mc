@@ -5,10 +5,17 @@
 #include "mc_routines.h"
 #include <iostream>
 
-int main(){
 
+// Temporary includes for testing
+#include "vector_utils.h"
+
+int main(){
   std::cout << "Program runs!\n";
-  
+
+  //particles_space::move_probas_arr test{
+      //particles_space::get_move_probas("input/model_params.json")};
+  //array_space::print_array(std::cout, test);
+
   model_space::model new_model;
 
   new_model.print_model_state();
@@ -16,7 +23,7 @@ int main(){
 
   simulation_space::mc annealing;
   annealing.print_mc_parameters();
- 
+
   annealing.t_scan(new_model);
 
   return 0;

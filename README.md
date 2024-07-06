@@ -2,28 +2,51 @@
 
 ## Future
 
+* Next: Change the geometry class to accept user input
+* Next: Implement Python classes to generate the interaction matrix
+* Next: Implement 1D lattice geometry and test the simulation on it first
+* When time: perform small refactor of the particles.update library, which is particularly
+  ugly and reuses code
+
 ### General
 
 * Documentation (priority)
+* Geometry class (priority)
 * Write an interface for running jobs
 
-### Tutorial and `ising` model (`ising_dev` branch)
+### Testing
 
-* Write a tutorial on ising model (priority)
+* V: I have for now added a `test/test_geometry.cc` file, the contents of which can be
+  copy-pasted into `app/main.cc` in order to test the Geometry class we have written.
 
 ### `fields` model on branch `fields_dev`
 
-* Debug Segmentation fault error in the fields library (priority)
+* Debug Segmentation fault error in the fields library
 
 # `frusa_mc`
 
 ## Dependencies
 
+### Venv
+
+The python part of the code is developed as a package.
+To use it for the first time, go through the following steps in the `python` folder:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install requirements.txt
+```
+
+Every time you want to use the Python code, activate the virtual environment first with
+`source .venv/bin/activate`
+
+
 ### JSON
 
-The relevant header for `nlohmann::json` c++ library is located 
-in `include/thirdparty/`. 
-The python `json` library is a built-in module. 
+The relevant header for `nlohmann::json` c++ library is located
+in `include/thirdparty/`.
+The python `json` library is a built-in module.
 
 
 ## Building using cmake
@@ -42,7 +65,7 @@ Currently, the available `<MODEL_NAME>` options are:
 
 * `default` - two-state system (__stable__)
 * `fields_chain` - concentration fields on a 1D lattice
-* `fields_square` - concentration fields on a 2d square lattice 
+* `fields_square` - concentration fields on a 2d square lattice
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
 
 ### Creating a custom `model` class

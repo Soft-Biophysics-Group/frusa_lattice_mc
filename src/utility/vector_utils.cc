@@ -5,7 +5,8 @@
 
 namespace array_space {
 
-void ij_to_r(int &r, int i, int j, int Lx, [[maybe_unused]] int Ly) {
+void ij_to_r(int& r, int i, int j, int Lx, [[maybe_unused]] int Ly)
+{
   r = i + Lx * j;
 }
 

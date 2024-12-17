@@ -27,19 +27,19 @@ namespace particles_space {
     }
   }
 
-  void save_averages(averages_struct &averages,
-                     [[maybe_unused]] state_struct &state,
-                     model_parameters_struct &parameters,
-                     double T, int mcs_av){
-
+  void save_averages(averages_struct& averages,
+                     [[maybe_unused]] state_struct& state,
+                     model_parameters_struct& parameters,
+                     double T,
+                     int mcs_av)
+  {
     if(parameters.e_av_option==true){
       averages.e_av/= mcs_av;
       averages.e2_av/= mcs_av;
       vec1d output_vec = {T, averages.e_av, averages.e2_av};
       std::string output_file =
-          parameters.e_av_output +
-          "esf_av_T_" + std::to_string(T) + ".dat";
-      io_space::save_vector(output_vec,7,output_file);
+          parameters.e_av_output + "esf_av_T_" + std::to_string(T) + ".dat";
+      io_space::save_vector(output_vec, 7, output_file);
     }
   }
 

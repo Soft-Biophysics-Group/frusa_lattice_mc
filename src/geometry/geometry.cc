@@ -47,14 +47,16 @@ std::ostream& operator<< (std::ostream& out, bond_struct& bonds) {
   return out;
 }
 
-lattice_options get_lattice_from_str(std::string& lattice_str) {
+lattice_options get_lattice_from_str(std::string& lattice_str)
+{
   for (std::size_t i {0}; i < lattice_options::n_lattices; ++i) {
     if (lattice_str == lattice_str_arr[i]) {
       return static_cast<lattice_options>(i);
     }
   }
-  throw(std::runtime_error("Invalid lattice name provided.\nOptions are: "
-                           "chain, square, triangular, cubic, bcc, fcc"));
+  throw(
+      std::runtime_error("Invalid lattice name provided.\nOptions are: "
+                         "chain, square, triangular, cubic, bcc, fcc"));
 }
 
 Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
@@ -155,35 +157,58 @@ bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
   //}
 //}
 
+/**
+ * Returns a one-particle index from which the index of a contact between two
+ * particles can be deduced.
+ * Usually calculated as bond_type * (site_type + 1); runs from 1 to n_bonds
+ * for particle type 1, bond_type * (site_type + 1) + 1 to 2 * (bond_type *
+ * (site_type + 1)) for type 2, etc...
+ * **/
 int Geometry::get_interaction_coeff(const int site_orientation,
-                                    const int site_type, const int bond) const {
+                                    const int site_type,
+                                    const int bond) const
+{
   std::size_t u_bond {static_cast<std::size_t>(bond)};
-  const vec1i &permutation_table{bond_struct_m.bond_permutation[u_bond]};
+  const vec1i& permutation_table {bond_struct_m.bond_permutation[u_bond]};
 
-  std::size_t u_orientation{static_cast<std::size_t>(site_orientation)};
-  return permutation_table[u_orientation] * (site_type+1);
+  std::size_t u_orientation {static_cast<std::size_t>(site_orientation)};
+  return permutation_table[u_orientation] * (site_type + 1);
 }
 
+/**
+* Interaction index is obtained by hashing individual interaction coefficients,
+* with a 
+* **/
 int Geometry::get_interaction_index(const int site_1_orientation,
                                     const int site_1_type,
                                     const int site_2_orientation,
                                     const int site_2_type,
-                                    const int bond) const {
-  int coeff_1{get_interaction_coeff(site_1_orientation, site_1_type, bond)};
-  int coeff_2{get_interaction_coeff(site_2_orientation, site_2_type, bond)};
-  int interaction_index{};
-  array_space::ij_to_r(interaction_index, coeff_1, coeff_2, n_orientations_m,
-                       1);
+                                    const int bond,
+                                    const int n_types) const
+{
+  int coeff_1 {get_interaction_coeff(site_1_orientation, site_1_type, bond)};
+  int coeff_2 {get_interaction_coeff(site_2_orientation, site_2_type, bond)};
+  int interaction_index {};
+  array_space::ij_to_r(
+      interaction_index, coeff_1, coeff_2, n_orientations_m * n_types, 1);
   return interaction_index;
 }
 
 double Geometry::get_interaction(const int site_1_orientation,
                                  const int site_1_type,
                                  const int site_2_orientation,
-                                 const int site_2_type, const int bond,
-                                 const vec1d &flat_interaction_matrix) const {
-  std::size_t interaction_index{static_cast<std::size_t>(get_interaction_index(
-      site_1_orientation, site_1_type, site_2_orientation, site_2_type, bond))};
+                                 const int site_2_type,
+                                 const int bond,
+                                 const int n_types,
+                                 const vec1d& flat_interaction_matrix) const
+{
+  std::size_t interaction_index {
+      static_cast<std::size_t>(get_interaction_index(site_1_orientation,
+                                                     site_1_type,
+                                                     site_2_orientation,
+                                                     site_2_type,
+                                                     bond,
+                                                     n_types))};
   return flat_interaction_matrix[interaction_index];
 }
 

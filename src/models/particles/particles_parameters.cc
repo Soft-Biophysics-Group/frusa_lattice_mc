@@ -1,12 +1,12 @@
 #include "particles_parameters.h"
 #include "vector_utils.h"
 
-namespace particles_space {
+namespace particles_space
+{
 
-model_parameters_struct::model_parameters_struct(
-    const std::string &input_file) {
-
-  std::ifstream model_input_f{input_file};
+model_parameters_struct::model_parameters_struct(const std::string& input_file)
+{
+  std::ifstream model_input_f {input_file};
   if (!model_input_f) {
     std::cerr << "Could not open JSON model parameters file" << '\n';
     exit(1);
@@ -14,6 +14,7 @@ model_parameters_struct::model_parameters_struct(
 
   json json_model_params = json::parse(model_input_f);
 
+  // Parse parameters from JSON one by one
   n_types = json_model_params["n_types"].template get<int>();
   n_particles = json_model_params["n_particles"].template get<vec1i>();
   couplings = json_model_params["couplings"].template get<vec1d>();
@@ -29,7 +30,8 @@ model_parameters_struct::model_parameters_struct(
   e_av_option = json_model_params["e_av_option"].template get<bool>();
   e_av_output = json_model_params["e_av_output"].template get<std::string>();
   state_av_option = json_model_params["state_av_option"].template get<bool>();
-  state_av_output = json_model_params["state_av_output"].template get<std::string>();
+  state_av_output =
+      json_model_params["state_av_output"].template get<std::string>();
 }
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {
@@ -55,20 +57,22 @@ std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {
   return out;
 }
 
-move_probas_arr get_move_probas(const std::string &model_input_file) {
-  std::ifstream mc_json_f{model_input_file};
+move_probas_arr get_move_probas(const std::string& model_input_file)
+{
+  std::ifstream mc_json_f {model_input_file};
   if (!mc_json_f) {
     std::cerr << "Could not find MC paramereters file" << '\n';
     exit(1);
   }
-  json mc_json{json::parse(mc_json_f)};
-  std::map<std::string, double> move_map{
+
+  json mc_json {json::parse(mc_json_f)};
+  std::map<std::string, double> move_map {
       mc_json["move_probas"].template get<std::map<std::string, double>>()};
-  // Initialize array of move probabilities filled with zeros
-  move_probas_arr move_probas{};
+
+  move_probas_arr move_probas {};
   move_probas.fill(0.0);
-  for (std::size_t move{0}; move < mc_moves::n_enum_moves; move++) {
-    const std::string &move_name{mc_moves_str[move]};
+  for (std::size_t move {0}; move < mc_moves::n_enum_moves; move++) {
+    const std::string& move_name {mc_moves_str[move]};
     // look for entry with the name of the move and assign the right
     // probability if it exists
     if (move_map.contains(move_name)) {
@@ -82,4 +86,4 @@ move_probas_arr get_move_probas(const std::string &model_input_file) {
 
   return move_probas;
 }
-} // namespace lattice_particles_space
+}  // namespace particles_space

@@ -115,7 +115,7 @@ namespace io_space{
       exit(1);
     }
 
-    for(std::size_t i=0;i<static_cast<std::size_t>(N);i++){
+    for (std::size_t i = 0; i < static_cast<std::size_t>(N); i++) {
       array_f << array[i] << "\n";
     }
     array_f.close();

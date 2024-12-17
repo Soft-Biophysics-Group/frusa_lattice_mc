@@ -14,22 +14,19 @@
 namespace particles_space {
 
 // Structure containing the characteristics of the model interactions:
-// couplings          - Interaction energy between neighbouring particles
-// energy             - Total energy of the system
-// neighbours         - Array of indices neighbouring a given site, updated at
-//                      each energy calculation. Useful to avoid constant
-//                      allocations.
-// n_edges:           - number of neighbours of lattice sites; hopefully
-//                      something I can remove in the future.
 struct interactions_struct {
+  // Interaction energy between neighbouring particles, flattened into 1
+  // dimension
   vec1d couplings{};
+  // Current total energy of the system
   double energy{};
+  // Number of neighbours of each lattice site. Imposed by choice of lattice
   int n_edges{};
 };
 
-void initialize_interactions(state_struct &state,
-                             interactions_struct &interactions,
-                             model_parameters_struct &parameters,
+void initialize_interactions(state_struct& state,
+                             interactions_struct& interactions,
+                             model_parameters_struct& parameters,
                              geometry_space::Geometry geometry);
 
 // Print the summary of the interactions characteristics
@@ -40,8 +37,10 @@ void print_energy(interactions_struct &interactions);
 
 // Get the contact energy between 2 neighbouring sites with indices site1 and
 // site2, touching along respective edge indices edge1 and edge2.
-double get_contact_energy(state_struct &state, int site1, int site2,
-                          interactions_struct &interactions,
+double get_contact_energy(state_struct& state,
+                          int site1,
+                          int site2,
+                          interactions_struct& interactions,
                           geometry_space::Geometry geometry);
 
 // Get total energy of a given site, which is the sum of contact energy with

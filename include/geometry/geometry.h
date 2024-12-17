@@ -55,32 +55,58 @@ public:
   // const;
   int get_interaction_coeff(const int site_orientation, const int site_type,
                             const int bond) const;
+  /**
+   * Return the index of a contact between two particles in the flattened
+   * interactions array.
+  * **/
   int get_interaction_index(const int site_1_orientation,
                             const int site_1_type,
                             const int site_2_orientation,
-                            const int site_2_type, const int bond) const;
-  int get_interaction_index(const int site_1_orientation, const int site_1_type,
-                            const int site_1_ind, const int site_2_orientation,
-                            const int site_2_type, const int site_2_ind) const {
-    return get_interaction_index(site_1_orientation, site_1_type,
-                                 site_2_orientation, site_2_type,
-                                 get_bond(site_1_ind, site_2_ind));
+                            const int site_2_type,
+                            const int bond,
+                            const int n_types) const;
+  int get_interaction_index(const int site_1_orientation,
+                            const int site_1_type,
+                            const int site_1_ind,
+                            const int site_2_orientation,
+                            const int site_2_type,
+                            const int site_2_ind,
+                            const int n_types) const
+  {
+    return get_interaction_index(site_1_orientation,
+                                 site_1_type,
+                                 site_2_orientation,
+                                 site_2_type,
+                                 get_bond(site_1_ind, site_2_ind),
+                                 n_types);
   };
-  double get_interaction(const int site_1_orientation, const int site_1_type,
-                         const int site_2_orientation, const int site_2_type,
+  double get_interaction(const int site_1_orientation,
+                         const int site_1_type,
+                         const int site_2_orientation,
+                         const int site_2_type,
                          const int bond,
-                         const vec1d &flat_interaction_matrix) const;
-  double get_interaction(const int site_1_orientation, const int site_1_type,
-                         const int site_1_ind, const int site_2_orientation,
-                         const int site_2_type, const int site_2_ind,
-                         const vec1d &flat_interaction_matrix) const {
-    return get_interaction(site_1_orientation, site_1_type, site_2_orientation,
-                           site_2_type, get_bond(site_1_ind, site_2_ind),
+                         const int n_types,
+                         const vec1d& flat_interaction_matrix) const;
+  double get_interaction(const int site_1_orientation,
+                         const int site_1_type,
+                         const int site_1_ind,
+                         const int site_2_orientation,
+                         const int site_2_type,
+                         const int site_2_ind,
+                         const int n_types,
+                         const vec1d& flat_interaction_matrix) const
+  {
+    return get_interaction(site_1_orientation,
+                           site_1_type,
+                           site_2_orientation,
+                           site_2_type,
+                           get_bond(site_1_ind, site_2_ind),
+                           n_types,
                            flat_interaction_matrix);
   }
   bool are_neighbours(const int bond_index);
   bool are_neighbours(const int site_1_ind, const int site_2_ind);
-  friend std::ostream& operator<< (std::ostream& out, Geometry& geometry);
+  friend std::ostream& operator<<(std::ostream& out, Geometry& geometry);
 
 private:
   lattice_options lattice_m {lattice_options::chain};

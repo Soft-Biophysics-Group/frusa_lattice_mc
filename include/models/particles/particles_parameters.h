@@ -20,7 +20,8 @@ namespace particles_space {
 // TODO Remove this type
 
 // Enum for the different types of possible particle moves.
-enum mc_moves {
+enum mc_moves
+{
   swap_empty_full,
   swap_full_full,
   rotate,
@@ -29,13 +30,12 @@ enum mc_moves {
   n_enum_moves
 };
 
-static const inline std::array<std::string, n_enum_moves> mc_moves_str{
+static const inline std::array<std::string, n_enum_moves> mc_moves_str {
     "swap_empty_full",
     "swap_full_full",
     "rotate",
     "mutate",
-    "rotate_and_swap_w_empty"
-};
+    "rotate_and_swap_w_empty"};
 
 // User-supplied array of probabilities of selecting each type of move during
 // lattice update
@@ -49,32 +49,38 @@ using move_probas_arr =
 // TODO Add try/catches to this to make sure that we define the right
 // quantitites
 
-// Structure containing parameters used for model definition:
-// n_types           - number of different particle types
-// n_orientations    - number of orientations a particle can take
-// lx, ly, lz        - dimensions of the lattice
-// n_particles       - number of particles of each type
-// couplings         - Flattened array of contact energies between each
-//                     possible pair of faces
-// rng               - random number generator
-// initialize_option - option string for choosing initialization function
-//                     current options are "from_file", "random"
-// state_input       - if initialize_option is set to "from_file", this
-//                     string contains the location of the input structure
-// move_probas       - user-supplied array of various moves' probabilities of
-//                     being picked during update
-struct model_parameters_struct {
-  model_parameters_struct(const std::string &model_input_file);
+/**
+ * Structure containing parameters used for model definition:
+ * n_types           - number of different particle types
+ * n_particles       - number of particles of each type
+ * couplings         - Flattened array of contact energies between each
+ *                     possible pair of faces
+ * rng               - random number generator
+ * initialize_option - option string for choosing initialization function
+ *                     current options are "from_file", "random"
+ * state_input       - if initialize_option is set to "from_file", this
+ *                     string contains the location of the input structure
+ * move_probas       - user-supplied array of various moves' probabilities of
+ *                     being picked during update
+ * e_av_option      - Set to true to record average energies
+ * e_av_output      - Location where to save average energy
+ * state_av_option  - As far as I understand, useless for lattice particles.
+ *                    Too scared to remove it though!
+ * state_av_output  - As far as I understand, useless for lattice particles.
+ *                    Too scared to remove it though!
+ **/
+struct model_parameters_struct
+{
+  model_parameters_struct(const std::string& model_input_file);
   model_parameters_struct()
-      : model_parameters_struct("./input/model_params.json"){};
-  int n_types{};
-  vec1i n_particles{};
-  vec1d couplings{};
-  EngineType rng{};
-  std::string initialize_option{};
-  std::string state_input{};
-  move_probas_arr move_probas{};
-  // TODO Add code to get option from json; understand what these do
+      : model_parameters_struct("./input/model_params.json") {};
+  int n_types {};
+  vec1i n_particles {};
+  vec1d couplings {};
+  EngineType rng {};
+  std::string initialize_option {};
+  std::string state_input {};
+  move_probas_arr move_probas {};
   bool e_av_option {true};
   std::string e_av_output {};
   bool state_av_option {true};
@@ -85,11 +91,13 @@ std::ostream &operator<<(std::ostream &out, model_parameters_struct &params);
 
 // Definition and choice of Monte Carlo move probabilities
 
-// Returns a vector assigning the probability of each of the moves in
-// mc_moves being picked at every MC step.
-// The json file should include a vector of n_enum_moves doubles summing to one,
-// each of which corresponds to the probability of the associated move (in
-// enum order) being picked.
+/**
+ * Returns a vector assigning the probability of each of the moves in
+ * mc_moves being picked at every MC step.
+ * The json file should include a vector of n_enum_moves doubles summing to one,
+ * each of which corresponds to the probability of the associated move (in
+ * enum order) being picked.
+ **/
 move_probas_arr get_move_probas(const std::string &model_input_file);
 
 } // namespace lattice_particles_space

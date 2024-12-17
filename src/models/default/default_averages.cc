@@ -4,13 +4,13 @@
 #include "default_averages.h"
 
 namespace default_space{
-  
+
   /*
    * Definitions required for the public routines of the model class
    */
   void initialize_averages(averages_struct &averages,
                            model_parameters_struct &parameters){
-  
+
     if(parameters.state_av_option==true){
       averages.state_av = 0.0;
     }
@@ -21,12 +21,12 @@ namespace default_space{
     }
   }
 
-  void update_averages(averages_struct &averages, 
+  void update_averages(averages_struct &averages,
                        state_struct &state,
                        interactions_struct &interactions,
-                       model_parameters_struct &parameters, 
+                       model_parameters_struct &parameters,
                        double T){
-  
+
     if(parameters.state_av_option==true){
       averages.state_av+= state.average_occupation;
     }
@@ -37,11 +37,11 @@ namespace default_space{
     }
   }
 
-  void save_averages(averages_struct &averages, 
+  void save_averages(averages_struct &averages,
                      state_struct &state,
-                     model_parameters_struct &parameters, 
+                     model_parameters_struct &parameters,
                      double T, int mcs_av){
-  
+
     if(parameters.state_av_option==true){
       averages.state_av/= mcs_av;
       vec1d output_vec = {T, averages.state_av};
@@ -62,7 +62,7 @@ namespace default_space{
     }
   }
 
-  /* 
+  /*
    * End of the required definitions for the model class
    */
 }

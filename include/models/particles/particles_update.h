@@ -19,9 +19,11 @@ using json = nlohmann::json;
 // interactions - energetics of the system before the update
 // parameters   - used to access random number generator (parameters.rng)
 // T            - annealing temperature (not the same as T_model!)
-void update_system(state_struct &state, interactions_struct &interactions,
-                   model_parameters_struct &parameters,
-                   geometry_space::Geometry geometry, double T);
+void update_system(state_struct& state,
+                   interactions_struct& interactions,
+                   model_parameters_struct& parameters,
+                   geometry_space::Geometry geometry,
+                   double T);
 
 /*
  * End of the required definitions for the model class
@@ -48,35 +50,46 @@ int perform_random_rotation(state_struct &state,
                             model_parameters_struct &parameters,
                             int site_index);
 
-double measure_pair_energy(int index1, int index2, int bond,
-                           state_struct &state,
-                           interactions_struct &interactions,
-                           geometry_space::Geometry &geometry);
+double measure_pair_energy(int index1,
+                           int index2,
+                           int bond,
+                           state_struct& state,
+                           interactions_struct& interactions,
+                           geometry_space::Geometry& geometry);
 /*
  * The following functions perform a MC move and return the corresponding energy
  * difference.
  */
-double attempt_swap_sites(int index1, int index2, state_struct &state,
-                          model_parameters_struct &parameters,
-                          interactions_struct &interactions,
-                          geometry_space::Geometry geometry, double T);
-double attempt_swap_empty_full(state_struct &state,
-                               model_parameters_struct &parameters,
-                               interactions_struct &interactions,
-                               geometry_space::Geometry geometry, double T);
-double attempt_swap_full_full(state_struct &state,
-                              model_parameters_struct &parameters,
-                              interactions_struct &interactions,
-                              geometry_space::Geometry geometry, double T);
-double attempt_rotate(state_struct &state, model_parameters_struct &parameters,
-                      interactions_struct &interactions,
-                      geometry_space::Geometry geometry, double T);
-double attempt_mutate(state_struct &state, model_parameters_struct &parameters,
-                      interactions_struct &interactions,
-                      geometry_space::Geometry geometry, double T);
-double attempt_rotate_and_swap_w_empty(state_struct &state,
-                                       model_parameters_struct &parameters,
-                                       interactions_struct &interactions,
+double attempt_swap_sites(int index1,
+                          int index2,
+                          state_struct& state,
+                          model_parameters_struct& parameters,
+                          interactions_struct& interactions,
+                          geometry_space::Geometry geometry,
+                          double T);
+double attempt_swap_empty_full(state_struct& state,
+                               model_parameters_struct& parameters,
+                               interactions_struct& interactions,
+                               geometry_space::Geometry geometry,
+                               double T);
+double attempt_swap_full_full(state_struct& state,
+                              model_parameters_struct& parameters,
+                              interactions_struct& interactions,
+                              geometry_space::Geometry geometry,
+                              double T);
+double attempt_rotate(state_struct& state,
+                      model_parameters_struct& parameters,
+                      interactions_struct& interactions,
+                      geometry_space::Geometry geometry,
+                      double T);
+double attempt_mutate(state_struct& state,
+                      model_parameters_struct& parameters,
+                      interactions_struct& interactions,
+                      geometry_space::Geometry geometry,
+                      double T);
+double attempt_rotate_and_swap_w_empty(state_struct& state,
+                                       model_parameters_struct& parameters,
+                                       interactions_struct& interactions,
                                        geometry_space::Geometry geometry,
                                        double T);
 

@@ -4,7 +4,8 @@ import numpy as np
 
 
 def flatten_couplings(coupling_arr) -> list:
-    return coupling_arr.flatten().tolist()
+    sym_coupling_arr = (coupling_arr + coupling_arr.T)/2
+    return sym_coupling_arr.flatten().tolist()
 
 # SINGLE-TYPE SYSTEMS
 

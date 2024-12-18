@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc libutils_library.a CMakeFiles/utils_library.dir/io_utils.cc.o CMakeFiles/utils_library.dir/vector_utils.cc.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib libutils_library.a

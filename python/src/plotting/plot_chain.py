@@ -24,15 +24,14 @@ TODOS:
 """
 
 
-def plot_chain(orientations: List[int],
-               ax: Axes):
+def plot_chain(orientations: List[int], ax: Axes):
     n_sites = len(orientations)
     for site in range(n_sites):
         # Only plot non-empty sites
         orientation = orientations[site]
         if orientation != -1:
             ParticleRepresentation().plot(site, orientation, ax)
-    ax.set_xlim(-1, n_sites+1)
+    ax.set_xlim(-1, n_sites + 1)
     ax.set_ylim(-0.3, 0.3)
 
 

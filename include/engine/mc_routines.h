@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Andrey Zelenskiy
+// Copyright (c) 2024 Soft Biophysics Group LPTMS
 // Part of frusa_mc, released under BSD 3-Clause License.
 
 #ifndef MC_HEADER_H
@@ -54,6 +54,7 @@ namespace simulation_space{
       void print_mc_parameters();
 
       // MC annealing
+      void extracted();
       void t_scan(model_space::model &simulation_system);
 
       // MC simmulation at a fixed temperature T

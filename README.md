@@ -2,9 +2,16 @@
 
 ## Future
 
+* Next: Change the geometry class to accept user input
+* Next: Implement Python classes to generate the interaction matrix
+* Next: Implement 1D lattice geometry and test the simulation on it first
+* When time: perform small refactor of the particles.update library, which is particularly
+  ugly and reuses code
+
 ### General
 
 * Documentation (priority)
+* Geometry class (priority)
 * Write an interface for running jobs
 * Implement calculations of average energy, heat capacity, and correlation
   functions in `averages_utils`
@@ -13,13 +20,14 @@
 
 * Write the `default_averages` functions to collect average occupation numbers
 
-### Tutorial and `ising` model (`ising_dev` branch)
+### Testing
 
-* Write a tutorial on ising model (priority)
+* V: I have for now added a `test/test_geometry.cc` file, the contents of which can be
+  copy-pasted into `app/main.cc` in order to test the Geometry class we have written.
 
 ### `fields` model on branch `fields_dev`
 
-* Debug Segmentation fault error in the fields library (priority)
+* Debug Segmentation fault error in the fields library
 
 ### `lattice_particles` model on branch `lattice_mc_dev`
 
@@ -35,6 +43,21 @@
 # `frusa_mc`
 
 ## Dependencies
+
+### Venv
+
+The python part of the code is developed as a package.
+To use it for the first time, go through the following steps in the `python` folder:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install requirements.txt
+```
+
+Every time you want to use the Python code, activate the virtual environment first with
+`source .venv/bin/activate`
+
 
 ### JSON
 

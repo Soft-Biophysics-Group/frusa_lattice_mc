@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Andrey Zelenskiy
+// Copyright (c) 2024 Soft Biophysics Group LPTMS
 // Part of frusa_mc, released under BSD 3-Clause License.
 
 #include "mc_routines.h"
@@ -96,7 +96,7 @@ namespace simulation_space{
 
   void mc::t_scan(model_space::model &simulation_model){
 
-    for(int i=0;i<parameters.Nt;i++){
+    for (std::size_t i = 0; i < static_cast<std::size_t>(parameters.Nt); i++) {
 
       double T;
 
@@ -112,15 +112,17 @@ namespace simulation_space{
       mc_simulate(simulation_model,T);
 
       if(parameters.checkpoint_option){
-        simulation_model.save_model_state(parameters.checkpoint_address+\
-                                          "structure_"+\
-                                          std::to_string(i)+".dat");
+        std::string save_loc{parameters.checkpoint_address + "structure_" +
+                             std::to_string(i) + ".dat"};
+        simulation_model.save_model_state(save_loc);
       }
-      std::cout << "Energy at T = " << T << ":\n";
+      std::cout << "Energy at T = " << T << ": ";
       simulation_model.print_model_energy();
+      std::cout << '\n' ;
     }
-    simulation_model.save_model_state(parameters.final_structure_address+\
-                                "final_structure.dat");
+    std::string final_state_save_loc{parameters.final_structure_address +
+                                     "final_structure.dat"};
+    simulation_model.save_model_state(final_state_save_loc);
   }
 
   void mc::mc_simulate(model_space::model &simulation_model, double T){

@@ -1,10 +1,15 @@
+*.dat
 *.sh
 *.o
 *.swp
 *.json
+*.envrc
 
 /build*/
-/data*/
-/test*/
+/test/build*/
 /input*/
-/.cache*/
+.cache/
+__pycache__/
+.venv/
+.DS_Store
+app/

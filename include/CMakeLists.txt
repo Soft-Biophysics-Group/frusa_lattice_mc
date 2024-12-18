@@ -2,6 +2,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/engine)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/models)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/utility)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/geometry)
 
 set(HEADER_FRUSA_ENGINE
     ${HEADER_FRUSA_ENGINE}
@@ -17,4 +18,8 @@ set(HEADER_FRUSA_UTILITY
 
 set(HEADER_FRUSA_THIRDPARTY
     ${HEADER_FRUSA_THIRDPARTY}
+    PARENT_SCOPE)
+
+set(HEADER_FRUSA_GEOMETRY
+  ${HEADER_FRUSA_GEOMETRY}
     PARENT_SCOPE)

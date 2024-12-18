@@ -13,6 +13,7 @@ add_library(mc_library
 target_include_directories(mc_library PUBLIC
                            ${INCLUDE_FRUSA_ENGINE}
                            ${INCLUDE_FRUSA_MODELS}
+                           ${INCLUDE_FRUSA_GEOMETRY}
                            ${INCLUDE_FRUSA_UTILITY}
                            ${INCLUDE_FRUSA_THIRDPARTY})
 

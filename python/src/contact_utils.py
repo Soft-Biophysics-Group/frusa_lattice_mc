@@ -1,3 +1,4 @@
+from sys import exception
 import numpy as np
 
 # ---------- GENERAL FUNCTIONS ----------
@@ -74,3 +75,107 @@ def uniform_interaction_tri(e):
         - e: interaction energy
     """
     return e * np.ones((6, 6))
+
+def is_symmetric(matrix):
+    return np.isclose(matrix, (matrix + matrix.T) / 2).prod()
+
+
+class ContactMapWrapper:
+    """
+    Wrapper class to easily manipulate a contact map object.
+    The mirror image of what is contained in the C++ code.
+    """
+
+    def __init__(self, n_types, n_orientations):
+        self.n_types = n_types
+        self.n_orientations = n_orientations
+        self.n_states = self.n_types * self.n_orientations
+        self.contact_map = np.zeros(self.n_states**2)
+
+
+    # Different lattices for which we can use this class
+    @classmethod
+    def triangular(cls, n_types):
+        return cls(n_types, 6)
+
+    def get_one_face_coeff(self, face, type):
+        return type * self.n_orientations + face
+
+    def get_interaction_coeff(self, face1, type1, face2, type2):
+        coeff_1 = self.get_one_face_coeff(face1, type1)
+        coeff_2 = self.get_one_face_coeff(face2, type2)
+        return coeff_1 + coeff_2 * self.n_types * self.n_orientations
+
+    def __getitem__(self, faces_types):
+        (face1, type1, face2, type2) = faces_types
+        int_coeff = self.get_interaction_coeff(face1, type1, face2, type2)
+
+        return self.contact_map[int_coeff]
+
+    def __setitem__(self, faces_types, value):
+        (face1, type1, face2, type2) = faces_types
+        int_coeff = self.get_interaction_coeff(face1, type1, face2, type2)
+
+        self.contact_map[int_coeff] = value
+
+    def get_two_species_contact_matrix(self, type1, type2):
+        contact_map = np.zeros((self.n_orientations, self.n_orientations))
+        for face1 in range(self.n_orientations):
+            for face2 in range(self.n_orientations):
+                contact_map[face1, face2] = self[face1, type1, face2, type2]
+        return contact_map
+
+    def get_single_species_contact_matrix(self, type):
+        return self.get_two_species_contact_matrix(type, type)
+
+    def set_two_species_contacts(self, type1, type2, contact_matrix, symmetrize=True):
+        """Contact_matrix has to be a n_orientations by n_orientations np array"""
+        if contact_matrix.shape != (self.n_orientations, self.n_orientations):
+            print("Invalid matrix format! Stopping now")
+            return
+        # Ensure contact matrix is symmetric
+        if not is_symmetric(contact_matrix) and not symmetrize:
+            print("Contact energies are not symmetric! Aborting")
+            return
+        else:
+            contact_matrix = (contact_matrix + contact_matrix.T) / 2
+
+        for face1 in range(self.n_orientations):
+            for face2 in range(self.n_orientations):
+                self[face1, type1, face2, type2] = contact_matrix[face1, face2]
+        return
+
+    def set_single_species_contact(self, type, contact_matrix):
+        self.set_two_species_contacts(type, type, contact_matrix)
+        return
+
+    def get_formatted_couplings(self):
+        """Returns the contact  matrix in a format"""
+        # Check the contacts are symmetric
+        for type1 in range(self.n_types):
+            for type2 in range(self.n_types):
+                if not is_symmetric(self.get_two_species_contact_matrix(type1, type2)):
+                    print(
+                        f"Contact matrix between species {type1} and {type2} is not symmetric."
+                        "Aborting"
+                    )
+                    return
+        return list(self.contact_map)
+
+
+def get_camembert_cmap(j_crystal, j_line, sigma, j_infty):
+    cmap_wrapper = ContactMapWrapper.triangular(1)
+    contact_map_matrix = cmap_wrapper.get_single_species_contact_matrix(0)
+    contact_map_matrix += j_infty - 2 * sigma
+    # Crystal contacts: same face every time
+    for face in range(6):
+        contact_map_matrix[face, face] = j_crystal - 2 * sigma
+    # Line contacts
+    contact_map_matrix[0, 2] = j_line - 2 * sigma
+    contact_map_matrix[1, 5] = j_line - 2 * sigma
+    print(contact_map_matrix)
+
+    cmap_wrapper.set_single_species_contact(0, contact_map_matrix)
+    print(cmap_wrapper.get_single_species_contact_matrix(0))
+
+    return cmap_wrapper.get_formatted_couplings()

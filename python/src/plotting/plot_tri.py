@@ -1,9 +1,20 @@
+# pyright: basic
 from typing import Iterator, List
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
 import numpy as np
+from lattice_utils import (
+    lattice_coords_to_lattice_site_2d,
+    lattice_site_to_lattice_coords_2d,
+    get_full_sites_characteristics,
+)
+from pathlib import Path
+import config as cfg
+from matplotlib.axes import Axes
 
+ARROW_COLORS = ["blue", "red", "green"]
 
 """
 Code is strongly inspired from Lara's; see 
@@ -59,15 +70,14 @@ class ParticleRepresentation:
         self.border_color = "black"
         self.side_length = lattice_spacing * np.sqrt(3) / 3
         self.n_faces = 6
-        self.rotation_matrix = np.array([[1 / 2, -sr32], [sr32, 1 / 2]])
+        self.rotation_matrix = np.array([[1 / 2, sr32], [-sr32, 1 / 2]])
         self.face_0_corners = [
             np.array([0, 0]),
             np.array([sr32 * self.side_length, -self.side_length / 2]),
             np.array([sr32 * self.side_length, self.side_length / 2]),
         ]
         self.all_face_corners = self.init_face_coords()
-        self.lattice_vectors_in_cartesian = np.array([[1,    0],
-                                                      [sr32, 1]])
+        self.lattice_vectors_in_cartesian = np.array([[1, 0], [1/2, sr32]])
 
     def rotate_point(self, coords, n_steps):
         for i in range(n_steps):
@@ -82,11 +92,9 @@ class ParticleRepresentation:
             all_faces_corners.append(face_corners)
         return all_faces_corners
 
-    # V: I stopped before working on this function
     def plot_particle_outline(
-        self, x_center_lattice: int, y_center_lattice: int, orientation: int, ax: Axes
+        self, x_center_lattice: int, y_center_lattice: int, ax: Axes
     ) -> None:
-        permuted_faces = self.permutations[orientation]
         x_center, y_center = self.lattice_to_cartesian(
             x_center_lattice, y_center_lattice
         )
@@ -95,14 +103,99 @@ class ParticleRepresentation:
             self.n_faces,
             radius=self.side_length,
             facecolor=None,
-            fill = False,
+            fill=False,
             edgecolor="black",
         )
         ax.add_artist(h)
 
-    def lattice_to_cartesian(self, x_lattice, y_lattice):
+    def plot_particle_orientation(
+        self,
+        x_center_lattice: int,
+        y_center_lattice: int,
+        orientation: int,
+        ax: Axes,
+        color="blue",
+    ) -> None:
+        """
+        Adds an arrow at the center of the particle indicating the particle orientation.
+        The arrow is of length side_length/2, and points towards face 0 in the particle's
+        current orientation.
+        """
+        a_length = self.side_length / 2
+        # Get the edge corresponding to face 0 in current orientation
+        # And deduce the arrow orientation in lattice coordinates
+        edge = np.where(self.permutations[orientation] == 0)[0][0]
+        arrow_vector = np.array([a_length, 0])
+        self.rotate_point(arrow_vector, edge)
+        # FancyArrow uses arrow base location as input, so we'll need that
+        x_center_cartesian, y_center_cartesian = self.lattice_to_cartesian(
+            x_center_lattice, y_center_lattice
+        )
+        x_arrow_base = x_center_cartesian - arrow_vector[0] / 2
+        y_arrow_base = y_center_cartesian - arrow_vector[1] / 2
+
+        arrow = mpatches.FancyArrow(
+            x_arrow_base,
+            y_arrow_base,
+            arrow_vector[0],
+            arrow_vector[1],
+            width=a_length / 10,
+            color=color,
+        )
+        ax.add_artist(arrow)
+
+    def lattice_to_cartesian(self, x_lattice: int, y_lattice: int) -> int:
         return (
             x_lattice * self.lattice_vectors_in_cartesian[0, :]
             + y_lattice * self.lattice_vectors_in_cartesian[1, :]
         )
 
+    def plot_result_outlines(
+        self,
+        results_index: int = -1,
+        results_file: str | Path = "",
+        ax: Axes | None = None,
+        **kwargs
+    ) -> tuple[Figure, Axes]:
+        if ax is None:
+            fig, ax = plt.subplots(**kwargs)
+        else:
+            fig = ax.get_figure()
+        results = cfg.load_structure(results_index, results_file)
+        lx = cfg.load_model_file()["lx"]
+        for (
+            site,
+            _,
+            _,
+        ) in get_full_sites_characteristics(results):
+            x_lattice, y_lattice = lattice_site_to_lattice_coords_2d(site, lx)
+            self.plot_particle_outline(x_lattice, y_lattice, ax)
+
+        return
+
+    def plot_results_arrows(
+        self, results_index: int = -1, results_file: str | Path = "", **kwargs
+    ) -> tuple[Figure, Axes]:
+        fig, ax = plt.subplots()
+        results = cfg.load_structure(results_index, results_file)
+        lx = cfg.load_model_file()["lx"]
+        ly = cfg.load_model_file()["ly"]
+
+        for (
+            site,
+            ptype,
+            orientation,
+        ) in get_full_sites_characteristics(results):
+            x_lattice, y_lattice = lattice_site_to_lattice_coords_2d(site, lx)
+            color = ARROW_COLORS[ptype]
+            self.plot_particle_outline(x_lattice, y_lattice, ax)
+            self.plot_particle_orientation(x_lattice, y_lattice, orientation, ax, color = color)
+
+        # Adjusting the viewing window
+        x_min = -self.side_length
+        y_min = -self.side_length
+        x_max, y_max = self.lattice_to_cartesian(lx, ly) + self.side_length
+        ax.set_xlim(x_min, x_max)
+        ax.set_ylim(y_min, y_max)
+
+        return fig, ax

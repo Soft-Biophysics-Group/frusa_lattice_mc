@@ -146,6 +146,8 @@ struct state_struct {
   int n_types{};
   // Number of orietations a particle can take
   int n_orientations{};
+  // Number of neighbours each particle has
+  int n_neighbours{};
   // Total number of states a particle can take
   int n_states{};
   // Number of lattice sites

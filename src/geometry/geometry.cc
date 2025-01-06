@@ -8,23 +8,19 @@ using json = nlohmann::json;
 
 namespace geometry_space {
 
-bond_struct::bond_struct(lattice_options lattice) {
+bond_struct::bond_struct(lattice_options lattice)
+{
   switch (lattice) {
     case chain:
-      bond_permutation =
-          chain_space::bond_struct::bond_permutation;
-      bond_array =
-          chain_space::bond_struct::bond_array;
-      bond_index =
-          chain_space::bond_struct::bond_index;
+      bond_permutation = chain_space::bond_struct::bond_permutation;
+      bond_array = chain_space::bond_struct::bond_array;
+      bond_index = chain_space::bond_struct::bond_index;
       break;
     case triangular:
-      bond_permutation =
-          triangular_space::bond_struct::bond_permutation;
-      bond_array =
-          triangular_space::bond_struct::bond_array;
-      bond_index =
-          triangular_space::bond_struct::bond_index;
+      bond_permutation = triangular_space::bond_struct::bond_permutation;
+      bond_array = triangular_space::bond_struct::bond_array;
+      bond_index = triangular_space::bond_struct::bond_index;
+      opposite_bonds = triangular_space::bond_struct::opposite_bonds;
       break;
     default:
       throw(std::runtime_error(
@@ -60,13 +56,19 @@ lattice_options get_lattice_from_str(std::string& lattice_str)
 }
 
 Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
-    : lattice_m{lattice}, lx_m{lx}, ly_m{ly}, lz_m{lz}, n_sites_m{lx * ly * lz},
-      bond_struct_m{bond_struct(lattice)} {
+    : lattice_m {lattice}
+    , lx_m {lx}
+    , ly_m {ly}
+    , lz_m {lz}
+    , n_sites_m {lx * ly * lz}
+    , bond_struct_m {bond_struct(lattice)}
+{
   set_lattice_properties();
 }
 
-Geometry::Geometry(const std::string &geometry_input) {
-  std::ifstream geometry_input_f{geometry_input};
+Geometry::Geometry(const std::string& geometry_input)
+{
+  std::ifstream geometry_input_f {geometry_input};
   if (!geometry_input_f) {
     std::cerr << "Could not open geometry model parameters file" << '\n';
     exit(1);
@@ -74,7 +76,7 @@ Geometry::Geometry(const std::string &geometry_input) {
 
   json json_geometry = json::parse(geometry_input_f);
 
-  std::string lattice_str{
+  std::string lattice_str {
       json_geometry["lattice_name"].template get<std::string>()};
   lattice_m = get_lattice_from_str(lattice_str);
   lx_m = json_geometry["lx"].template get<int>();
@@ -85,23 +87,23 @@ Geometry::Geometry(const std::string &geometry_input) {
   set_lattice_properties();
 }
 
-int Geometry::get_neighbour(const int site_ind, const int bond_ind) const {
+int Geometry::get_neighbour(const int site_ind, const int bond_ind) const
+{
   // Found at https://stackoverflow.com/a/26282004
-    int i{};
-    int j{};
-    int k{};
-    array_space::r_to_ijk(site_ind, i, j, k, lx_m, ly_m, lz_m);
+  int i {};
+  int j {};
+  int k {};
+  array_space::r_to_ijk(site_ind, i, j, k, lx_m, ly_m, lz_m);
 
-    std::size_t u_bond_ind {static_cast<std::size_t>(bond_ind)};
-    const vec1i& bond_direction {bond_struct_m.bond_array[u_bond_ind]};
-    int i_neigh{array_space::mod(i+bond_direction[0], lx_m)};
-    int j_neigh{array_space::mod(j+bond_direction[1], ly_m)};
-    int k_neigh{array_space::mod(k+bond_direction[2], lz_m)};
+  std::size_t u_bond_ind {static_cast<std::size_t>(bond_ind)};
+  const vec1i& bond_direction {bond_struct_m.bond_array[u_bond_ind]};
+  int i_neigh {array_space::mod(i + bond_direction[0], lx_m)};
+  int j_neigh {array_space::mod(j + bond_direction[1], ly_m)};
+  int k_neigh {array_space::mod(k + bond_direction[2], lz_m)};
 
-    int neigh_ind{0};
-    array_space::ijk_to_r(neigh_ind, i_neigh, j_neigh, k_neigh, lx_m, ly_m,
-                          lz_m);
-    return neigh_ind;
+  int neigh_ind {0};
+  array_space::ijk_to_r(neigh_ind, i_neigh, j_neigh, k_neigh, lx_m, ly_m, lz_m);
+  return neigh_ind;
 }
 
 int Geometry::get_bond(const int site_1_ind, const int site_2_ind) const {
@@ -157,28 +159,23 @@ bool Geometry::are_neighbours(const int site_1_ind, const int site_2_ind) {
   //}
 //}
 
-/**
- * Returns a one-particle index from which the index of a contact between two
- * particles can be deduced.
- * Usually calculated as bond_type * (site_type + 1); runs from 1 to n_bonds
- * for particle type 1, bond_type * (site_type + 1) + 1 to 2 * (bond_type *
- * (site_type + 1)) for type 2, etc...
- * **/
 int Geometry::get_interaction_coeff(const int site_orientation,
                                     const int site_type,
                                     const int bond) const
 {
-  std::size_t u_bond {static_cast<std::size_t>(bond)};
-  const vec1i& permutation_table {bond_struct_m.bond_permutation[u_bond]};
-
   std::size_t u_orientation {static_cast<std::size_t>(site_orientation)};
-  return permutation_table[u_orientation] * (site_type + 1);
+  const vec1i& permutation_table {bond_struct_m.bond_permutation[u_orientation]};
+
+  std::size_t u_bond {static_cast<std::size_t>(bond)};
+  int interaction_coeff {};
+  array_space::ij_to_r(interaction_coeff,
+                       permutation_table[u_bond],
+                       site_type,
+                       get_n_orientations(),
+                       1);
+  return interaction_coeff;
 }
 
-/**
-* Interaction index is obtained by hashing individual interaction coefficients,
-* with a 
-* **/
 int Geometry::get_interaction_index(const int site_1_orientation,
                                     const int site_1_type,
                                     const int site_2_orientation,
@@ -186,8 +183,11 @@ int Geometry::get_interaction_index(const int site_1_orientation,
                                     const int bond,
                                     const int n_types) const
 {
-  int coeff_1 {get_interaction_coeff(site_1_orientation, site_1_type, bond)};
-  int coeff_2 {get_interaction_coeff(site_2_orientation, site_2_type, bond)};
+  int coeff_1 {
+      get_interaction_coeff(site_1_orientation, site_1_type, bond)};
+  int opposite_bond {get_opposite_bond(bond)};
+  int coeff_2 {get_interaction_coeff(
+      site_2_orientation, site_2_type, opposite_bond)};
   int interaction_index {};
   array_space::ij_to_r(
       interaction_index, coeff_1, coeff_2, n_orientations_m * n_types, 1);
@@ -209,6 +209,7 @@ double Geometry::get_interaction(const int site_1_orientation,
                                                      site_2_type,
                                                      bond,
                                                      n_types))};
+  // std::cout << "Interaction index is" << interaction_index ;
   return flat_interaction_matrix[interaction_index];
 }
 

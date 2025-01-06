@@ -81,8 +81,3 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/engine)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/models)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/utility)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/geometry)
-
-###############################################################################
-### Compiling a small program ##################################################
-add_executable(frusa_lattice_mc_test test_geometry.cc
-               ${HEADER_FRUSA_GEOMETRY})

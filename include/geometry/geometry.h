@@ -10,10 +10,12 @@
 
 using BondIndexMap = std::map<std::array<int,3> , int>;
 
-namespace geometry_space {
+namespace geometry_space
+{
 // Vectors of vectors giving the permutation indices for all the possible bond
 // orientations.
-enum lattice_options {
+enum lattice_options
+{
   chain,
   square,
   triangular,
@@ -24,17 +26,20 @@ enum lattice_options {
 };
 
 static const inline std::array<std::string, lattice_options::n_lattices>
-    lattice_str_arr{"chain", "square", "triangular", "cubic", "bcc", "fcc"};
+    lattice_str_arr {"chain", "square", "triangular", "cubic", "bcc", "fcc"};
 
 lattice_options get_lattice_from_str(std::string& lattice_str);
 
-struct bond_struct{
+struct bond_struct
+{
   // TODO Write this constructor with switch cases
   bond_struct() = default;
   bond_struct(lattice_options lattice);
-  vec2i bond_permutation{};
-  vec2i bond_array{};
-  BondIndexMap bond_index{};
+  vec2i bond_permutation {};
+  vec2i bond_array {};
+  BondIndexMap bond_index {};
+  vec1i opposite_bonds {};
+  int n_neighbours {};
 };
 
 std::ostream& operator<< (std::ostream& out, bond_struct& bonds);
@@ -50,10 +55,20 @@ public:
   // More involved functions
   int get_neighbour(const int site_ind, const int bond_ind) const;
   int get_bond(const int site_1_ind, const int site_2_ind) const;
-  // template <int N>
-  // arr1i<N>& get_bond_permutation(const int site_1_ind, const int site_2_ind)
-  // const;
-  int get_interaction_coeff(const int site_orientation, const int site_type,
+  int get_opposite_bond(const int bond) const
+  {
+    std::size_t u_bond {static_cast<std::size_t>(bond)};
+    return bond_struct_m.opposite_bonds[u_bond];
+  };
+  /**
+   * Returns a one-particle index from which the index of a contact between two
+   * particles can be deduced.
+   * Usually calculated as bond_type * (site_type + 1); runs from 1 to n_bonds
+   * for particle type 1, bond_type * (site_type + 1) + 1 to 2 * (bond_type *
+   * (site_type + 1)) for type 2, etc...
+   * **/
+  int get_interaction_coeff(const int site_orientation,
+                            const int site_type,
                             const int bond) const;
   /**
    * Return the index of a contact between two particles in the flattened
@@ -120,5 +135,5 @@ private:
   void set_lattice_properties();
 };
 
-} // namespace geometry_space
+}  // namespace geometry_space
 #endif

@@ -20,8 +20,6 @@ double get_contact_energy(state_struct& state,
                           interactions_struct& interactions,
                           geometry_space::Geometry geometry)
 {
-  // std::cout << "Edge between neighbours is " << edge1 << '\n' ;
-
   // Contacts with empty site count as 0 energy
   if (state.lattice_sites.is_empty(site1)
       or state.lattice_sites.is_empty(site2))
@@ -55,8 +53,8 @@ double get_site_energy(state_struct& state,
     return 0.0;
   } else {
     for (int bond {0}; bond < geometry.get_n_neighbours(); ++bond) {
-      // std::cout << "Checking neighbour " << neighbour_site << '\n' ;
       int neighbour_site {geometry.get_neighbour(site_index, bond)};
+      /*std::cout << "Checking neighbour " << neighbour_site << '\n' ;*/
       site_energy += get_contact_energy(
           state, site_index, neighbour_site, interactions, geometry);
     }

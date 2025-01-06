@@ -18,6 +18,7 @@ void initialize_state(state_struct& state,
 {
   state.n_types = parameters.n_types;
   state.n_orientations = geometry.get_n_orientations();
+  state.n_neighbours = geometry.get_n_neighbours();
   state.n_particles = parameters.n_particles;
   state.n_states = state.n_types * state.n_orientations;
   state.n_sites = geometry.get_n_sites();

@@ -2,22 +2,10 @@
 # Part of frusa_mc, released under BSD 3-Clause License.
 
 import numpy as np
-import os
+from os import makedirs
 from json_dump import *
+import config as cfg
 
-
-def make_dir(name):
-    """
-    Creates a new directory if it doesn't already exist at the
-    specified address/name.
-
-    Arguments:
-
-    name - (str) name and location of the new directory.
-    """
-
-    if not os.path.exists(name):
-        os.makedirs(name)
 
 # Define model parameters
 
@@ -25,10 +13,7 @@ def make_dir(name):
 model_params = {}
 
 # Number of particles
-model_params["N"] = 20
-
-# Energy gap
-model_params["delta"] = 1
+model_params["lattice_name"] = "triangular"
 
 # Initialization option
 model_params["initialize_option"] = "random"
@@ -42,14 +27,14 @@ model_params["state_av_option"] = True
 model_params["e_av_option"] = True
 
 if model_params["state_av_option"]:
-    make_dir("../data/average_state")
+    makedirs(cfg.averages_path, exist_ok = True)
     model_params["state_av_output"] = "./data/average_state/"
 
 if model_params["e_av_option"]:
-    make_dir("../data/energy_moments")
+    makedirs(cfg.energy_path, exist_ok=True)
     model_params["e_av_output"] = "./data/energy_moments/"
 
-make_json_file(model_params, "../input/model_params.json")
+make_json_file(model_params, cfg.default_model_params_file)
 
 # Define mc parameters
 

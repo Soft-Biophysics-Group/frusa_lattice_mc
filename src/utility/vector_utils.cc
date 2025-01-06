@@ -56,5 +56,4 @@ int mod(int a, int b) { return (a % b + b) % b; }
   //}
   //out << "}";
 //}
->>>>>>> test_hex
 } // namespace array_space

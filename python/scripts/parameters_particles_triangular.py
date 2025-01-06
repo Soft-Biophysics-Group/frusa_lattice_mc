@@ -17,7 +17,7 @@ model_params["lattice_name"] = "triangular"
 # Lattice dimensions
 model_params["lx"] = 10
 model_params["ly"] = 10  # Has to be 1 for chain
-model_params["lz"] = 1  # Has to be 1 for square & triangular
+model_params["lz"] = 1  # Has to be 1 for chain, square, and triangular
 
 # ---------- MODEL PARAMETERS ----------
 

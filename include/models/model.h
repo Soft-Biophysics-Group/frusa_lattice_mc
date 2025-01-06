@@ -95,5 +95,4 @@ public:
   void save_model_averages(double T, int mcs_av);
 };
 } // namespace model_space
->>>>>>> test_hex
 #endif

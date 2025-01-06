@@ -63,8 +63,8 @@ struct bond_struct {
     { {-1,  0,  0}, 5 },
   }; //bond_index
 }; // bond_structure
-static constexpr int n_neighbours{2};
-static constexpr int n_orientations{2};
+static constexpr int n_neighbours{6};
+static constexpr int n_orientations{24};
 } // namespace cubic_space
 } // namespace geometry_space
 

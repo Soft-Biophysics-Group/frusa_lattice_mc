@@ -36,7 +36,7 @@ struct bond_struct {
     { { 1, -1, 0}, 5 },
   }; //bond_index
 
-  static inline const vec1i opposite_bonds {3, 4, 5, 6, 0, 1, 2};
+  static inline const vec1i opposite_bonds {3, 4, 5, 0, 1, 2};
 };
 static constexpr int n_neighbours{6};
 static constexpr int n_orientations{6};

@@ -20,19 +20,19 @@ struct bond_struct {
   //static inline const std::unordered_map<vec1i, int> bond_indices{
   static inline const vec2i bond_array{
     { 1,  0, 0},
-    { 1,  1, 0},
+    { 0,  1, 0},
     {-1,  1, 0},
     {-1,  0, 0},
-    {-1, -1, 0},
+    { 0, -1, 0},
     { 1, -1, 0},
   }; //bond_directions
 
   static inline const BondIndexMap bond_index{
     { { 1,  0, 0}, 0 },
-    { { 1,  1, 0}, 1 },
+    { { 0,  1, 0}, 1 },
     { {-1,  1, 0}, 2 },
-    { {-1,  0, 0}, 3 },
-    { {-1, -1, 0}, 4 },
+    { {-1,  1, 0}, 3 },
+    { { 0, -1, 0}, 4 },
     { { 1, -1, 0}, 5 },
   }; //bond_index
 

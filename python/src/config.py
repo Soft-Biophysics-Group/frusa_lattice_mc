@@ -29,7 +29,9 @@ def load_model_file(model_file = default_model_params_file):
         params = json.load(f)
     return params
 
-def load_structure(struct_index:int = -1, struct_file:str|Path = ""):
+def load_structure(
+    struct_index: int = -1, struct_folder: str | Path = "", struct_file: str | Path = ""
+):
     """
     Load a configuration of the particles on the lattice recorded during the simulation.
     Default behavior (no parameters): loads the structure at the end of the simulation.
@@ -40,14 +42,17 @@ def load_structure(struct_index:int = -1, struct_file:str|Path = ""):
     and line 2 to particle orientation.
     orientation -1 always corresponds to an empty site, irrespective of particle type.
     """
+    if struct_folder == "":
+        struct_folder = structures_path
+    struct_folder = Path(struct_folder)
     if struct_file != "":
         file_path = struct_file
     if struct_index != -1:
-        file_path = structures_path / f"structure_{struct_index}.dat"
+        file_path = struct_folder / f"structure_{struct_index}.dat"
     else:
-        file_path = structures_path / "final_structure.dat"
+        file_path = struct_folder / "final_structure.dat"
     return np.loadtxt(file_path, dtype = int)
 
 ##### RUN SIMULATIONS FROM PYTHON  #####
 def run_simulation():
-    Popen(str(exec_path), cwd = parent_path)
+    run(str(exec_path), cwd = parent_path)

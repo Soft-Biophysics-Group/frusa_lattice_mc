@@ -251,22 +251,22 @@ std::ostream &operator<<(std::ostream &out, state_struct &state) {
   out << "Number of particles of each type: ";
   array_space::print_vector<int>(out, state.n_particles);
   out << '\n';
-  out << "Particle type at each site:\n";
-  array_space::print_vector(out, state.lattice_sites.types_m);
-  out << '\n';
-  out << "Particle orientation at each site:\n";
-  array_space::print_vector(out, state.lattice_sites.orientations_m);
-  out << '\n';
-  out << "Indices of full sites:\n";
-  array_space::print_vector(out, state.full_empty_sites.full_sites_indices_m);
-  out << '\n';
-  out << "Indices of empty sites:\n";
-  array_space::print_vector(out, state.full_empty_sites.empty_sites_indices_m);
-  out << '\n';
-  out << "Mapping of lattice sites to full and empty lists:\n";
-  array_space::print_vector(out,
-                            state.full_empty_sites.site_inds_to_full_empty_m);
-  out << '\n';
+  /*out << "Particle type at each site:\n";*/
+  /*array_space::print_vector(out, state.lattice_sites.types_m);*/
+  /*out << '\n';*/
+  /*out << "Particle orientation at each site:\n";*/
+  /*array_space::print_vector(out, state.lattice_sites.orientations_m);*/
+  /*out << '\n';*/
+  /*out << "Indices of full sites:\n";*/
+  /*array_space::print_vector(out, state.full_empty_sites.full_sites_indices_m);*/
+  /*out << '\n';*/
+  /*out << "Indices of empty sites:\n";*/
+  /*array_space::print_vector(out, state.full_empty_sites.empty_sites_indices_m);*/
+  /*out << '\n';*/
+  /*out << "Mapping of lattice sites to full and empty lists:\n";*/
+  /*array_space::print_vector(out,*/
+  /*                          state.full_empty_sites.site_inds_to_full_empty_m);*/
+  /*out << '\n';*/
   return out;
 }
 

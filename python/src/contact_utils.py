@@ -163,19 +163,23 @@ class ContactMapWrapper:
         return list(self.contact_map)
 
 
-def get_camembert_cmap(j_crystal, j_line, sigma, j_infty):
+def get_camembert_cmap(e_crystal, e_defect, e_repel):
     cmap_wrapper = ContactMapWrapper.triangular(1)
     contact_map_matrix = cmap_wrapper.get_single_species_contact_matrix(0)
-    contact_map_matrix += j_infty - 2 * sigma
-    # Crystal contacts: same face every time
+    contact_map_matrix += e_repel
+    # Crystal contacts: opposite faces every time
     for face in range(6):
-        contact_map_matrix[face, face] = j_crystal - 2 * sigma
+        contact_map_matrix[face, (face + 3)%6 ] = e_crystal
     # Line contacts
-    contact_map_matrix[0, 2] = j_line - 2 * sigma
-    contact_map_matrix[1, 5] = j_line - 2 * sigma
+    contact_map_matrix[0, 2] = e_defect
+    contact_map_matrix[1, 5] = e_defect
+    # We also need the symmetric contacts!
+    contact_map_matrix[2, 0] = e_defect
+    contact_map_matrix[5, 1] = e_defect
     print(contact_map_matrix)
 
     cmap_wrapper.set_single_species_contact(0, contact_map_matrix)
     print(cmap_wrapper.get_single_species_contact_matrix(0))
 
     return cmap_wrapper.get_formatted_couplings()
+

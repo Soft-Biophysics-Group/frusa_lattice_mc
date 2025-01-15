@@ -112,8 +112,8 @@ namespace simulation_space{
       mc_simulate(simulation_model,T);
 
       if(parameters.checkpoint_option){
-        std::string save_loc{parameters.checkpoint_address + "structure_" +
-                             std::to_string(i) + ".dat"};
+        std::string save_loc {parameters.checkpoint_address + "structure_"
+                              + std::to_string(i) + ".dat"};
         simulation_model.save_model_state(save_loc);
       }
       std::cout << "Energy at T = " << T << ": ";

@@ -4,12 +4,10 @@
 
 import numpy as np
 
-def lattice_site_to_lattice_coords_2d(site_index: int, lx: int, ly: int = 1):
-    if ly != 1:
-        z_lattice = site_index // (lx * ly)
+def lattice_site_to_lattice_coords_2d(site_index: int, lx: int):
     y_lattice = site_index // lx
     x_lattice = site_index - lx * y_lattice
-    return x_lattice, y_lattice
+    return np.array([x_lattice, y_lattice])
 
 
 def lattice_coords_to_lattice_site_2d(x_lattice: int, y_lattice: int, lx: int):

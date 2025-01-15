@@ -1,11 +1,11 @@
 {
-  "mcs_eq": 100,
-  "mcs_av": 1,
+  "mcs_eq": 1500,
+  "mcs_av": 1000,
   "cooling_schedule": "exponential",
-  "Ti": 0,
-  "Tf": -5,
+  "Ti": 1.3010299956639813,
+  "Tf": 0,
   "Nt": 10,
   "checkpoint_option": true,
-  "checkpoint_address": "/Users/vincent/research/coding/projects/2404_frusa_lattice_mc/data/structures/",
-  "final_structure_address": "/Users/vincent/research/coding/projects/2404_frusa_lattice_mc/data/structures/"
+  "checkpoint_address": "/Users/vincent/research/projects/23_frustratedSelfAssembly/simulations/2404_frusa_lattice_mc/data/structures/250109_test_camembert/",
+  "final_structure_address": "/Users/vincent/research/projects/23_frustratedSelfAssembly/simulations/2404_frusa_lattice_mc/data/structures/250109_test_camembert/"
 }

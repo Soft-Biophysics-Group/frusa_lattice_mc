@@ -163,13 +163,14 @@ int Geometry::get_interaction_coeff(const int site_orientation,
                                     const int site_type,
                                     const int bond) const
 {
-  std::size_t u_orientation {static_cast<std::size_t>(site_orientation)};
-  const vec1i& permutation_table {bond_struct_m.bond_permutation[u_orientation]};
-
   std::size_t u_bond {static_cast<std::size_t>(bond)};
+  // Permutation table: how each bond is permuted under each orientation
+  const vec1i& permutation_table {bond_struct_m.bond_permutation[u_bond]};
+
+  std::size_t u_orientation {static_cast<std::size_t>(site_orientation)};
   int interaction_coeff {};
   array_space::ij_to_r(interaction_coeff,
-                       permutation_table[u_bond],
+                       permutation_table[u_orientation],
                        site_type,
                        get_n_orientations(),
                        1);

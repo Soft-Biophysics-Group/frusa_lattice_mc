@@ -5,7 +5,8 @@
 from pathlib import Path
 import json
 import numpy as np
-from subprocess import run, Popen
+import subprocess
+import sys
 
 # Reliably make absolute paths to the right place.
 # #ILovePathLib <3 <3 <3
@@ -28,6 +29,13 @@ def load_model_file(model_file = default_model_params_file):
     with open(model_file_str, "r") as f:
         params = json.load(f)
     return params
+
+def load_mc_file(mc_file = default_mc_params_file):
+    mc_file_str = str(mc_file)
+    with open(mc_file_str, "r") as f:
+        params = json.load(f)
+    return params
+
 
 def load_structure(
     struct_index: int = -1, struct_folder: str | Path = "", struct_file: str | Path = ""
@@ -54,5 +62,41 @@ def load_structure(
     return np.loadtxt(file_path, dtype = int)
 
 ##### RUN SIMULATIONS FROM PYTHON  #####
-def run_simulation():
-    run(str(exec_path), cwd = parent_path)
+
+def check_data_existence(
+    struct_path: str | Path = structures_path, e_path: str | Path = energy_path
+):
+    struct_path = Path(struct_path)
+    e_path = Path(e_path)
+    files_exist = False
+
+    if struct_path.is_dir():
+        if any(struct_path.iterdir()):
+            files_exist = True
+
+    if e_path.is_dir():
+        if any(e_path.iterdir()):
+            files_exist = True
+
+    return files_exist
+
+
+def run_simulation(overwrite = False):
+    """
+    Starts the frusa_mc program with default parameters from the root directory of the project.
+    Should allow you to run the code smoothly from a python interpreter in which this file has
+    been imported.
+    """
+    # execute(str(exec_path), cwd = parent_path)
+    mc_params = load_mc_file()
+    struct_path = mc_params["checkpoint_address"]
+    model_params = load_model_file()
+    e_path = model_params["e_av_output"]
+    if check_data_existence(struct_path = struct_path, e_path = e_path):
+        print("At least one of the output folders is already populated!")
+        if not overwrite:
+            print("overwrite flag set to False: exiting.")
+            return
+        else:
+            print("overwrite flag set to True: running anyway.")
+    subprocess.run(str(exec_path), cwd = parent_path)

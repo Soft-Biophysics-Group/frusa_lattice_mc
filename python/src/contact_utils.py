@@ -1,5 +1,6 @@
 from sys import exception
 import numpy as np
+from numpy.typing import NDArray
 
 # ---------- GENERAL FUNCTIONS ----------
 
@@ -128,38 +129,57 @@ class ContactMapWrapper:
     def get_single_species_contact_matrix(self, type):
         return self.get_two_species_contact_matrix(type, type)
 
-    def set_two_species_contacts(self, type1, type2, contact_matrix, symmetrize=True):
+    def set_two_species_contacts(self, type1, type2, contact_matrix):
         """Contact_matrix has to be a n_orientations by n_orientations np array"""
         if contact_matrix.shape != (self.n_orientations, self.n_orientations):
             print("Invalid matrix format! Stopping now")
             return
-        # Ensure contact matrix is symmetric
-        if not is_symmetric(contact_matrix) and not symmetrize:
-            print("Contact energies are not symmetric! Aborting")
-            return
-        else:
-            contact_matrix = (contact_matrix + contact_matrix.T) / 2
+        # # Ensure contact matrix is symmetric
+        # if not is_symmetric(contact_matrix) and not symmetrize:
+        #     print("Contact energies are not symmetric! Aborting")
+        #     return
+        # else:
+        #     contact_matrix = (contact_matrix + contact_matrix.T) / 2
 
         for face1 in range(self.n_orientations):
             for face2 in range(self.n_orientations):
                 self[face1, type1, face2, type2] = contact_matrix[face1, face2]
+                self[face2, type2, face1, type1] = contact_matrix[face1, face2]
         return
 
-    def set_single_species_contact(self, type, contact_matrix):
-        self.set_two_species_contacts(type, type, contact_matrix)
+    def set_single_species_contacts(self, type:int, contact_matrix):
+        """
+        Set couplings of particle species with index type, from numpy array contact_matrix.
+        contact_matrix has to be symmetric, or upper/lower triangular, otherwise the
+        interactions between particles are non-reciprocal, which is cool but out of the scope of
+        this program.
+        """
+        if contact_matrix == contact_matrix.T:
+            self.set_two_species_contacts(type, type, contact_matrix)
+        elif (
+            np.tril(contact_matrix) == contact_matrix
+            or np.triu(contact_matrix) == contact_matrix
+        ):
+            self.set_two_species_contacts(type, type, contact_matrix + contact_matrix.T)
+        else:
+            print(
+                "Contact matrix is neither diagonal, nor upper or lower triangular."
+                "Aborting"
+            )
+
         return
 
     def get_formatted_couplings(self):
         """Returns the contact  matrix in a format"""
         # Check the contacts are symmetric
-        for type1 in range(self.n_types):
-            for type2 in range(self.n_types):
-                if not is_symmetric(self.get_two_species_contact_matrix(type1, type2)):
-                    print(
-                        f"Contact matrix between species {type1} and {type2} is not symmetric."
-                        "Aborting"
-                    )
-                    return
+        # for type1 in range(self.n_types):
+        #     for type2 in range(self.n_types):
+        #         if not is_symmetric(self.get_two_species_contact_matrix(type1, type2)):
+        #             print(
+        #                 f"Contact matrix between species {type1} and {type2} is not symmetric."
+        #                 "Aborting"
+        #             )
+        #             return
         return list(self.contact_map)
 
 
@@ -178,7 +198,7 @@ def get_camembert_cmap(e_crystal, e_defect, e_repel):
     contact_map_matrix[5, 1] = e_defect
     print(contact_map_matrix)
 
-    cmap_wrapper.set_single_species_contact(0, contact_map_matrix)
+    cmap_wrapper.set_single_species_contacts(0, contact_map_matrix)
     print(cmap_wrapper.get_single_species_contact_matrix(0))
 
     return cmap_wrapper.get_formatted_couplings()

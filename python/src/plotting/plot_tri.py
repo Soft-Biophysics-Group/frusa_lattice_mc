@@ -98,7 +98,7 @@ class ParticleRepresentation:
             [
                 # [[0.5 * self.lattice_spacing, 0.5 * self.lattice_spacing], [-sr32, sr32]]
                 [0.5 * self.lattice_spacing, 0.5 * self.lattice_spacing],
-                [-self.side_length / 2, self.side_length / 2],
+                [-0.25 / sr32 * self.lattice_spacing, 0.25 / sr32 * self.lattice_spacing],
             ]
         )
         self.all_face_corners = self.init_face_coords()
@@ -206,7 +206,7 @@ class ParticleRepresentation:
         The arrow is of length side_length/2, and points towards face 0 in the particle's
         current orientation.
         """
-        a_length = self.side_length / 2
+        a_length = self.radius / 2
         # Get the edge corresponding to face 0 in current orientation
         # And deduce the arrow orientation in lattice coordinates
         edge = np.where(self.permutations[orientation] == 0)[0][0]
@@ -226,7 +226,7 @@ class ParticleRepresentation:
             y_arrow_base,
             arrow_vector[0],
             arrow_vector[1],
-            width=a_length / 10,
+            width=a_length / 5,
             color=color,
         )
         ax.add_artist(arrow)
@@ -244,11 +244,15 @@ class ParticleRepresentation:
         face_1,
         face_2,
         bond,
+        lx,
         ax,
+        squared:bool = False,
         cmap=CAMEMBERT_CONTACTS_CMAP,
     ):
         centered_face_corners = self.all_face_corners[bond]
         x_center_cartesian, y_center_cartesian = self.lattice_to_cartesian(x_center, y_center)
+        if squared:
+            x_center_cartesian = square_coordinates(x_center_cartesian, lx)
         particles_face_corners = centered_face_corners + np.array(
             [
                 [x_center_cartesian, x_center_cartesian],
@@ -260,7 +264,7 @@ class ParticleRepresentation:
         else:
             color = cmap[CAMEMBERT_CONTACTS[face_1, face_2]]
 
-        ax.plot(particles_face_corners[:, 0], particles_face_corners[:, 1], color=color)
+        ax.plot(particles_face_corners[0, :], particles_face_corners[1, :], color=color)
         return
 
 
@@ -270,6 +274,7 @@ class ParticleRepresentation:
         results_index: int = -1,
         results_folder: str | Path = "",
         results_file: str | Path = "",
+        squared = False
     ):
         results = cfg.load_structure(results_index, results_folder, results_file)
         lx = cfg.load_model_file()["lx"]
@@ -288,7 +293,9 @@ class ParticleRepresentation:
                 face_1, face_2 = self.get_faces_in_contact(
                     site, neighbour, orientation, results[1, neighbour], lx, ly
                 )
-                self.plot_contact_camembert(x_1, y_1, face_1, face_2, bond, ax)
+                self.plot_contact_camembert(
+                    x_1, y_1, face_1, face_2, bond, lx, ax, squared
+                )
         return
 
     def plot_result_outlines(

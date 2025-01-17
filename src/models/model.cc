@@ -12,12 +12,14 @@ namespace model_space{
           ;
     }
   }
-  model::model(){
+  model::model(std::string_view model_params_file){
     /*
      * Initialize the system of particles and calculate the initial energy
      */
 
     geometry = geometry_space::Geometry();
+
+    parameters = particles_space::model_parameters_struct(model_params_file);
 
     particles_space::initialize_state(state, parameters, geometry);
 

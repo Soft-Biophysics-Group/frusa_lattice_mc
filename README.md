@@ -94,7 +94,18 @@ The `lattice_particles` model consists of 2 portions: the C++ part which does th
 computational heavy lifting, and the Python part which can be used to generate the contact
 maps in various geometries and visualise the simulation results.
 
-In principle, going to the `python/examples` folder and looking at the notebooks 
+In principle, going to the `python/examples` folder and looking at the notebooks should give
+you enough informations to run simulations.
+
+Note that, with the lattice_particles model, the frusa_mc executable takes 2 arguments, the
+help for which you can see by calling `frusa_mc -h`:
+
+```
+Options:
+  -h,--help                   Print this help message and exit
+  -m,--model-params TEXT      JSON input file for model parameters
+  -M,--mc-params TEXT         JSON input file for Monte-Carlo annealing parameters
+```
 
 ### Creating a custom `model` class
 

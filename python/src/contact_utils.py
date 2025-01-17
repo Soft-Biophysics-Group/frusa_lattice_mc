@@ -1,49 +1,167 @@
+# Andrey Zelenskiy, Vincent Ouazan-Reboul, 2024
+# Functions and classes to generate contact maps for input of `frusa_mc`.
 from sys import exception
 import numpy as np
 from numpy.typing import NDArray
 
+class ContactMapWrapper:
+    """
+    Wrapper class to easily manipulate a contact map object.
+    The mirror image of what is contained in the C++ code: changes made to one need to be made
+    to the other.
+    The class contains a `contact_map` member which is a flattened interaction map used
+    directly as input for the C++ code.
+    Its goal is to make filling that array as convenient as possible.
+
+    The typical workflow when designing an interaction matrix will be:
+    1. Create a class instance using the constructor associated to the lattice you will be
+    working with
+    2. Get the empty single-species and species-pair interaction matrices using the
+    `get_single_species_contact_matrix` and `get_two_species_contact_matrix` methods.
+    3. Setting the coefficients of the interaction matrices by hand.
+    4. Fill up the flattened `contact_map` member array using the `set_single_species_contacts`
+    and `set_two_species_contacts` method
+    5. Get the properly formatted couplings using the `get_formatted_couplings` method.
+
+    ## Constructors:
+    - `triangular(n_types)`: creates a class instance for a triangular lattice containing
+      `n_types` different particle types.
+    - `__init(n_types, n_orientations)__`: creates a class instance for `n_types`
+      different particle types and `n_orientations` particle orientations.
+      Usually not called directly, but used by class constructors.
+    """
+
+    # ----- CONSTRUCTORS ----- 
+    def __init__(self, n_types, n_orientations):
+        self.n_types = n_types
+        self.n_orientations = n_orientations
+        self.n_states = self.n_types * self.n_orientations
+        self.contact_map = np.zeros(self.n_states**2)
+
+    # Different lattices for which we can use this class
+    @classmethod
+    def triangular(cls, n_types):
+        return cls(n_types, 6)
+
+    # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
+    def get_one_orientation_coeff(self, orientation, type):
+        return type * self.n_orientations + orientation
+
+    def get_interaction_coeff(self, orientation1, type1, orientation2, type2):
+        coeff_1 = self.get_one_orientation_coeff(orientation1, type1)
+        coeff_2 = self.get_one_orientation_coeff(orientation2, type2)
+        return coeff_1 + coeff_2 * self.n_types * self.n_orientations
+
+    # ----- MORE CONVENIENT ACCESS TO COEFFICIENTS -----
+    def __getitem__(self, orientations_types):
+        (orientation1, type1, orientation2, type2) = orientations_types
+        int_coeff = self.get_interaction_coeff(orientation1, type1, orientation2, type2)
+
+        return self.contact_map[int_coeff]
+
+    def __setitem__(self, orientations_types, value):
+        (orientation1, type1, orientation2, type2) = orientations_types
+        int_coeff = self.get_interaction_coeff(orientation1, type1, orientation2, type2)
+
+        self.contact_map[int_coeff] = value
+
+    # ----- GETTING 2D CONTACT MATRICES -----
+    def get_two_species_contact_matrix(self, type1, type2):
+        contact_map = np.zeros((self.n_orientations, self.n_orientations))
+        for orientation1 in range(self.n_orientations):
+            for orientation2 in range(self.n_orientations):
+                contact_map[orientation1, orientation2] = self[
+                    orientation1, type1, orientation2, type2
+                ]
+        return contact_map
+
+    def get_single_species_contact_matrix(self, type):
+        return self.get_two_species_contact_matrix(type, type)
+
+    # -----  GOING FROM 2D MATRICES TO FLATTENED ARRAYS -----
+    def set_two_species_contacts(self, type1, type2, contact_matrix):
+        """Contact_matrix has to be a n_orientations by n_orientations np array"""
+        if contact_matrix.shape != (self.n_orientations, self.n_orientations):
+            print("Invalid matrix format! Stopping now")
+            return
+
+        for orientation1 in range(self.n_orientations):
+            for orientation2 in range(self.n_orientations):
+                self[orientation1, type1, orientation2, type2] = contact_matrix[
+                    orientation1, orientation2
+                ]
+                self[orientation2, type2, orientation1, type1] = contact_matrix[
+                    orientation1, orientation2
+                ]
+        return
+
+    def set_single_species_contacts(self, type:int, contact_matrix):
+        """
+        Set couplings of particle species with index type, from numpy array contact_matrix.
+        contact_matrix has to be symmetric, or upper/lower triangular, otherwise the
+        interactions between particles are non-reciprocal, which is cool but out of the scope of
+        this program.
+        """
+        if (contact_matrix == contact_matrix.T).all:
+            self.set_two_species_contacts(type, type, contact_matrix)
+        elif (np.tril(contact_matrix) == contact_matrix).all or (
+            np.triu(contact_matrix) == contact_matrix
+        ).all:
+            self.set_two_species_contacts(type, type, contact_matrix + contact_matrix.T)
+        else:
+            print(
+                "Contact matrix is neither diagonal, nor upper or lower triangular."
+                "Aborting"
+            )
+
+        return
+
+    # ----- GETTING THE FORMATTED COUPLINGS FOR JSON INPUT ----- 
+    def get_formatted_couplings(self):
+        """Returns the contact  matrix in a format"""
+        return list(self.contact_map)
+
+
 # ---------- GENERAL FUNCTIONS ----------
-
-
 def flatten_couplings(coupling_arr) -> list:
-    sym_coupling_arr = (coupling_arr + coupling_arr.T)/2
+    sym_coupling_arr = (coupling_arr + coupling_arr.T) / 2
     return sym_coupling_arr.flatten().tolist()
 
-# SINGLE-TYPE SYSTEMS
 
+# SINGLE-TYPE SYSTEMS
 def block_pauli_x(n: int):
-    """ Returns the block Pauli x matrix of size n.
-    Necessary for moving from face-based to orientation-based matrices """
+    """Returns the block Pauli x matrix of size n.
+    Necessary for moving from face-based to orientation-based matrices"""
     if n % 2 != 0:
         print("Dimension should be even!")
         return np.zeros(n)
-    halfdim = n//2
+    halfdim = n // 2
     zero_block = np.zeros(halfdim)
     id_block = np.eye(halfdim)
-    return np.block([
-        [ zero_block, id_block  ],
-        [ id_block,   zero_block],
-        ])
+    return np.block(
+        [
+            [zero_block, id_block],
+            [id_block, zero_block],
+        ]
+    )
 
 
 def face_to_or(face_mat):
-    """ Converts a face-based interaction matrix to an orientation-based one,
-    which is the format taken as input by the C++ code """
+    """Converts a face-based interaction matrix to an orientation-based one,
+    which is the format taken as input by the C++ code"""
     return np.matmul(face_mat, block_pauli_x(face_mat.shape[0]))
 
 
 def symmetrize(face_mat):
     return (face_mat + face_mat.T) / 2
 
+
 # SEVERAL-TYPES SYSTEMS
-
-
 def block_block_pauli_x(n_faces: int, n_types: int):
     return np.tile(block_pauli_x(n_faces), (n_types, n_types))
 
+
 # ---------- CHAIN FUNCTIONS ----------
-
-
 def chain_LEL_1type(one_to_one, two_to_two, one_to_two):
     """ 
         Returns orientation-based 1D interaction matrix.
@@ -65,123 +183,8 @@ def chain_LEL_2types(mat_11, mat_21, mat_22):
     ])
     return np.matmul(block_block_pauli_x(2, 2), full_face_matrix)
 
+
 # ---------- TRIANGULAR LATTICE FUNCTIONS ----------
-
-
-def uniform_interaction_tri(e):
-    """
-        Returns an interaction matrix for triangular lattices where all
-        coefficients are the same.
-        Parameters:
-        - e: interaction energy
-    """
-    return e * np.ones((6, 6))
-
-def is_symmetric(matrix):
-    return np.isclose(matrix, (matrix + matrix.T) / 2).prod()
-
-
-class ContactMapWrapper:
-    """
-    Wrapper class to easily manipulate a contact map object.
-    The mirror image of what is contained in the C++ code.
-    """
-
-    def __init__(self, n_types, n_orientations):
-        self.n_types = n_types
-        self.n_orientations = n_orientations
-        self.n_states = self.n_types * self.n_orientations
-        self.contact_map = np.zeros(self.n_states**2)
-
-
-    # Different lattices for which we can use this class
-    @classmethod
-    def triangular(cls, n_types):
-        return cls(n_types, 6)
-
-    def get_one_face_coeff(self, face, type):
-        return type * self.n_orientations + face
-
-    def get_interaction_coeff(self, face1, type1, face2, type2):
-        coeff_1 = self.get_one_face_coeff(face1, type1)
-        coeff_2 = self.get_one_face_coeff(face2, type2)
-        return coeff_1 + coeff_2 * self.n_types * self.n_orientations
-
-    def __getitem__(self, faces_types):
-        (face1, type1, face2, type2) = faces_types
-        int_coeff = self.get_interaction_coeff(face1, type1, face2, type2)
-
-        return self.contact_map[int_coeff]
-
-    def __setitem__(self, faces_types, value):
-        (face1, type1, face2, type2) = faces_types
-        int_coeff = self.get_interaction_coeff(face1, type1, face2, type2)
-
-        self.contact_map[int_coeff] = value
-
-    def get_two_species_contact_matrix(self, type1, type2):
-        contact_map = np.zeros((self.n_orientations, self.n_orientations))
-        for face1 in range(self.n_orientations):
-            for face2 in range(self.n_orientations):
-                contact_map[face1, face2] = self[face1, type1, face2, type2]
-        return contact_map
-
-    def get_single_species_contact_matrix(self, type):
-        return self.get_two_species_contact_matrix(type, type)
-
-    def set_two_species_contacts(self, type1, type2, contact_matrix):
-        """Contact_matrix has to be a n_orientations by n_orientations np array"""
-        if contact_matrix.shape != (self.n_orientations, self.n_orientations):
-            print("Invalid matrix format! Stopping now")
-            return
-        # # Ensure contact matrix is symmetric
-        # if not is_symmetric(contact_matrix) and not symmetrize:
-        #     print("Contact energies are not symmetric! Aborting")
-        #     return
-        # else:
-        #     contact_matrix = (contact_matrix + contact_matrix.T) / 2
-
-        for face1 in range(self.n_orientations):
-            for face2 in range(self.n_orientations):
-                self[face1, type1, face2, type2] = contact_matrix[face1, face2]
-                self[face2, type2, face1, type1] = contact_matrix[face1, face2]
-        return
-
-    def set_single_species_contacts(self, type:int, contact_matrix):
-        """
-        Set couplings of particle species with index type, from numpy array contact_matrix.
-        contact_matrix has to be symmetric, or upper/lower triangular, otherwise the
-        interactions between particles are non-reciprocal, which is cool but out of the scope of
-        this program.
-        """
-        if contact_matrix == contact_matrix.T:
-            self.set_two_species_contacts(type, type, contact_matrix)
-        elif (
-            np.tril(contact_matrix) == contact_matrix
-            or np.triu(contact_matrix) == contact_matrix
-        ):
-            self.set_two_species_contacts(type, type, contact_matrix + contact_matrix.T)
-        else:
-            print(
-                "Contact matrix is neither diagonal, nor upper or lower triangular."
-                "Aborting"
-            )
-
-        return
-
-    def get_formatted_couplings(self):
-        """Returns the contact  matrix in a format"""
-        # Check the contacts are symmetric
-        # for type1 in range(self.n_types):
-        #     for type2 in range(self.n_types):
-        #         if not is_symmetric(self.get_two_species_contact_matrix(type1, type2)):
-        #             print(
-        #                 f"Contact matrix between species {type1} and {type2} is not symmetric."
-        #                 "Aborting"
-        #             )
-        #             return
-        return list(self.contact_map)
-
 
 def get_camembert_cmap(e_crystal, e_defect, e_repel):
     cmap_wrapper = ContactMapWrapper.triangular(1)

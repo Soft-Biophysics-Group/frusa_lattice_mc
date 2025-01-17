@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # Vincent Ouazan-Reboul, 2024.05.14
 # Set of utilities which the Python code will have to use frequently
+# To be loaded before doing anything else
 
 from pathlib import Path
 import json
@@ -12,6 +13,7 @@ import sys
 # #ILovePathLib <3 <3 <3
 parent_path = Path(__file__).parent.parent.parent.absolute().resolve()
 
+# ----- OFTEN-USED PATHS -----
 input_path = parent_path/"input/"
 default_model_params_file = input_path/"model_params.json"
 default_mc_params_file = input_path/"mc_params.json"
@@ -23,14 +25,16 @@ structures_path = data_path/"structures/"
 
 exec_path = parent_path/"build/app/frusa_mc"
 
-##### STANDARDIZED FUNCTIONS TO LOAD FILES #####
-def load_model_file(model_file = default_model_params_file):
+
+# ----- STANDARDIZED FUNCTIONS TO LOAD FILES -----
+def load_model_file(model_file=default_model_params_file):
     model_file_str = str(model_file)
     with open(model_file_str, "r") as f:
         params = json.load(f)
     return params
 
-def load_mc_file(mc_file = default_mc_params_file):
+
+def load_mc_file(mc_file=default_mc_params_file):
     mc_file_str = str(mc_file)
     with open(mc_file_str, "r") as f:
         params = json.load(f)
@@ -59,9 +63,11 @@ def load_structure(
         file_path = struct_folder / f"structure_{struct_index}.dat"
     else:
         file_path = struct_folder / "final_structure.dat"
-    return np.loadtxt(file_path, dtype = int)
+    return np.loadtxt(file_path, dtype=int)
 
-##### RUN SIMULATIONS FROM PYTHON  #####
+
+# ----- RUN SIMULATIONS FROM PYTHON  -----
+
 
 def check_data_existence(
     struct_path: str | Path = structures_path, e_path: str | Path = energy_path
@@ -81,7 +87,7 @@ def check_data_existence(
     return files_exist
 
 
-def run_simulation(overwrite = False):
+def run_simulation(overwrite=False):
     """
     Starts the frusa_mc program with default parameters from the root directory of the project.
     Should allow you to run the code smoothly from a python interpreter in which this file has
@@ -92,11 +98,11 @@ def run_simulation(overwrite = False):
     struct_path = mc_params["checkpoint_address"]
     model_params = load_model_file()
     e_path = model_params["e_av_output"]
-    if check_data_existence(struct_path = struct_path, e_path = e_path):
+    if check_data_existence(struct_path=struct_path, e_path=e_path):
         print("At least one of the output folders is already populated!")
         if not overwrite:
             print("overwrite flag set to False: exiting.")
             return
         else:
             print("overwrite flag set to True: running anyway.")
-    subprocess.run(str(exec_path), cwd = parent_path)
+    subprocess.run(str(exec_path), cwd=parent_path)

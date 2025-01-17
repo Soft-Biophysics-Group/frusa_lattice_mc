@@ -1,5 +1,15 @@
 # `frusa_mc` - Generic Monte Carlo module for mean-field and particle models of frustrated self-assembly
 
+## Scope of this code
+
+Simulated-annealing Metropolis Monte Carlo on Bravais lattices.
+
+Used by Vincent for: 
+
+- Camembert simulations
+
+
+
 ## Notes during code annotation
 
 * Only chain and triangular lattices are so far implemented!!!
@@ -49,6 +59,13 @@ Every time you want to use the Python code, activate the virtual environment fir
 The relevant header for `nlohmann::json` c++ library is located
 in `include/thirdparty/`.
 The python `json` library is a built-in module.
+
+### CLI11
+
+The relevant header for `CLI11` c++ library is located
+in `include/thirdparty/`.
+Used for parsing command-line arguments, mostly to choose input files.
+(Source)[https://github.com/CLIUtils/CLI11]
 
 
 ## Building using cmake

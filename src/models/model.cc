@@ -19,10 +19,10 @@ namespace model_space{
 
     geometry = geometry_space::Geometry();
 
-    particles_space::initialize_state(state,parameters,geometry);
+    particles_space::initialize_state(state, parameters, geometry);
 
-    particles_space::initialize_interactions(state,interactions,parameters,geometry);
-
+    particles_space::initialize_interactions(
+        state, interactions, parameters, geometry);
   }
 
   void model::print_model_state(){

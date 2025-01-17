@@ -1,5 +1,6 @@
 #include "geometry.h"
 #include "triangular.h"
+#include "cubic.h"
 #include "chain.h"
 #include "vector_utils.h"
 #include <stdexcept>
@@ -10,6 +11,7 @@ namespace geometry_space {
 
 bond_struct::bond_struct(lattice_options lattice)
 {
+  // Add lattices by hand as needed
   switch (lattice) {
     case chain:
       bond_permutation = chain_space::bond_struct::bond_permutation;
@@ -22,6 +24,12 @@ bond_struct::bond_struct(lattice_options lattice)
       bond_index = triangular_space::bond_struct::bond_index;
       opposite_bonds = triangular_space::bond_struct::opposite_bonds;
       break;
+    case cubic:
+      bond_permutation = cubic_space::bond_struct::bond_permutation;
+      bond_array = cubic_space::bond_struct::bond_array;
+      bond_index = cubic_space::bond_struct::bond_index;
+      opposite_bonds = cubic_space::bond_struct::opposite_bonds;
+    break;
     default:
       throw(std::runtime_error(
           "Wrong lattice option received duting bond_structure creation"));

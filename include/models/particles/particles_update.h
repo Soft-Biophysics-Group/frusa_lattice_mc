@@ -1,6 +1,12 @@
 #ifndef PARTICLES_UPDATE_HEADER_H
 #define PARTICLES_UPDATE_HEADER_H
 
+/**
+ * Functions to update the state of particles occupying the sites of a Bravais
+ * lattice according to the Metropolis-Hastings algorithm, and update the
+ * energy of the system accordingly.
+ */
+
 #include "json.hpp"
 #include "geometry.h"
 #include "particles_interactions.h"
@@ -33,14 +39,10 @@ void update_system(state_struct& state,
  * Library-specific definitions
  */
 
-// Pick one move at random
 mc_moves pick_random_move(model_parameters_struct &parameters);
 
-// Returns the index of a random lattice site containing a particle
 std::size_t select_random_full_index(state_struct &state,
                                      model_parameters_struct &parameters);
-
-// Returns the index of a random lattice site containing no particle
 std::size_t select_random_empty_index(state_struct &state,
                                       model_parameters_struct &parameters);
 
@@ -50,12 +52,15 @@ int perform_random_rotation(state_struct &state,
                             model_parameters_struct &parameters,
                             int site_index);
 
+// Measure the total energy of a pair of particles, avoiding double counting if
+// they occupy neighbouring sites
 double measure_pair_energy(int index1,
                            int index2,
                            int bond,
                            state_struct& state,
                            interactions_struct& interactions,
                            geometry_space::Geometry& geometry);
+
 /*
  * The following functions perform a MC move and return the corresponding energy
  * difference.

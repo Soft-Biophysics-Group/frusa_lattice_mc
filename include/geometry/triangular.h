@@ -37,10 +37,10 @@ struct bond_struct {
   }; //bond_index
 
   static inline const vec1i opposite_bonds {3, 4, 5, 0, 1, 2};
-};
-static constexpr int n_neighbours{6};
-static constexpr int n_orientations{6};
-} // triangular_space
-} // namespace geometry_space
+};  // bond_structure
+static constexpr int n_neighbours {6};
+static constexpr int n_orientations {6};
+}  // namespace triangular_space
+}  // namespace geometry_space
 
 #endif

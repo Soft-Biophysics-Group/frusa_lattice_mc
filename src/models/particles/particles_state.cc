@@ -210,7 +210,6 @@ int FullEmptySites::get_random_empty_site(model_parameters_struct& parameters)
       empty_sites_dist(parameters.rng))]);
 }
 
-// TODO Check I got the right indices
 void FullEmptySites::update_after_swap(const int initially_full_site,
                                        const int initially_empty_site)
 {
@@ -236,11 +235,11 @@ void FullEmptySites::update_after_swap(const int initially_full_site,
 void swap_sites(state_struct& state, int site_1_index, int site_2_index)
 {
   state.lattice_sites.swap_sites(site_1_index, site_2_index);
+  // If either site is empty, we need to update the lists of full and empty
+  // sites. Mind the order of arguments!
   if (state.lattice_sites.is_empty(site_1_index)) {
-    // state.full_empty_sites.update_after_swap(site_2_index, site_1_index);
     state.full_empty_sites.update_after_swap(site_1_index, site_2_index);
   } else if (state.lattice_sites.is_empty(site_2_index)) {
-    // state.full_empty_sites.update_after_swap(site_1_index, site_2_index);
     state.full_empty_sites.update_after_swap(site_2_index, site_1_index);
   }
 }
@@ -251,6 +250,10 @@ std::ostream &operator<<(std::ostream &out, state_struct &state) {
   out << "Number of particles of each type: ";
   array_space::print_vector<int>(out, state.n_particles);
   out << '\n';
+  // 
+  // I commented out this part because it overloads the text ouptut when the
+  // lattice is too big.
+  //
   /*out << "Particle type at each site:\n";*/
   /*array_space::print_vector(out, state.lattice_sites.types_m);*/
   /*out << '\n';*/

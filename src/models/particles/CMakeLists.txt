@@ -20,7 +20,7 @@ add_library(particles_library
             ${SOURCE_PARTICLES}
             ${HEADER_PARTICLES})
 
-if("${MODEL_TYPE}" STREQUAL "particles_hexagonal")
+if("${MODEL_TYPE}" STREQUAL "lattice_particles")
 
     target_compile_definitions(particles_library PRIVATE "PARTICLES_HEXAGONAL")
 

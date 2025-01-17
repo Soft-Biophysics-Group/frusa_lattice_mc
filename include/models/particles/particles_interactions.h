@@ -1,6 +1,13 @@
 #ifndef PARTICLES_INTERACTIONS_H
 #define PARTICLES_INTERACTIONS_H
 
+/**
+* Vincent Ouazan-Reboul, 2024
+* Classes and functions to measure, and keep track of, the
+* orientation-dependent interactions between particles living on a Bravais
+* lattice.
+*/
+
 #include "particles_parameters.h"
 #include "particles_state.h"
 
@@ -29,21 +36,19 @@ void initialize_interactions(state_struct& state,
                              model_parameters_struct& parameters,
                              geometry_space::Geometry geometry);
 
-// Print the summary of the interactions characteristics
+// Printers
 void print_interactions(interactions_struct &interactions);
-
-// Print current system energy
 void print_energy(interactions_struct &interactions);
 
 // Get the contact energy between 2 neighbouring sites with indices site1 and
-// site2, touching along respective edge indices edge1 and edge2.
+// site2.
 double get_contact_energy(state_struct& state,
                           int site1,
                           int site2,
                           interactions_struct& interactions,
                           geometry_space::Geometry geometry);
 
-// Get total energy of a given site, which is the sum of contact energy with
+// Get total energy of a given site, which is the sum of contact energies with
 // its neighbours
 double get_site_energy(state_struct &state, interactions_struct &interactions,
                        geometry_space::Geometry geometry, int site_index);

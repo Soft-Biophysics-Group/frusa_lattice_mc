@@ -1,17 +1,18 @@
 # `frusa_mc` - Generic Monte Carlo module for mean-field and particle models of frustrated self-assembly
 
+## Notes during code annotation
+
+* Only chain and triangular lattices are so far implemented!!!
+
 ## Future
 
 * Next: Change the geometry class to accept user input
-* Next: Implement Python classes to generate the interaction matrix
-* Next: Implement 1D lattice geometry and test the simulation on it first
 * When time: perform small refactor of the particles.update library, which is particularly
   ugly and reuses code
 
 ### General
 
 * Documentation (priority)
-* Geometry class (priority)
 * Write an interface for running jobs
 * Implement calculations of average energy, heat capacity, and correlation
   functions in `averages_utils`
@@ -19,11 +20,6 @@
 ### `default` model (`default_model_dev` branch)
 
 * Write the `default_averages` functions to collect average occupation numbers
-
-### Testing
-
-* V: I have for now added a `test/test_geometry.cc` file, the contents of which can be
-  copy-pasted into `app/main.cc` in order to test the Geometry class we have written.
 
 ### `fields` model on branch `fields_dev`
 
@@ -84,6 +80,7 @@ Currently, the available `<MODEL_NAME>` options are:
 * `fields_chain` - concentration fields on a 1D lattice
 * `fields_square` - concentration fields on a 2d square lattice
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
+* `lattice_particles` - discrete particles on a lattice of your choice
 
 ### Creating a custom `model` class
 

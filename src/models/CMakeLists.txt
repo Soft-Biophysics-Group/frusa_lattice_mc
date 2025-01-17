@@ -36,7 +36,7 @@ elseif("${MODEL_TYPE}" STREQUAL "fields_chain" OR
 
   target_link_libraries(model_library PRIVATE fields_library)
 
-elseif("${MODEL_TYPE}" STREQUAL "particles_hexagonal")
+elseif("${MODEL_TYPE}" STREQUAL "lattice_particles")
   target_compile_definitions(model_library PUBLIC "PARTICLES")
 
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/particles)

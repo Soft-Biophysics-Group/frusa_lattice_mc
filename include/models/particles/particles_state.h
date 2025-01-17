@@ -1,6 +1,12 @@
 #ifndef PARTICLES_STATE_HEADER_H
 #define PARTICLES_STATE_HEADER_H
 
+/**
+ * Vincent Ouazan-Reboul, 2024
+ * Classes and functions to manipulate the state of particles on a Bravais
+ * lattice
+ */
+
 #include "particles_parameters.h"
 #include "geometry.h"
 
@@ -49,7 +55,7 @@ public:
              state_struct& state,
              model_parameters_struct& parameters);
 
-  // Simple getters and setters
+  // ----- SIMPLE GETTERS AND SETTERS -----
   int get_type(const int site_index) const
   {
     return types_m[static_cast<std::size_t>(site_index)];
@@ -95,19 +101,19 @@ private:
   int n_orientations_m{};
 };
 
-/*
- * Class which keeps track of which lattice sites are full and empty.
- * To be updated whenever we swap full and empty sites.
- * Useful to pick a full/empty site at random.
- */
 class FullEmptySites
 {
+  /*
+   * Class which keeps track of which lattice sites are full and empty.
+   * To be updated whenever we swap full and empty sites.
+   * Useful to pick a full/empty site at random.
+   */
 public:
   FullEmptySites() = default;
   FullEmptySites(state_struct &state);
   void update_after_swap(const int initially_full_index,
                          const int initially_empty_index);
-  // Simple getters
+  // ----- SIMPLE GETTERS -----
   int get_n_full_sites()
   {
     return static_cast<int>(full_sites_indices_m.size());
@@ -116,7 +122,8 @@ public:
   {
     return static_cast<int>(empty_sites_indices_m.size());
   };
-  // Get random sites for MC moves
+
+  // ----- RANDOM SITE GETTERS -----
   int get_random_full_site(model_parameters_struct& parameters);
   int get_random_empty_site(model_parameters_struct& parameters);
   friend std::ostream& operator<<(std::ostream& out, state_struct& state);
@@ -131,16 +138,7 @@ private:
   vec1s site_inds_to_full_empty_m{};
 };
 
-// Structure containing the characteristics of the state of the system:
-// n_types          - number of different particle trypes
-// n_orientations   - number of orientations a particle can take
-// n_states         - total number of states (type+orientation) a given
-//                    particle can take
-// lx, ly, lz       - dimensions of the lattice
-// n_sites          - total number of sites
-// n_particles      - number of particles of each type
-// lattice_sites    - See SiteVector class
-// full_empty_sites - See FullEmptySites class
+// Structure containing the characteristics of the state of the system
 struct state_struct {
   // Number of particle types
   int n_types{};
@@ -169,6 +167,7 @@ void initialize_state(state_struct& state,
 // Print the current values of the structural properties of the system
 std::ostream& operator<<(std::ostream& out, state_struct& state);
 // Thin wrapper around operator<< to make this header consistent with the rest
+// of the code
 void print_state(state_struct &state);
 
 // Save the state of the lattice to a file "state_output"
@@ -201,7 +200,7 @@ void initialize_state_random_fixed_particle_numbers(
     model_parameters_struct& parameters);
 
 // Exchange the states of site_1 and site_2, updating both the SiteVector and
-// FullEmptySites objects
+// FullEmptySites objects. site_1 and site_2 can be either empty or full.
 void swap_sites(state_struct& state, int site_1_index, int site_2_index);
 
 }  // namespace particles_space

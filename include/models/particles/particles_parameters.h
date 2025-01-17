@@ -19,7 +19,10 @@ namespace particles_space {
 // it down the line
 // TODO Remove this type
 
-// Enum for the different types of possible particle moves.
+/** Enum for the different types of possible particle moves.
+ *Allows us to define move-specific probabilities without having to remember
+ *numbers associated to moves.
+ */
 enum mc_moves
 {
   swap_empty_full,

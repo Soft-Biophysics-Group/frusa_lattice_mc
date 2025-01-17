@@ -25,17 +25,6 @@
 
 * Debug Segmentation fault error in the fields library
 
-### `lattice_particles` model on branch `lattice_mc_dev`
-
-- Someday: make a lattice library where we compile the functions (e.g. geometry) used by both
-  the fields and lattice particles libraries.
-- Someday/maybe: Pre-calculate the exponentials of the interactions so that we can calculate
-  the energy differences faster during MC moves
-- Next: figure out where to declare the move_probas array in the code
-- When I start the cubic lattice: start specializing at compile time like Andrey does
-- After I'm done: regularize the number of edges to be a constexpr int defined at compile
-  time, depending on the compilation option chosen
-
 # `frusa_mc`
 
 ## Dependencies
@@ -48,7 +37,7 @@ To use it for the first time, go through the following steps in the `python` fol
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Every time you want to use the Python code, activate the virtual environment first with
@@ -81,6 +70,14 @@ Currently, the available `<MODEL_NAME>` options are:
 * `fields_square` - concentration fields on a 2d square lattice
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
 * `lattice_particles` - discrete particles on a lattice of your choice
+
+## Using the `lattice_particles` model
+
+The `lattice_particles` model consists of 2 portions: the C++ part which does the
+computational heavy lifting, and the Python part which can be used to generate the contact
+maps in various geometries and visualise the simulation results.
+
+In principle, going to the `python/examples` folder and looking at the notebooks 
 
 ### Creating a custom `model` class
 

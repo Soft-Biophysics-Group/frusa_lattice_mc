@@ -3,9 +3,11 @@ src/__init__.py
 src/config.py
 src/contact_utils.py
 src/json_dump.py
+src/lattice_utils.py
 src/frusa_lattice_mc.egg-info/PKG-INFO
 src/frusa_lattice_mc.egg-info/SOURCES.txt
 src/frusa_lattice_mc.egg-info/dependency_links.txt
 src/frusa_lattice_mc.egg-info/top_level.txt
 src/plotting/__init__.py
 src/plotting/plot_chain.py
+src/plotting/plot_tri.py

@@ -160,8 +160,9 @@
   "state_av_output": "/Users/vincent/research/projects/23_frustratedSelfAssembly/simulations/2404_frusa_lattice_mc/data/210115_zigzag2Species/average_state/",
   "e_av_output": "/Users/vincent/research/projects/23_frustratedSelfAssembly/simulations/2404_frusa_lattice_mc/data/210115_zigzag2Species/energy_moment/",
   "move_probas": {
-    "swap_empty_full": 0.3333333333333333,
-    "rotate": 0.3333333333333333,
-    "rotate_and_swap_w_empty": 0.3333333333333333
+    "swap_empty_full": 0.25,
+    "rotate": 0.25,
+    "rotate_and_swap_w_empty": 0.25,
+    "swap_full_full": 0.25
   }
 }

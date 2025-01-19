@@ -12,6 +12,5 @@
 __pycache__/
 .venv/
 .DS_Store
-app/
 .ipynb_checkpoints/
 *.egg-info/

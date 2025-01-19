@@ -34,6 +34,7 @@ using in order to understand the conventions we use.
 #include <fstream>
 #include <array>
 #include <string>
+#include <string_view>
 
 using BondIndexMap = std::map<std::array<int,3> , int>;
 
@@ -94,7 +95,7 @@ class Geometry {
 public:
   // ----- CONSTRUCTORS -----
   Geometry(lattice_options lattice, int lx, int ly, int lz = 1);
-  Geometry(const std::string &geometry_input = "input/model_params.json");
+  Geometry(const std::string_view geometry_input = "input/model_params.json");
 
   // ----- SIMPLE GETTERS -----
   int get_n_orientations() const { return n_orientations_m; };

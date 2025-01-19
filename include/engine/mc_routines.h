@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <string_view>
 
 #include <json.hpp>
 
@@ -18,7 +19,7 @@ namespace simulation_space{
 
   /*Monte Carlo parameters*/
   struct mc_parameters_struct{
-    mc_parameters_struct();
+    mc_parameters_struct(std::string_view mc_input);
     int mcs_eq;
     int mcs_av;
     double Ti;
@@ -48,7 +49,7 @@ namespace simulation_space{
     public:
 
       // Class constructor
-      mc();
+      mc(std::string_view mc_input);
 
       // Prints user-defined MC parameters
       void print_mc_parameters();

@@ -34,7 +34,7 @@ int main(int argc, char** argv)
   new_model.print_model_interactions();
 
   // Create MC engine and perform annealing
-  simulation_space::mc annealing;
+  simulation_space::mc annealing {mc_params_file};
   annealing.print_mc_parameters();
 
   annealing.t_scan(new_model);

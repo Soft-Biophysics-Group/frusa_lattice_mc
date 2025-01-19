@@ -5,13 +5,13 @@
 
 namespace simulation_space{
 
-  mc_parameters_struct::mc_parameters_struct(){
+  mc_parameters_struct::mc_parameters_struct(std::string_view mc_input){
     /*
      * Populate the struct using the input JSON file
      */
 
     std::ifstream mc_f;
-    mc_f.open("./input/mc_params.json");
+    mc_f.open(mc_input);
     if(!mc_f){
       std::cerr << "Could not open JSON MC parameters file" << std::endl;
       exit(1);
@@ -37,7 +37,7 @@ namespace simulation_space{
       json_mc_params["final_structure_address"].template get<std::string>();
   }
 
-  mc::mc(){
+  mc::mc(std::string_view mc_input): parameters {mc_parameters_struct(mc_input)}{
 
     // Map the cooling option on the integer variable
     try{

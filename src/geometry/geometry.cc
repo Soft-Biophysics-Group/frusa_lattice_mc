@@ -74,7 +74,7 @@ Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
   set_lattice_properties();
 }
 
-Geometry::Geometry(const std::string& geometry_input)
+Geometry::Geometry(const std::string_view geometry_input)
 {
   std::ifstream geometry_input_f {geometry_input};
   if (!geometry_input_f) {

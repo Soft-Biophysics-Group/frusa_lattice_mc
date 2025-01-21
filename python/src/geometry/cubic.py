@@ -1,0 +1,153 @@
+# pyright basic
+"""
+Vincent Ouazan-Reboul, 2025
+Tools to implement geometry of cubic particles, in order to easily generate contact maps and plot
+simulation results
+
+TODOS:
+- Check the rotation operations are correct
+- Find a better way to explain the docstrings
+"""
+
+import bpy
+# mathutils is provided by bpy
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+# Globals
+ID_ROT = R.identity()
+# scipy convention is positive = counter-clockwise when looking at axis through + sign
+# At this point I encourage you to play with the cube to understand why we define rotations like
+# this
+C4XM = R.from_euler("x", -90, degrees=True)
+C4Y = R.from_euler("y",  90, degrees=True)
+C4ZM = R.from_euler("z", -90, degrees=True)
+C2Z = C4ZM * C4ZM
+C4XM_POWERS = [C4XM**i for i in range(4)]
+BOND_ORIENTATIONS = [ID_ROT, C4ZM, C4Y]  # , C2Z, C2Z * C4Z, C2Z * C4Y]
+
+
+class CubicParticle:
+    def __init__(self):
+        # We keep track of only x and y internal vectors, z is redundant
+        self.orientation_0_vectors = np.array([[1, 0, 0], [0, 1, 0]])
+        self.n_orientations = 24
+        self.orientation_rotations = self.gen_orientation_rotations()
+        self.face_to_bond = {
+            ( 1,  0,  0): 0,
+            ( 0,  1,  0): 1,
+            ( 0,  0,  1): 2,
+            (-1,  0,  0): 3,
+            ( 0, -1,  0): 4,
+            ( 0,  0, -1): 5,
+        }
+        self.rotation_to_bond = self.gen_bond_rotations()
+
+    def gen_orientation_rotations(self):
+        # Rotation operations are defined as quaternions and compositions of quaternions
+        orientations = [ID_ROT for i in range(self.n_orientations)]
+        # Generate first rotation
+        # Generate the faces/orientations along + directions
+        for i, orientation in enumerate(BOND_ORIENTATIONS):
+            for j in range(4):
+                orientation_index = i* 4 + j
+                orientations[orientation_index] =  C4XM_POWERS[j] * BOND_ORIENTATIONS[i]
+                orientations[get_opposite_orientation(orientation_index)] = (
+                    C2Z * orientations[orientation_index]
+                )
+        return R.concatenate(orientations)
+
+    def gen_bond_rotations(self):
+        """
+        Generate a list associating which bond (1, 0, 0) maps to under every rotation.
+        """
+        all_rotated_bonds = []
+        zero_bond = np.array([1, 0, 0])
+        for rot in self.orientation_rotations:
+            # Change type to round coefficients to 0, 1, or -1
+            new_bond_arr = rot.apply(zero_bond).astype(int)
+            new_bond = tuple(new_bond_arr)
+            all_rotated_bonds.append(self.face_to_bond[new_bond])
+        return all_rotated_bonds
+
+    def identify_orientation(self, rotation):
+        """
+        Identifies which orientation the rotation `rotation` puts the particle in.
+        Returns -1 if the supplied rotation does not put the particle in one of its 24 possible
+        orientations.
+        """
+        for i, rot in enumerate(self.orientation_rotations):
+            if rot.approx_equal(rotation):
+                return i
+        return -1
+
+    def apply_rotation(self, rotation_idx, orientation):
+        """
+        Applies rotation rotation_idx to particle orientation orientation, and returns the new
+        orientation of the particle.
+        """
+        # Mind the order when composing rotations!
+        new_rot = (
+            self.orientation_rotations[rotation_idx]
+            * self.orientation_rotations[orientation]
+        )
+        return self.identify_orientation(new_rot)
+
+    def face_face_to_ref_bond(self, face1, face2):
+        """
+        Takes a contact between 2 faces and returns the corresponding orientations of the
+        particles if they were to touch through the reference bond (1, 0, 0).
+        The face of the first particle is put in its reference orientation, i.e. it gets rotated
+        until its rotation index is the lowest (a multiple of 4).
+        The first particle occupies lattice site (0, 0, 0) and the second (1, 0, 0).
+        """
+        curr_orientation_2 = get_opposite_orientation(face2)
+
+        return (face1, curr_orientation_2, 0)
+
+    def get_all_orientations_reproducing_ref_contact(
+        self, ref_orientation_1, ref_orientation_2
+    ):
+        """
+        From the orientations of particle 1 at lattice site (0,0,0) and of particle 2 at site
+        (1,0,0), fill list `all_orientation_bond` with all the [orientation_1, orientation_2,
+        bond] combination reproducing the contact between the 2 particles.
+        """
+        all_orientation_sets = []
+        for rotation_idx in range(self.n_orientations):
+            orientation_1 = self.apply_rotation(rotation_idx, ref_orientation_1)
+            orientation_2 = self.apply_rotation(rotation_idx, ref_orientation_2)
+            bond = self.rotation_to_bond[rotation_idx]
+            all_orientation_sets.append([orientation_1, orientation_2, bond])
+        return all_orientation_sets
+
+    def get_all_orientation_bond_contacts(self, face1, face2):
+        """
+        For a face-face contact between `face1` and `face2`, generates all the (orientation,
+        orientation, bond) triplets reproducing this contact as a 3-column array.
+        """
+        all_orientation_bond = []
+        ref_orientation_1, ref_orientation_2, _ = self.face_face_to_ref_bond(face1, face2)
+        all_orientation_bond.extend(
+            self.get_all_orientations_reproducing_ref_contact(
+                ref_orientation_1, ref_orientation_2
+            )
+        )
+        # Apply all possible rotations to the contact we are considering
+
+        # We also need to take into account the contacts when 2 is to the left of 1
+        # in the reference bond!
+        if face1 != face2:
+            ref_orientation_2_reverse, ref_orientation_1_reverse, _ = (
+                self.face_face_to_ref_bond(face2, face1)
+            )
+            all_orientation_bond.extend(
+                self.get_all_orientations_reproducing_ref_contact(
+                    ref_orientation_2_reverse, ref_orientation_1_reverse
+                )
+            )
+
+        return np.vstack(all_orientation_bond)
+
+def get_opposite_orientation(orientation):
+    return (orientation + 12) % 24

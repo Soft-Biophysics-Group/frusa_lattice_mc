@@ -13,6 +13,8 @@ class ContactMapWrapper:
     directly as input for the C++ code.
     Its goal is to make filling that array as convenient as possible.
 
+    Note that the interaction matrices manipulated by that class assume that all contacts happen
+    through bond 0.
     The typical workflow when designing an interaction matrix will be:
     1. Create a class instance using the constructor associated to the lattice you will be
     working with
@@ -25,6 +27,8 @@ class ContactMapWrapper:
 
     ## Constructors:
     - `triangular(n_types)`: creates a class instance for a triangular lattice containing
+      `n_types` different particle types.
+    - `cubic(n_types)`: creates a class instance for a cubic lattice containing
       `n_types` different particle types.
     - `__init(n_types, n_orientations)__`: creates a class instance for `n_types`
       different particle types and `n_orientations` particle orientations.
@@ -42,6 +46,10 @@ class ContactMapWrapper:
     @classmethod
     def triangular(cls, n_types):
         return cls(n_types, 6)
+
+    @classmethod
+    def cubic(cls, n_types):
+        return cls(n_types, 24)
 
     # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
     def get_one_orientation_coeff(self, orientation, type):

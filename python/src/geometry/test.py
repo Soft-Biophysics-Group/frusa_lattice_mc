@@ -36,17 +36,18 @@ test_orientation = 18
 opp_orientation = get_opposite_orientation(test_orientation)
 print(f"Opposite orientation to {test_orientation} is {opp_orientation}")
 
-# Putting one (face1, face2) formatted contact into (orientation1, orientation2, 0) format
-# with orientation1 as low as can be given face1 == in the reference orientation associated with
-# the face
+# Putting one (face1, face2, bond) formatted contact into (orientation1, orientation2) through
+# bond 0 format
 # Contact between 21 and 4 should map to orientations 20 and 19
 face1 = 21
 face2 = 4
-orientation1, orientation2, _ = cp.face_face_to_ref_bond(face1, face2)
+bond_ind = 5
+orientation1, orientation2 = cp.face_face_to_ref_bond(face1, face2, bond_ind)
 print(
-    f"\nContact between {face1} and {face2} maps to reference orientations "
+    f"\nContact between {face1} and {face2} through bond {bond_ind} maps to reference orientations "
     f"{orientation1} and {orientation2} along bond 0"
 )
+
 all_contacts = cp.get_all_orientation_bond_contacts(face1, face2)
 print(
     f"All of the corresponding (orientation, orientation, bond) combinations are: {all_contacts}"

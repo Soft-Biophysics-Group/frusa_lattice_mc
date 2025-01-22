@@ -1,8 +1,14 @@
 # Andrey Zelenskiy, Vincent Ouazan-Reboul, 2024
 # Functions and classes to generate contact maps for input of `frusa_mc`.
+# pyright: basic
 from sys import exception
 import numpy as np
 from numpy.typing import NDArray
+from geometry import geometry
+from geometry.cubic import CubicGeometry
+from geometry.triangular import TriangularGeometry
+
+LATTICE_NAMES = ["chain", "triangular", "cubic"]
 
 class ContactMapWrapper:
     """
@@ -25,6 +31,12 @@ class ContactMapWrapper:
     and `set_two_species_contacts` method
     5. Get the properly formatted couplings using the `get_formatted_couplings` method.
 
+    If you only need to set a couple of orientations, you can do so using the syntax:
+    `cmap_wrapper[orientation_1, type_1, orientation_2, type_2] = energy`.
+    The __setitem__ function takes care of setting all the coefficients redundant with the
+    initial geometry as well: i.e. the ones corresponding to particle 2 on the left and 1 on the
+    right, the ones which should be equal through rotational invariance, etc...
+
     ## Constructors:
     - `triangular(n_types)`: creates a class instance for a triangular lattice containing
       `n_types` different particle types.
@@ -35,21 +47,24 @@ class ContactMapWrapper:
       Usually not called directly, but used by class constructors.
     """
 
-    # ----- CONSTRUCTORS ----- 
-    def __init__(self, n_types, n_orientations):
+    # ----- CONSTRUCTORS -----
+    def __init__(
+        self, n_types=1, n_orientations=6, lattice_geometry=TriangularGeometry()
+    ):
         self.n_types = n_types
         self.n_orientations = n_orientations
         self.n_states = self.n_types * self.n_orientations
         self.contact_map = np.zeros(self.n_states**2)
+        self.geometry = lattice_geometry
 
     # Different lattices for which we can use this class
     @classmethod
     def triangular(cls, n_types):
-        return cls(n_types, 6)
+        return cls(n_types, 6, TriangularGeometry())
 
     @classmethod
     def cubic(cls, n_types):
-        return cls(n_types, 24)
+        return cls(n_types, 24, CubicGeometry())
 
     # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
     def get_one_orientation_coeff(self, orientation, type):
@@ -60,6 +75,7 @@ class ContactMapWrapper:
         coeff_2 = self.get_one_orientation_coeff(orientation2, type2)
         return coeff_1 + coeff_2 * self.n_types * self.n_orientations
 
+
     # ----- MORE CONVENIENT ACCESS TO COEFFICIENTS -----
     def __getitem__(self, orientations_types):
         (orientation1, type1, orientation2, type2) = orientations_types
@@ -69,9 +85,40 @@ class ContactMapWrapper:
 
     def __setitem__(self, orientations_types, value):
         (orientation1, type1, orientation2, type2) = orientations_types
-        int_coeff = self.get_interaction_coeff(orientation1, type1, orientation2, type2)
+        equiv_orientations = self.get_equivalent_orientation_pairs(
+            orientation1, orientation2
+        )
+        # All equivalent contacts with particle 1 at the center and through bond 0
+        for this_orientation1, this_orientation2 in equiv_orientations:
+            int_coeff = self.get_interaction_coeff(
+                this_orientation1, type1, this_orientation2, type2
+            )
+            self.contact_map[int_coeff] = value
+        # All equivalent contacts with particle 2 at the center and through bond 0
+        for (
+            this_orientation_2,
+            this_orientation_1,
+        ) in self.geometry.get_reverse_orientations_from_orientations(
+            orientation1, orientation2
+        ):
+            int_coeff = self.get_interaction_coeff(
+                this_orientation2, type2, this_orientation1, type1
+            )
+            self.contact_map[int_coeff] = value
 
-        self.contact_map[int_coeff] = value
+    # -----SETTING EQUIVALENT COEFFICIENTS -----
+    def get_equivalent_orientation_pairs(self, orientation1, orientation2):
+        """
+        Depending on the lattice geometry, when setting a contact with an (orientation,
+        orientation) pair, there will be some amount of other (orientation, orientation) pairs
+        reproducing the same contact through bond 0.
+        This function generates all of them for the implemented lattices (so far only cubic).
+        TODO: Implement triangular lattice
+        """
+
+        return self.geometry.get_equivalent_orientations_from_orientations(
+            orientation1, orientation2
+        )
 
     # ----- GETTING 2D CONTACT MATRICES -----
     def get_two_species_contact_matrix(self, type1, type2):
@@ -98,9 +145,12 @@ class ContactMapWrapper:
                 self[orientation1, type1, orientation2, type2] = contact_matrix[
                     orientation1, orientation2
                 ]
-                self[orientation2, type2, orientation1, type1] = contact_matrix[
-                    orientation1, orientation2
-                ]
+                self[
+                    self.geometry.get_opposite_orientation(orientation2),
+                    type2,
+                    self.geometry.get_opposite_orientation(orientation1),
+                    type1,
+                ] = contact_matrix[orientation1, orientation2]
         return
 
     def set_single_species_contacts(self, type:int, contact_matrix):
@@ -131,7 +181,7 @@ class ContactMapWrapper:
 
 
 # ---------- GENERAL FUNCTIONS ----------
-def flatten_couplings(coupling_arr) -> list:
+def flatten_couplings(coupling_arr) -> list[float]:
     sym_coupling_arr = (coupling_arr + coupling_arr.T) / 2
     return sym_coupling_arr.flatten().tolist()
 

@@ -1,9 +1,9 @@
 import config as cfg
-from cubic import CubicParticle, get_opposite_orientation
+from cubic import CubicGeometry, get_opposite_orientation
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-cp = CubicParticle()
+cp = CubicGeometry()
 
 print("Testing generated rotation against printed cube")
 all_rots_euler = np.array(

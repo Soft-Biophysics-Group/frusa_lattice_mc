@@ -5,7 +5,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
 import numpy as np
-from lattice_utils import (
+from geometry.geometry import (
     lattice_coords_to_lattice_site_2d,
     lattice_site_to_lattice_coords_2d,
     get_full_sites_characteristics,

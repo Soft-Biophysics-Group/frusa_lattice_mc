@@ -12,7 +12,7 @@ import config as cfg
 from pathlib import Path
 
 ### Key parameter: how we will name this run
-run_name = "01_crystal"
+run_name = "01_liquid"
 
 ### Define model parameters
 

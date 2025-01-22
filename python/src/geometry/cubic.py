@@ -5,11 +5,9 @@ Tools to implement geometry of cubic particles, in order to easily generate cont
 simulation results
 
 TODOS:
-- Check the rotation operations are correct
 - Find a better way to explain the docstrings
 """
 
-import bpy
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -55,7 +53,7 @@ class CubicGeometry:
                 orientations[orientation_index] = (
                     C4XM_POWERS[j] * BOND_ORIENTATIONS_POSITIVE[i]
                 )
-                orientations[get_opposite_orientation(orientation_index)] = (
+                orientations[self.get_opposite_orientation(orientation_index)] = (
                     C2Z * orientations[orientation_index]
                 )
         return R.concatenate(orientations)
@@ -73,7 +71,7 @@ class CubicGeometry:
         opposite_orientation_2_in_ref = self.identify_orientation(
             ALL_BOND_ORIENTATIONS[bond_index].inv() * self.orientation_rotations[face2]
         )
-        orientation_2_in_ref = get_opposite_orientation(opposite_orientation_2_in_ref)
+        orientation_2_in_ref = self.get_opposite_orientation(opposite_orientation_2_in_ref)
 
         return orientation_1_in_ref, orientation_2_in_ref
 
@@ -141,7 +139,35 @@ class CubicGeometry:
         bond_index = self.bond_to_bond_index[bond]
         return bond_index
 
-    def get_all_orientation_bond_contacts(self, face1, face2):
+    def get_equivalent_orientations_from_orientations(
+        self, orientation_1, orientation_2
+    ):
+        all_equivalent_orientation_pairs = []
+        # ref_orientation_1, ref_orientation_2 = self.face_face_to_ref_bond(
+        #     face1, face2, bond
+        # )
+        # If face1 n
+        # Apply all possible rotations to the contact we are considering
+        all_equivalent_orientation_pairs.extend(
+            self.get_all_orientations_reproducing_ref_contact(
+                orientation_1, orientation_2
+            )
+        )
+
+        return np.vstack(all_equivalent_orientation_pairs)
+
+    def get_reverse_orientations_from_orientations(self, orientation_1, orientation_2):
+        all_opposite_orientation_pairs = []
+        if orientation_1 != self.get_opposite_orientation(orientation_2):
+            orientation_1_reverse = self.get_opposite_orientation(orientation_1)
+            orientation_2_reverse = self.get_opposite_orientation(orientation_2)
+            return self.get_equivalent_orientations_from_orientations(
+                orientation_2_reverse, orientation_1_reverse
+            )
+        else:
+            return []
+
+    def get_equivalent_orientations_from_faces(self, face1, face2):
         """
         For a face-face contact between `face1` and `face2`,
         generates all the (orientation, orientation) pairs reproducing this contact through bond
@@ -151,32 +177,9 @@ class CubicGeometry:
         # contact through bond 0. So we can consider the case where orientation1 = face1 and
         # orientation2 = opposite(face2).
         # We don't need to consider bonds different from 0: the C++ code already does that!
-        all_orientation_bond = []
-        ref_orientation_1 = face1
-        ref_orientation_2 = get_opposite_orientation(face2)
-        # ref_orientation_1, ref_orientation_2 = self.face_face_to_ref_bond(
-        #     face1, face2, bond
-        # )
-        # If face1 n
-        # Apply all possible rotations to the contact we are considering
-        all_orientation_bond.extend(
-            self.get_all_orientations_reproducing_ref_contact(
-                ref_orientation_1, ref_orientation_2
-            )
-        )
+        orientation_2 = self.get_opposite_orientation(face2)
 
-        # We also need to take into account the contacts when 2 is to the left of 1
-        # in the reference bond!
-        if face1 != face2:
-            ref_orientation_1_reverse = get_opposite_orientation(face1)
-            ref_orientation_2_reverse = face2
-            all_orientation_bond.extend(
-                self.get_all_orientations_reproducing_ref_contact(
-                    ref_orientation_2_reverse, ref_orientation_1_reverse
-                )
-            )
+        return self.get_equivalent_orientations_from_orientations(face1, orientation_2)
 
-        return np.vstack(all_orientation_bond)
-
-def get_opposite_orientation(orientation):
-    return (orientation + 12) % 24
+    def get_opposite_orientation(self, orientation):
+        return (orientation + 12) % 24

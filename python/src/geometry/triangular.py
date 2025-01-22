@@ -29,18 +29,18 @@ class TriangularGeometry:
         }
         # self.rotation_to_bond = self.gen_bond_rotations()
 
-    def get_equivalent_orientations_from_orientations(self, orientation1, orientation2):
+    def get_equivalent_face_pairs(self, orientation1, orientation2):
         return [[orientation1, orientation2]]
 
-    def get_reverse_orientations_from_orientations(self, orientation_1, orientation_2):
-        if orientation_1 != self.get_opposite_orientation(orientation_2):
-            return []
-        else:
-            return [[
-                self.get_opposite_orientation(orientation_2),
-                self.get_opposite_orientation(orientation_1),
-            ]]
-
+    # def get_reverse_orientations_from_orientations(self, orientation_1, orientation_2):
+    #     if orientation_1 != self.get_opposite_orientation(orientation_2):
+    #         return []
+    #     else:
+    #         return [[
+    #             self.get_opposite_orientation(orientation_2),
+    #             self.get_opposite_orientation(orientation_1),
+    #         ]]
+    #
     #
     # def gen_orientation_rotations(self):
     #     # Rotation operations are defined as quaternions and compositions of quaternions

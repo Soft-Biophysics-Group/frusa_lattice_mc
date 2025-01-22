@@ -31,8 +31,8 @@ class ContactMapWrapper:
     and `set_two_species_contacts` method
     5. Get the properly formatted couplings using the `get_formatted_couplings` method.
 
-    If you only need to set a couple of orientations, you can do so using the syntax:
-    `cmap_wrapper[orientation_1, type_1, orientation_2, type_2] = energy`.
+    If you only need to set a couple of faces, you can do so using the syntax:
+    `cmap_wrapper[face_1, type_1, face_2, type_2] = energy`.
     The __setitem__ function takes care of setting all the coefficients redundant with the
     initial geometry as well: i.e. the ones corresponding to particle 2 on the left and 1 on the
     right, the ones which should be equal through rotational invariance, etc...
@@ -67,47 +67,53 @@ class ContactMapWrapper:
         return cls(n_types, 24, CubicGeometry())
 
     # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
-    def get_one_orientation_coeff(self, orientation, type):
+    def get_one_face_coeff(self, orientation, type):
+        """
+        Returns a single hashed index describing the face of a particle, taking into account its
+        type: faces 0 to n_orientation-1 belong to species 0, 1 to 2*n_orientations-1 to 1,
+        etc...
+        """
         return type * self.n_orientations + orientation
 
-    def get_interaction_coeff(self, orientation1, type1, orientation2, type2):
-        coeff_1 = self.get_one_orientation_coeff(orientation1, type1)
-        coeff_2 = self.get_one_orientation_coeff(orientation2, type2)
+    def get_interaction_coeff(self, face1, type1, face2, type2):
+        coeff_1 = self.get_one_face_coeff(face1, type1)
+        coeff_2 = self.get_one_face_coeff(face2, type2)
         return coeff_1 + coeff_2 * self.n_types * self.n_orientations
 
 
     # ----- MORE CONVENIENT ACCESS TO COEFFICIENTS -----
-    def __getitem__(self, orientations_types):
-        (orientation1, type1, orientation2, type2) = orientations_types
-        int_coeff = self.get_interaction_coeff(orientation1, type1, orientation2, type2)
+    def __getitem__(self, faces_types):
+        (face1, type1, face2, type2) = faces_types
+        int_coeff = self.get_interaction_coeff(face1, type1, face2, type2)
 
         return self.contact_map[int_coeff]
 
-    def __setitem__(self, orientations_types, value):
-        (orientation1, type1, orientation2, type2) = orientations_types
-        equiv_orientations = self.get_equivalent_orientation_pairs(
-            orientation1, orientation2
-        )
+    def __setitem__(self, faces_types, value):
+        (face1, type1, face2, type2) = faces_types
+        # If we are in 3D, some pairs of faces might be equivalent to the one we are looking at
+        # through rotational invariance. If so, we must generate these.
+        equiv_faces = self.get_equivalent_face_pairs(face1, face2)
         # All equivalent contacts with particle 1 at the center and through bond 0
-        for this_orientation1, this_orientation2 in equiv_orientations:
-            int_coeff = self.get_interaction_coeff(
-                this_orientation1, type1, this_orientation2, type2
-            )
+        for this_face1, this_face2 in equiv_faces:
+            int_coeff = self.get_interaction_coeff(this_face1, type1, this_face2, type2)
             self.contact_map[int_coeff] = value
-        # All equivalent contacts with particle 2 at the center and through bond 0
-        for (
-            this_orientation_2,
-            this_orientation_1,
-        ) in self.geometry.get_reverse_orientations_from_orientations(
-            orientation1, orientation2
-        ):
-            int_coeff = self.get_interaction_coeff(
-                this_orientation2, type2, this_orientation1, type1
+            # We also need to fill the coefficients with particle 1 and particle 2 swapped to
+            # respect symmetry of the interactions
+            int_coeff_reversed = self.get_interaction_coeff(
+                this_face2, type2, this_face1, type1
             )
-            self.contact_map[int_coeff] = value
+            self.contact_map[int_coeff_reversed] = value
+        # for (
+        #     this_face_2,
+        #     this_face_1,
+        # ) in self.geometry.get_reverse_orientations_from_orientations(face1, face2):
+        #     int_coeff = self.get_interaction_coeff(
+        #         this_face2, type2, this_face1, type1
+        #     )
+        #     self.contact_map[int_coeff] = value
 
     # -----SETTING EQUIVALENT COEFFICIENTS -----
-    def get_equivalent_orientation_pairs(self, orientation1, orientation2):
+    def get_equivalent_face_pairs(self, face1, face2):
         """
         Depending on the lattice geometry, when setting a contact with an (orientation,
         orientation) pair, there will be some amount of other (orientation, orientation) pairs
@@ -116,17 +122,17 @@ class ContactMapWrapper:
         TODO: Implement triangular lattice
         """
 
-        return self.geometry.get_equivalent_orientations_from_orientations(
-            orientation1, orientation2
+        return self.geometry.get_equivalent_face_pairs(
+            face1, face2
         )
 
     # ----- GETTING 2D CONTACT MATRICES -----
     def get_two_species_contact_matrix(self, type1, type2):
         contact_map = np.zeros((self.n_orientations, self.n_orientations))
-        for orientation1 in range(self.n_orientations):
-            for orientation2 in range(self.n_orientations):
-                contact_map[orientation1, orientation2] = self[
-                    orientation1, type1, orientation2, type2
+        for face1 in range(self.n_orientations):
+            for face2 in range(self.n_orientations):
+                contact_map[face1, face2] = self[
+                    face1, type1, face2, type2
                 ]
         return contact_map
 
@@ -140,17 +146,17 @@ class ContactMapWrapper:
             print("Invalid matrix format! Stopping now")
             return
 
-        for orientation1 in range(self.n_orientations):
-            for orientation2 in range(self.n_orientations):
-                self[orientation1, type1, orientation2, type2] = contact_matrix[
-                    orientation1, orientation2
+        for face1 in range(self.n_orientations):
+            for face2 in range(self.n_orientations):
+                self[face1, type1, face2, type2] = contact_matrix[
+                    face1, face2
                 ]
-                self[
-                    self.geometry.get_opposite_orientation(orientation2),
-                    type2,
-                    self.geometry.get_opposite_orientation(orientation1),
-                    type1,
-                ] = contact_matrix[orientation1, orientation2]
+                # self[
+                #     self.geometry.get_opposite_orientation(face2),
+                #     type2,
+                #     self.geometry.get_opposite_orientation(face1),
+                #     type1,
+                # ] = contact_matrix[face1, face2]
         return
 
     def set_single_species_contacts(self, type:int, contact_matrix):

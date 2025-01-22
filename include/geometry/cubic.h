@@ -75,21 +75,21 @@ struct bond_struct {
     { 1,  0,  0},
     { 0,  1,  0},
     { 0,  0,  1},
-    { 0,  0, -1},
-    { 0, -1,  0},
     {-1,  0,  0},
+    { 0, -1,  0},
+    { 0,  0, -1},
   }; //bond_directions
 
   static inline const BondIndexMap bond_index{
     { { 1,  0,  0}, 0 },
     { { 0,  1,  0}, 1 },
     { { 0,  0,  1}, 2 },
-    { { 0,  0, -1}, 3 },
+    { {-1,  0,  0}, 3 },
     { { 0, -1,  0}, 4 },
-    { {-1,  0,  0}, 5 },
+    { { 0,  0, -1}, 5 },
   }; //bond_index
 
-  static inline const vec1i opposite_bonds {5, 4, 3, 2, 1, 0};
+  static inline const vec1i opposite_bonds {3, 4, 5, 0, 1, 2};
 };  // bond_structure
 static constexpr int n_neighbours {6};
 static constexpr int n_orientations {24};

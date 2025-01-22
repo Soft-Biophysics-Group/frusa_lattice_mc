@@ -25,6 +25,7 @@ structures_path = data_path/"structures/"
 
 exec_path = parent_path/"build/app/frusa_mc"
 
+python_path = parent_path/"python"
 
 # ----- STANDARDIZED FUNCTIONS TO LOAD FILES -----
 def load_model_file(model_file=default_model_params_file):

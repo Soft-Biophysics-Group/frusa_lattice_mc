@@ -28,7 +28,7 @@ BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C4ZM, C4Y]  # , C2Z, C2Z * C4Z, C2Z * C4Y]
 ALL_BOND_ORIENTATIONS = [*BOND_ORIENTATIONS_POSITIVE, C2Z, C2Z * C4ZM, C2Z * C4Y]
 
 
-class CubicParticle:
+class CubicGeometry:
     def __init__(self):
         # We keep track of only x and y internal vectors, z is redundant
         self.orientation_0_vectors = np.array([[1, 0, 0], [0, 1, 0]])
@@ -52,8 +52,6 @@ class CubicParticle:
         for i, orientation in enumerate(BOND_ORIENTATIONS_POSITIVE):
             for j in range(4):
                 orientation_index = i* 4 + j
-                print(C4XM_POWERS[j])
-                print(BOND_ORIENTATIONS_POSITIVE[i])
                 orientations[orientation_index] = (
                     C4XM_POWERS[j] * BOND_ORIENTATIONS_POSITIVE[i]
                 )

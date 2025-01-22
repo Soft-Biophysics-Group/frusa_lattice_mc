@@ -4,7 +4,7 @@ Generating interaction maps for cubic particles.
 """
 
 import config as cfg
-from geometry.cubic import CubicParticle
+from geometry.cubic import CubicGeometry
 from contact_utils import ContactMapWrapper
 
 class CubicInteractions:
@@ -13,7 +13,7 @@ class CubicInteractions:
     In ContactMapWrapper, contacts are encoded as (orientation, orientation, bond) sets.
     """
     def __init__(self, n_types):
-        self.geometry = CubicParticle()
+        self.geometry = CubicGeometry()
         self.cmap_wrapper = ContactMapWrapper(n_types)
         self.n_orientations = 24
 

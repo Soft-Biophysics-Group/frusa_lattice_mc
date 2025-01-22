@@ -107,6 +107,18 @@ Options:
   -M,--mc-params TEXT         JSON input file for Monte-Carlo annealing parameters
 ```
 
+## Generating contact map and plotting using the python utilities
+
+The `python` folder contains useful codes and utilities for generating contact maps, and
+handling the particle geometry in a more intuitive manner than the C++ code.
+
+To view how to generate contact maps, run simulations, and view results in 2 and 3D, the best
+is to look at the notebooks in `python/examples`.
+
+One particulartly important file is `python/scripts/generate_cubic_permutations.py`, which is
+used for generating the permutations of particle orientations when viewed under different
+bonds for use in the C++ code.
+
 ### Creating a custom `model` class
 
 * [Tutorial: writing your own model]

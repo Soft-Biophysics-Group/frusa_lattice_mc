@@ -8,7 +8,7 @@ namespace particles_space {
 void initialize_interactions(state_struct& state,
                              interactions_struct& interactions,
                              model_parameters_struct& parameters,
-                             geometry_space::Geometry geometry)
+                             geometry_space::Geometry& geometry)
 {
   interactions.couplings = parameters.couplings;
   interactions.energy = get_energy(state, interactions, geometry);
@@ -18,7 +18,7 @@ double get_contact_energy(state_struct& state,
                           int site1,
                           int site2,
                           interactions_struct& interactions,
-                          geometry_space::Geometry geometry)
+                          geometry_space::Geometry& geometry)
 {
   // Contacts with empty site count as 0 energy
   if (state.lattice_sites.is_empty(site1)
@@ -44,7 +44,7 @@ double get_contact_energy(state_struct& state,
 
 double get_site_energy(state_struct& state,
                        interactions_struct& interactions,
-                       geometry_space::Geometry geometry,
+                       geometry_space::Geometry& geometry,
                        int site_index)
 {
   // std::cout << "\nGetting energy of site " << site_index << '\n' ;
@@ -64,7 +64,7 @@ double get_site_energy(state_struct& state,
 
 double get_energy(state_struct& state,
                   interactions_struct& interactions,
-                  geometry_space::Geometry geometry)
+                  geometry_space::Geometry& geometry)
 {
   double energy {0.0};
   for (int i {0}; i < state.n_sites; i++)

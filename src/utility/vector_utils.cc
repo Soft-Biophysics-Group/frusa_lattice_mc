@@ -20,8 +20,14 @@ void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly,
   r = i + Lx * j + Lx * Ly * k;
 }
 
-void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly,
-              [[maybe_unused]] int Lz) {
+void r_to_ijk(const int r,
+              int& i,
+              int& j,
+              int& k,
+              const int Lx,
+              const int Ly,
+              [[maybe_unused]] const int Lz)
+{
   k = r / (Lx * Ly);
   j = (r - Lx * Ly * k) / Lx;
   i = r - Lx * j - Lx * Ly * k;

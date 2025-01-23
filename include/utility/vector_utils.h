@@ -40,7 +40,8 @@ void ijk_to_r(int &r, int i, int j, int k, int Lx, int Ly, int Lz);
 
 // Calculates the 3D coordinates (i,j,k) given the flat array inde (r) and
 // the dimensions of the system
-void r_to_ijk(int r, int &i, int &j, int &k, int Lx, int Ly, int Lz);
+void r_to_ijk(
+    const int r, int& i, int& j, int& k, const int Lx, const int Ly, int Lz);
 
 // Calculates modulo of an integer a (positive or negative) with respect to
 // another positive integer b

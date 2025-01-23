@@ -34,7 +34,7 @@ struct interactions_struct {
 void initialize_interactions(state_struct& state,
                              interactions_struct& interactions,
                              model_parameters_struct& parameters,
-                             geometry_space::Geometry geometry);
+                             geometry_space::Geometry& geometry);
 
 // Printers
 void print_interactions(interactions_struct &interactions);
@@ -46,16 +46,19 @@ double get_contact_energy(state_struct& state,
                           int site1,
                           int site2,
                           interactions_struct& interactions,
-                          geometry_space::Geometry geometry);
+                          geometry_space::Geometry& geometry);
 
 // Get total energy of a given site, which is the sum of contact energies with
 // its neighbours
-double get_site_energy(state_struct &state, interactions_struct &interactions,
-                       geometry_space::Geometry geometry, int site_index);
+double get_site_energy(state_struct& state,
+                       interactions_struct& interactions,
+                       geometry_space::Geometry& geometry,
+                       int site_index);
 
 // Get total energy of the system
-double get_energy(state_struct &state, interactions_struct &interactions,
-                  geometry_space::Geometry geometry);
+double get_energy(state_struct& state,
+                  interactions_struct& interactions,
+                  geometry_space::Geometry& geometry);
 
 std::ostream &operator<<(std::ostream &out, interactions_struct &interactions);
 } // namespace lattice_particles_space

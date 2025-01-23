@@ -172,7 +172,7 @@ int Geometry::get_interaction_coeff(const int site_orientation,
                                     const int bond) const
 {
   std::size_t u_bond {static_cast<std::size_t>(bond)};
-  // Permutation table: how each bond is permuted under each orientation
+  // Permutation table: how each face is permuted under each bond
   const vec1i& permutation_table {bond_struct_m.bond_permutation[u_bond]};
 
   std::size_t u_orientation {static_cast<std::size_t>(site_orientation)};
@@ -192,11 +192,14 @@ int Geometry::get_interaction_index(const int site_1_orientation,
                                     const int bond,
                                     const int n_types) const
 {
+  /*std::cout << "Calculating contact between " << site_1_orientation << " and "*/
+  /*          << site_2_orientation << " through " << bond << '\n';*/
   int coeff_1 {
       get_interaction_coeff(site_1_orientation, site_1_type, bond)};
   int opposite_bond {get_opposite_bond(bond)};
   int coeff_2 {get_interaction_coeff(
       site_2_orientation, site_2_type, opposite_bond)};
+  /*std::cout << "Coeff 1: " << coeff_1 << " \n Coeff 2:" << coeff_2 << "\n\n";*/
   int interaction_index {};
   array_space::ij_to_r(
       interaction_index, coeff_1, coeff_2, n_orientations_m * n_types, 1);
@@ -244,6 +247,11 @@ void Geometry::set_lattice_properties() {
     n_neighbours_m = triangular_space::n_neighbours;
     n_orientations_m = triangular_space::n_orientations;
     break;
+  case lattice_options::cubic:
+    n_neighbours_m = cubic_space::n_neighbours;
+    n_orientations_m = cubic_space::n_orientations;
+    break;
+
   default:
     throw(std::runtime_error("Invalid lattice option"));
   }

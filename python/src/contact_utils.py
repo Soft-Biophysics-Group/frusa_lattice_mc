@@ -83,13 +83,21 @@ class ContactMapWrapper:
 
     # ----- MORE CONVENIENT ACCESS TO COEFFICIENTS -----
     def __getitem__(self, faces_types):
-        (face1, type1, face2, type2) = faces_types
+        if len(faces_types) == 2:
+            face1, face2 = faces_types
+            type1, type2 = 0, 0
+        else:
+            (face1, type1, face2, type2) = faces_types
         int_coeff = self.get_interaction_coeff(face1, type1, face2, type2)
 
         return self.contact_map[int_coeff]
 
     def __setitem__(self, faces_types, value):
-        (face1, type1, face2, type2) = faces_types
+        if len(faces_types) == 2:
+            face1, face2 = faces_types
+            type1, type2 = 0, 0
+        else:
+            (face1, type1, face2, type2) = faces_types
         # If we are in 3D, some pairs of faces might be equivalent to the one we are looking at
         # through rotational invariance. If so, we must generate these.
         equiv_faces = self.get_equivalent_face_pairs(face1, face2)
@@ -166,11 +174,13 @@ class ContactMapWrapper:
         interactions between particles are non-reciprocal, which is cool but out of the scope of
         this program.
         """
-        if (contact_matrix == contact_matrix.T).all:
+        if (contact_matrix == contact_matrix.T).all():
+            print("Symmetric contact matrix")
             self.set_two_species_contacts(type, type, contact_matrix)
-        elif (np.tril(contact_matrix) == contact_matrix).all or (
+        elif (np.tril(contact_matrix) == contact_matrix).all() or (
             np.triu(contact_matrix) == contact_matrix
-        ).all:
+        ).all():
+            print("Triangular contact matrix")
             self.set_two_species_contacts(type, type, contact_matrix + contact_matrix.T)
         else:
             print(

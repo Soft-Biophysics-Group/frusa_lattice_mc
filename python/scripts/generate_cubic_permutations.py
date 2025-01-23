@@ -19,7 +19,7 @@ def gen_bond_permutations():
     for bond_rotation in ALL_BOND_ORIENTATIONS:
         these_permutations = []
         for orientation_rotation in cg.orientation_rotations:
-            permuted_orientation_rotation = orientation_rotation * bond_rotation
+            permuted_orientation_rotation = bond_rotation * orientation_rotation
             these_permutations.append(
                 cg.identify_orientation(permuted_orientation_rotation)
             )

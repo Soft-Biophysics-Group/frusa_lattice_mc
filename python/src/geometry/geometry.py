@@ -120,9 +120,9 @@ def lattice_coords_to_lattice_site_2d(x_lattice: int, y_lattice: int, lx: int):
 
 # Helper functions in 2D
 def lattice_site_to_lattice_coords_3d(site_index: int, lx: int, ly:int):
-    z_lattice = site_index // ly
-    y_lattice = site_index // ly // lx
-    x_lattice = site_index - ly * z_lattice - lx * y_lattice
+    z_lattice = site_index // ly // lx
+    y_lattice = ( site_index - lx * ly * z_lattice) // lx
+    x_lattice = site_index - ly * lx * z_lattice - lx * y_lattice
     return np.array([x_lattice, y_lattice, z_lattice])
 
 

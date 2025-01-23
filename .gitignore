@@ -4,6 +4,8 @@
 *.swp
 *.json
 *.envrc
+*.blend
+*.blend1
 
 /build*/
 /test/build*/

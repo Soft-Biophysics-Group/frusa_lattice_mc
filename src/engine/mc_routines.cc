@@ -128,9 +128,11 @@ namespace simulation_space{
   void mc::mc_simulate(model_space::model &simulation_model, double T){
 
     // Equilibrate the system for mcs_eq steps
-    for(int step=0;step<parameters.mcs_eq;step++){
+    for (int step = 0; step < parameters.mcs_eq; step++) {
       simulation_model.update_model_system(T);
+      simulation_model.update_model_records();
     }
+    simulation_model.save_model_records(T);
 
     // Depending on the options in the mc_params structure, initialize the
     // containers that will store the MC averages

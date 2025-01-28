@@ -5,6 +5,7 @@ set(HEADER_PARTICLES
     ${INCLUDE_FRUSA_MODELS}/particles/particles_interactions.h
     ${INCLUDE_FRUSA_MODELS}/particles/particles_update.h
     ${INCLUDE_FRUSA_MODELS}/particles/particles_averages.h
+    ${INCLUDE_FRUSA_MODELS}/particles/particles_records.h
     ${INCLUDE_FRUSA_THIRDPARTY}/json.hpp)
 
 set(SOURCE_PARTICLES
@@ -13,6 +14,7 @@ set(SOURCE_PARTICLES
     particles_interactions.cc
     particles_update.cc
     particles_averages.cc
+    particles_records.cc
     )
 
 ### Create the particles library and include the header directories

@@ -9,13 +9,13 @@ namespace io_space{
    * Routines for reading data from files
    */
 
-  void read_vector(vec1i &array, int N, std::string location){
+  void read_vector(vec1i &array, int N, std::string_view location){
 
     std::ifstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -29,13 +29,13 @@ namespace io_space{
     array_f.close();
   }
 
-  void read_vector(vec1d &array, int N, std::string location){
+  void read_vector(vec1d &array, int N, std::string_view location){
 
     std::ifstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -49,13 +49,13 @@ namespace io_space{
     array_f.close();
   }
 
-  void read_vector(vec2i &array, int N1, int N2, std::string location){
+  void read_vector(vec2i &array, int N1, int N2, std::string_view location){
 
     std::ifstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -75,13 +75,13 @@ namespace io_space{
     array_f.close();
   }
 
-  void read_vector(vec2d &array, int N1, int N2, std::string location){
+  void read_vector(vec2d &array, int N1, int N2, std::string_view location){
 
     std::ifstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -105,13 +105,13 @@ namespace io_space{
    * Routines for writing data to files
    */
 
-  void save_vector(vec1i &array, int N, std::string location){
+  void save_vector(vec1i &array, int N, std::string_view location){
 
     std::ofstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -121,13 +121,13 @@ namespace io_space{
     array_f.close();
   }
 
-  void save_vector(vec1d &array, int N, std::string location){
+  void save_vector(vec1d &array, int N, std::string_view location){
 
     std::ofstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -137,13 +137,13 @@ namespace io_space{
     array_f.close();
   }
 
-  void save_vector(vec2i &array, int N1, int N2, std::string location){
+  void save_vector(vec2i &array, int N1, int N2, std::string_view location){
 
     std::ofstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 
@@ -156,13 +156,13 @@ namespace io_space{
     array_f.close();
   }
 
-  void save_vector(vec2d &array, int N1, int N2, std::string location){
+  void save_vector(vec2d &array, int N1, int N2, std::string_view location){
 
     std::ofstream array_f;
     array_f.open(location);
 
     if(!array_f){
-      std::cerr << "Unable to open file "+location;
+      std::cerr << "Unable to open file " << location;
       exit(1);
     }
 

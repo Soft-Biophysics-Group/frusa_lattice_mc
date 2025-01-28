@@ -3,58 +3,77 @@
 
 #include "model.h"
 
-namespace model_space{
-  model_parameters_struct::model_parameters_struct(model_options model) {
-    switch (model) {
-      case fields:
-          ;
-      default:
-          ;
-    }
-  }
-  model::model(std::string_view model_params_file)
-      : geometry {geometry_space::Geometry(model_params_file)}
-      , parameters {particles_space::model_parameters_struct(model_params_file)}
-  {
-    /*
-     * Initialize the system of particles and calculate the initial energy
-     */
-
-    particles_space::initialize_state(state, parameters, geometry);
-
-    particles_space::initialize_interactions(
-        state, interactions, parameters, geometry);
-  }
-
-  void model::print_model_state(){
-    particles_space::print_state(state);
-  }
-
-  void model::save_model_state(std::string& state_output){
-    particles_space::save_state(state, state_output);
-  }
-
-  void model::print_model_interactions(){
-    particles_space::print_interactions(interactions);
-  }
-
-  void model::print_model_energy(){
-    particles_space::print_energy(interactions);
-  }
-
-  void model::update_model_system(double T){
-    particles_space::update_system(state,interactions,parameters,geometry,T);
-  }
-
-  void model::initialize_model_averages(){
-    initialize_averages(averages,parameters);
-  }
-
-  void model::update_model_averages(double T){
-    update_averages(averages,state,interactions,parameters,T);
-  }
-
-  void model::save_model_averages(double T, int mcs_av){
-    save_averages(averages,state,parameters,T,mcs_av);
+namespace model_space
+{
+model_parameters_struct::model_parameters_struct(model_options model)
+{
+  switch (model) {
+    case fields:;
+    default:;
   }
 }
+model::model(std::string_view model_params_file)
+    : geometry {geometry_space::Geometry(model_params_file)}
+    , parameters {particles_space::model_parameters_struct(model_params_file)}
+{
+  /*
+   * Initialize the system of particles and calculate the initial energy
+   */
+
+  particles_space::initialize_state(state, parameters, geometry);
+
+  particles_space::initialize_interactions(
+      state, interactions, parameters, geometry);
+}
+
+void model::print_model_state()
+{
+  particles_space::print_state(state);
+}
+
+void model::save_model_state(std::string& state_output)
+{
+  particles_space::save_state(state, state_output);
+}
+
+void model::print_model_interactions()
+{
+  particles_space::print_interactions(interactions);
+}
+
+void model::print_model_energy()
+{
+  particles_space::print_energy(interactions);
+}
+
+void model::update_model_system(double T)
+{
+  particles_space::update_system(state, interactions, parameters, geometry, T);
+}
+
+void model::initialize_model_averages()
+{
+  initialize_averages(averages, parameters);
+}
+
+void model::update_model_averages(double T)
+{
+  update_averages(averages, state, interactions, parameters, T);
+}
+
+void model::save_model_averages(double T, int mcs_av)
+{
+  save_averages(averages, state, parameters, T, mcs_av);
+}
+
+void model::update_model_records()
+{
+  update_records(parameters, interactions, records);
+}
+
+void model::save_model_records(double T)
+{
+  save_records(parameters, T, records);
+}
+
+}  // namespace model_space

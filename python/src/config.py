@@ -91,16 +91,28 @@ def check_data_existence(
     return files_exist
 
 
-def run_simulation(overwrite=False):
+def run_simulation(
+    model_file=default_model_params_file,
+    mc_file=default_mc_params_file,
+    overwrite=False,
+):
     """
     Starts the frusa_mc program with default parameters from the root directory of the project.
     Should allow you to run the code smoothly from a python interpreter in which this file has
     been imported.
+
+    Keyword arguments:
+    - `model_file`: string or path. json model parameter file. Defaults to `input/model_params.json` from the
+      root of the program.
+    - `mc_file`: string or path. json Monte Carlo parameter file. Defaults to `input/mc_params.json` from the
+      root of the program.
+    - `overwrite`: boolean, `False` by default. If false, does not overwrite data directory
+      contents if they're populated.
     """
     # execute(str(exec_path), cwd = parent_path)
-    mc_params = load_mc_file()
+    mc_params = load_mc_file(mc_file)
     struct_path = mc_params["checkpoint_address"]
-    model_params = load_model_file()
+    model_params = load_model_file(model_file)
     e_path = model_params["e_av_output"]
     if check_data_existence(struct_path=struct_path, e_path=e_path):
         print("At least one of the output folders is already populated!")
@@ -109,4 +121,4 @@ def run_simulation(overwrite=False):
             return
         else:
             print("overwrite flag set to True: running anyway.")
-    subprocess.run(str(exec_path), cwd=parent_path)
+    subprocess.run([str(exec_path), "-m", str(model_file), "-M", str(mc_file)])

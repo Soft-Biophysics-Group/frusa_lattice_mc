@@ -71,6 +71,8 @@ using move_probas_arr =
  *                    Too scared to remove it though!
  * state_av_output  - As far as I understand, useless for lattice particles.
  *                    Too scared to remove it though!
+ * e_record_option  - Set to true to record energy after each system update
+ * e_record_output  - Location where to output the energy records
  **/
 struct model_parameters_struct
 {
@@ -86,8 +88,10 @@ struct model_parameters_struct
   move_probas_arr move_probas {};
   bool e_av_option {true};
   std::string e_av_output {};
-  bool state_av_option {true};
+  bool state_av_option {false};
   std::string state_av_output {};
+  bool e_record_option {false};
+  std::string e_record_output {};
 };
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params);

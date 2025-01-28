@@ -23,6 +23,7 @@
 #include "particles_parameters.h"
 #include "particles_state.h"
 #include "particles_update.h"
+#include "particles_records.h"
 
 namespace model_space {
 
@@ -63,6 +64,9 @@ private:
   // Structure containing information about MC averages
   particles_space::averages_struct averages;
 
+  // Structure containing records of energy after each lattice update
+  particles_space::records_struct records;
+
 public:
   /*Class constructor*/
   model(std::string_view model_params_file);
@@ -94,6 +98,12 @@ public:
 
   // Save the selected simulation averages to the corresponding files
   void save_model_averages(double T, int mcs_av);
+
+  // Save a set of recorded energies after a lattice update
+  void update_model_records();
+
+  // Save a set of recorded energies after a lattice update
+  void save_model_records(double T);
 };
 } // namespace model_space
 #endif

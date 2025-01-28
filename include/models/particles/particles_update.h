@@ -12,6 +12,7 @@
 #include "particles_interactions.h"
 #include "particles_parameters.h"
 #include "particles_state.h"
+#include "particles_records.h"
 
 namespace particles_space {
 using json = nlohmann::json;

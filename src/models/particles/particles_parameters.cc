@@ -28,10 +28,19 @@ model_parameters_struct::model_parameters_struct(const std::string_view input_fi
   }
   move_probas = get_move_probas(input_file);
   e_av_option = json_model_params["e_av_option"].template get<bool>();
-  e_av_output = json_model_params["e_av_output"].template get<std::string>();
+  if (e_av_option) {
+    e_av_output = json_model_params["e_av_output"].template get<std::string>();
+  }
   state_av_option = json_model_params["state_av_option"].template get<bool>();
-  state_av_output =
-      json_model_params["state_av_output"].template get<std::string>();
+  if (state_av_option) {
+    state_av_output =
+        json_model_params["state_av_output"].template get<std::string>();
+  }
+  e_record_option = json_model_params["e_record_option"].template get<bool>();
+  if (e_record_option) {
+    e_record_output =
+        json_model_params["e_record_output"].template get<std::string>();
+  }
 }
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {

@@ -65,10 +65,11 @@ model_params["initialize_option"] = "random"
 # the input file
 # model_params["state_input"] = str(cfg.structures_path/"final_structure.dat")
 
-# Options for average collection
+# Options for average and record collection
 
 model_params["state_av_option"] = True
-model_params["e_av_option"] = True
+model_params["e_av_option"] = False
+model_params["e_record_option"] = True
 
 if model_params["state_av_option"]:
     state_path = Path("./data/"+run_name+"/average_state")
@@ -79,6 +80,11 @@ if model_params["e_av_option"]:
     energy_path = Path("./data/"+run_name+"/average_energy")
     energy_path.mkdir(parents = True, exist_ok = True)
     model_params["e_av_output"] = str(energy_path.resolve())  + "/"
+
+if model_params["e_record_option"]:
+    e_records_path = Path("./data/" + run_name + "/energy_records")
+    e_records_path.mkdir(parents=True, exist_ok=True)
+    model_params["e_record_output"] = str(e_records_path.resolve()) + "/"
 
 # Pick the probabilities of different moves. Has to sum to 1.
 # Options:

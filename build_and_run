@@ -1,7 +1,0 @@
-#!/bin/bash
-
-cd build
-cmake .. -DMODEL_TYPE="particles_hexagonal"
-cmake --build .
-cd ..
-./build/app/frusa_mc

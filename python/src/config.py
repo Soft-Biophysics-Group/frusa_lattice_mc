@@ -66,6 +66,7 @@ def load_structure(
         file_path = struct_folder / "final_structure.dat"
     return np.loadtxt(file_path, dtype=int)
 
+
 def get_full_sites(site_orientations):
     return np.where(site_orientations != -1)[0]
 

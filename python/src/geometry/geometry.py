@@ -14,7 +14,9 @@ class ParticleGeometry:
         self.opposite_bonds = parameters_dict["opposite_bonds"]
         self.bonds = parameters_dict["bonds"]
         self.n_faces = parameters_dict["n_faces"]
-        self.lattice_vectors_in_cartesian = parameters_dict["lattice_vectors_in_cartesian"]
+        self.lattice_vectors_in_cartesian = parameters_dict[
+            "lattice_vectors_in_cartesian"
+        ]
         self.ndims = parameters_dict["ndims"]
         self.rotation_matrix = parameters_dict["rotation_matrix"]
         self.lattice_spacing = lattice_spacing

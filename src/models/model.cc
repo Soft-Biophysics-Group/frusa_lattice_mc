@@ -12,7 +12,7 @@ model_parameters_struct::model_parameters_struct(model_options model)
     default:;
   }
 }
-model::model(std::string_view model_params_file)
+model::model(std::string& model_params_file)
     : geometry {geometry_space::Geometry(model_params_file)}
     , parameters {particles_space::model_parameters_struct(model_params_file)}
 {

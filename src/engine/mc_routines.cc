@@ -5,7 +5,7 @@
 
 namespace simulation_space{
 
-  mc_parameters_struct::mc_parameters_struct(std::string_view mc_input){
+  mc_parameters_struct::mc_parameters_struct(std::string& mc_input){
     /*
      * Populate the struct using the input JSON file
      */
@@ -37,7 +37,7 @@ namespace simulation_space{
       json_mc_params["final_structure_address"].template get<std::string>();
   }
 
-  mc::mc(std::string_view mc_input): parameters {mc_parameters_struct(mc_input)}{
+  mc::mc(std::string& mc_input): parameters {mc_parameters_struct(mc_input)}{
 
     // Map the cooling option on the integer variable
     try{

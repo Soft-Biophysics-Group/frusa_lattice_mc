@@ -4,7 +4,7 @@
 namespace particles_space
 {
 
-model_parameters_struct::model_parameters_struct(const std::string_view input_file)
+model_parameters_struct::model_parameters_struct(const std::string& input_file)
 {
   std::ifstream model_input_f {input_file};
   if (!model_input_f) {
@@ -66,7 +66,7 @@ std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {
   return out;
 }
 
-move_probas_arr get_move_probas(const std::string_view model_input_file)
+move_probas_arr get_move_probas(const std::string& model_input_file)
 {
   std::ifstream mc_json_f {model_input_file};
   if (!mc_json_f) {

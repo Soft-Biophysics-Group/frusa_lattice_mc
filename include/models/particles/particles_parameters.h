@@ -76,7 +76,7 @@ using move_probas_arr =
  **/
 struct model_parameters_struct
 {
-  model_parameters_struct(std::string_view model_input_file);
+  model_parameters_struct(std::string& model_input_file);
   model_parameters_struct()
       : model_parameters_struct("./input/model_params.json") {};
   int n_types {};
@@ -105,7 +105,7 @@ std::ostream &operator<<(std::ostream &out, model_parameters_struct &params);
  * each of which corresponds to the probability of the associated move (in
  * enum order) being picked.
  **/
-move_probas_arr get_move_probas(const std::string_view model_input_file);
+move_probas_arr get_move_probas(const std::string& model_input_file);
 
 } // namespace lattice_particles_space
 #endif

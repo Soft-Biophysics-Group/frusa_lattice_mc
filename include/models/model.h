@@ -6,7 +6,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <string_view>
+#include <string>
 
 /*Select the model library*/
 // #include "default_include.h"
@@ -69,7 +69,7 @@ private:
 
 public:
   /*Class constructor*/
-  model(std::string_view model_params_file);
+  model(std::string& model_params_file);
 
   /*
    * Required public routines of the class

@@ -10,9 +10,9 @@ namespace io_space{
    */
 
   void read_vector(vec1i &array, int N, std::string_view location){
-
     std::ifstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -32,7 +32,8 @@ namespace io_space{
   void read_vector(vec1d &array, int N, std::string_view location){
 
     std::ifstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -52,7 +53,8 @@ namespace io_space{
   void read_vector(vec2i &array, int N1, int N2, std::string_view location){
 
     std::ifstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -78,7 +80,8 @@ namespace io_space{
   void read_vector(vec2d &array, int N1, int N2, std::string_view location){
 
     std::ifstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -108,7 +111,8 @@ namespace io_space{
   void save_vector(vec1i &array, int N, std::string_view location){
 
     std::ofstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -124,7 +128,8 @@ namespace io_space{
   void save_vector(vec1d &array, int N, std::string_view location){
 
     std::ofstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -140,7 +145,8 @@ namespace io_space{
   void save_vector(vec2i &array, int N1, int N2, std::string_view location){
 
     std::ofstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;
@@ -159,7 +165,8 @@ namespace io_space{
   void save_vector(vec2d &array, int N1, int N2, std::string_view location){
 
     std::ofstream array_f;
-    array_f.open(location);
+    std::string location_str {std::string(location)};
+    array_f.open(location_str);
 
     if(!array_f){
       std::cerr << "Unable to open file " << location;

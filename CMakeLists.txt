@@ -39,9 +39,13 @@ project(${META_PROJECT_NAME}
 ### Compiler options ###########################################################
 
 add_library(compiler_flags INTERFACE)
-target_compile_features(compiler_flags INTERFACE cxx_std_11)
+# target_compile_features(compiler_flags INTERFACE cxx_std_20)
 add_compile_options(-Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror)
-set (CMAKE_CXX_STANDARD 20)
+# Comment line below if problematic
+add_compile_options(-O3)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 ################################################################################
 

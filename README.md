@@ -8,6 +8,25 @@ Used by Vincent for:
 
 - Camembert simulations
 
+## Important: compiling the code for the cluster
+
+The cluster uses an x86_64 linux architecture, but the version of the C++ compiler on it does
+not support some of the C++20 features used in this code.
+
+To overcome this, I have compiled it on my M3 macbook, which involved setting up a
+cross-compilation toolchain in `toolchain-x86_64-linux.cmake`.
+
+Before you use it on macOS, make sure to install the x86 cross-compiler by running the
+MacPorts command:
+`sudo port install x86_64-elf-gcc x86_64-elf-binutils `.
+
+Then, add the installed files to your PATH variable:
+`export PATH=/opt/local/bin:$PATH` (has to be done for every shell session, or added to your
+`.bashrc`/`.zshrc` file
+
+Finally, run the commands:
+`cmake -DMODEL_TYPE="lattice_particles" -DCMAKE_TOOLCHAIN_FILE=toolchain-x86_64-linux.cmake -B build`
+
 
 
 ## Notes during code annotation

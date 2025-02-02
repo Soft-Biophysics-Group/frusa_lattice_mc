@@ -20,16 +20,16 @@ namespace io_space{
   // N, N1, N2 are dimensions of the target array
   // Currently using overloading, may be changed in the future to avoid
   // repeating definitions
-  void read_vector(vec1i &array, int N, std::string_view location);
-  void read_vector(vec1d &array, int N, std::string_view location);
-  void read_vector(vec2i &array, int N1, int N2, std::string_view location);
-  void read_vector(vec2d &array, int N1, int N2, std::string_view location);
+  void read_vector(vec1i &array, int N, std::string& location);
+  void read_vector(vec1d &array, int N, std::string& location);
+  void read_vector(vec2i &array, int N1, int N2, std::string& location);
+  void read_vector(vec2d &array, int N1, int N2, std::string& location);
 
   // Save data to a file at specified location
-  void save_vector(vec1i &array, int N, std::string_view location);
-  void save_vector(vec1d &array, int N, std::string_view location);
-  void save_vector(vec2i &array, int N1, int N2, std::string_view location);
-  void save_vector(vec2d &array, int N1, int N2, std::string_view location);
+  void save_vector(vec1i &array, int N, std::string& location);
+  void save_vector(vec1d &array, int N, std::string& location);
+  void save_vector(vec2i &array, int N1, int N2, std::string& location);
+  void save_vector(vec2d &array, int N1, int N2, std::string& location);
 }
 
 #endif

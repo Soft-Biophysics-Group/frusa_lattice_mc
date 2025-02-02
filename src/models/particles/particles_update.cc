@@ -2,7 +2,7 @@
 #include "particles_interactions.h"
 #include "particles_state.h"
 #include <iterator>
-#include <ranges>
+/*#include <ranges>*/
 #include <stdexcept>
 
 namespace particles_space {

@@ -108,7 +108,7 @@ namespace io_space{
    * Routines for writing data to files
    */
 
-  void save_vector(vec1i &array, int N, std::string_view location){
+  void save_vector(vec1i &array, int N, std::string& location){
 
     std::ofstream array_f;
     std::string location_str {std::string(location)};
@@ -125,7 +125,7 @@ namespace io_space{
     array_f.close();
   }
 
-  void save_vector(vec1d &array, int N, std::string_view location){
+  void save_vector(vec1d &array, int N, std::string& location){
 
     std::ofstream array_f;
     std::string location_str {std::string(location)};
@@ -142,7 +142,7 @@ namespace io_space{
     array_f.close();
   }
 
-  void save_vector(vec2i &array, int N1, int N2, std::string_view location){
+  void save_vector(vec2i &array, int N1, int N2, std::string& location){
 
     std::ofstream array_f;
     std::string location_str {std::string(location)};
@@ -162,7 +162,7 @@ namespace io_space{
     array_f.close();
   }
 
-  void save_vector(vec2d &array, int N1, int N2, std::string_view location){
+  void save_vector(vec2d &array, int N1, int N2, std::string& location){
 
     std::ofstream array_f;
     std::string location_str {std::string(location)};

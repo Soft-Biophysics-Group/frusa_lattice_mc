@@ -4,6 +4,7 @@
 #include "chain.h"
 #include "vector_utils.h"
 #include <stdexcept>
+#include <string>
 
 using json = nlohmann::json;
 
@@ -74,10 +75,9 @@ Geometry::Geometry(lattice_options lattice, int lx, int ly, int lz)
   set_lattice_properties();
 }
 
-Geometry::Geometry(const std::string_view geometry_input):
-Geometry(lattice_options::chain, 0, 0, 0)
+Geometry::Geometry(const std::string& geometry_input)
 {
-  std::ifstream geometry_input_f {std::string(geometry_input)};
+  std::ifstream geometry_input_f (geometry_input);
   if (!geometry_input_f) {
     std::cerr << "Could not open geometry model parameters file" << '\n';
     exit(1);

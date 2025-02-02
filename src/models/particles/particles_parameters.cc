@@ -74,10 +74,8 @@ move_probas_arr get_move_probas(const std::string& model_input_file)
     exit(1);
   }
 
-  json mc_json {json::parse(mc_json_f)};
+  json mc_json = json::parse(mc_json_f);
   // This line is making the program fail on the cluster
-  std::map<std::string, double> move_map {
-      mc_json["move_probas"].template get<std::map<std::string, double>>()};
 
   move_probas_arr move_probas {};
   move_probas.fill(0.0);
@@ -85,8 +83,8 @@ move_probas_arr get_move_probas(const std::string& model_input_file)
     const std::string& move_name {mc_moves_str[move]};
     // look for entry with the name of the move and assign the right
     // probability if it exists
-    if (move_map.contains(move_name)) {
-      move_probas[move] = move_map[move_name];
+    if (mc_json["move_probas"].contains(move_name)) {
+      move_probas[move] = mc_json["move_probas"][move_name];
     }
   }
   // Move probabilities have to sum to 1

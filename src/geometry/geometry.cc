@@ -4,6 +4,7 @@
 #include "chain.h"
 #include "vector_utils.h"
 #include <stdexcept>
+#include <string>
 
 using json = nlohmann::json;
 

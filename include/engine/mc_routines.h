@@ -19,15 +19,15 @@ namespace simulation_space{
   /*Monte Carlo parameters*/
   struct mc_parameters_struct{
     mc_parameters_struct(std::string& mc_input);
-    int mcs_eq;
-    int mcs_av;
-    double Ti;
-    double Tf;
-    int Nt;
-    std::string cooling_schedule;
-    bool checkpoint_option;
-    std::string checkpoint_address;
-    std::string final_structure_address;
+    int mcs_eq {};
+    int mcs_av {};
+    double Ti {};
+    double Tf {};
+    int Nt {};
+    std::string cooling_schedule {};
+    bool checkpoint_option {};
+    std::string checkpoint_address {};
+    std::string final_structure_address {};
   };
 
   class mc {
@@ -40,10 +40,10 @@ namespace simulation_space{
       mc_parameters_struct parameters;
 
       // Integer option for annealing schedule
-      int cooling_option;
+      int cooling_option {};
 
       //Array with annealing temperatures
-      vec1d T_array;
+      vec1d T_array {};
 
     public:
 

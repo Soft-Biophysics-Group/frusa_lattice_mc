@@ -21,20 +21,21 @@ namespace simulation_space{
 
     mcs_eq            = json_mc_params["mcs_eq"].template get<int>();
     mcs_av            = json_mc_params["mcs_av"].template get<int>();
-    cooling_schedule  =\
-      json_mc_params["cooling_schedule"].template get<std::string>();
+    cooling_schedule =
+        json_mc_params["cooling_schedule"].template get<std::string>();
     Ti                = json_mc_params["Ti"].template get<double>();
     Tf                = json_mc_params["Tf"].template get<double>();
     Nt                = json_mc_params["Nt"].template get<int>();
-    checkpoint_option =\
-      json_mc_params["checkpoint_option"].template get<bool>();
+    checkpoint_option =
+        json_mc_params["checkpoint_option"].template get<bool>();
+  std::cout << "All mc parameters loaded successfully" ;
 
-    if(checkpoint_option){
-      checkpoint_address =\
-        json_mc_params["checkpoint_address"].template get<std::string>();
+    if (checkpoint_option) {
+      checkpoint_address =
+          json_mc_params["checkpoint_address"].template get<std::string>();
     }
-    final_structure_address =\
-      json_mc_params["final_structure_address"].template get<std::string>();
+    final_structure_address =
+        json_mc_params["final_structure_address"].template get<std::string>();
   }
 
   mc::mc(std::string& mc_input): parameters {mc_parameters_struct(mc_input)}{

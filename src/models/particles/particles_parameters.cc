@@ -75,6 +75,7 @@ move_probas_arr get_move_probas(const std::string& model_input_file)
   }
 
   json mc_json {json::parse(mc_json_f)};
+  // This line is making the program fail on the cluster
   std::map<std::string, double> move_map {
       mc_json["move_probas"].template get<std::map<std::string, double>>()};
 

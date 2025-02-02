@@ -76,9 +76,7 @@ using move_probas_arr =
  **/
 struct model_parameters_struct
 {
-  model_parameters_struct(std::string& model_input_file);
-  model_parameters_struct()
-      : model_parameters_struct("./input/model_params.json") {};
+  model_parameters_struct(const std::string& model_input_file = "./input/model_params.json");
   int n_types {};
   vec1i n_particles {};
   vec1d couplings {};

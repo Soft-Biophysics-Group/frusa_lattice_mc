@@ -118,7 +118,7 @@ def plot_cubes_from_simulation_results(
         struct_index=struct_index, struct_folder=struct_folder, struct_file=struct_file
     )
     orientations = results[1, :]
-    full_sites = cfg.get_full_sites(orientations)
+    full_sites = cfg.get_full_sites(results)
     print(len(full_sites))
 
     for site in full_sites:

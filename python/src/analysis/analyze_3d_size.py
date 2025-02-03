@@ -4,9 +4,13 @@ Few functions to get the size of aggregates on 3D lattices.
 """
 
 import numpy as np
-from geometry.geometry import lattice_site_to_lattice_coords_3d, lattice_coords_to_lattice_site_3d
+from geometry.geometry import (
+    lattice_site_to_lattice_coords_3d,
+    lattice_coords_to_lattice_site_3d,
+)
 from pathlib import Path
 import config as cfg
+
 
 def get_neighbouring_particles(site, full_sites, lx, ly, lz):
     """
@@ -20,12 +24,12 @@ def get_neighbouring_particles(site, full_sites, lx, ly, lz):
     neighbours = set()
 
     x, y, z = lattice_site_to_lattice_coords_3d(site, lx, ly)
-    xp1 = ((x + 1)%lx, y, z)
-    yp1 = (x, (y + 1)%ly, z)
-    zp1 = (x, y, (z + 1)%lz)
-    xm1 = (x-1 if x > 0 else lx-1, y, z)
-    ym1 = (x, y-1 if y > 0 else ly-1, z)
-    zm1 = (x, y, z-1 if z > 0 else lz-1)
+    xp1 = ((x + 1) % lx, y, z)
+    yp1 = (x, (y + 1) % ly, z)
+    zp1 = (x, y, (z + 1) % lz)
+    xm1 = (x - 1 if x > 0 else lx - 1, y, z)
+    ym1 = (x, y - 1 if y > 0 else ly - 1, z)
+    zm1 = (x, y, z - 1 if z > 0 else lz - 1)
 
     for neigh_coords in [xp1, yp1, zp1, xm1, ym1, zm1]:
         xn, yn, zn = neigh_coords
@@ -45,12 +49,20 @@ def get_aggregates(
     """
     Returns a list of sets. Each list member is a cluster, represented by the set of the
     sites containing its constitueent particles.
+    If struct_file is specified: overrides directly fetches results in
+    struct_file.
+    If struct_index is specified: load structure with index struct_index from folder
+    struct_folder.
+    If not, laods final structure from struct_folder.
+    Returned structure is a dimensional numpy array, with line 1 corresponding to particle type
+    and line 2 to particle orientation.
+    orientation -1 always corresponds to an empty site, irrespective of particle type.
     """
     site_orientations = cfg.load_structure(
         struct_index=struct_index, struct_folder=struct_folder, struct_file=struct_file
     )
-    model_params = cfg.load_model_file(model_file)
     full_sites = cfg.get_full_sites(site_orientations)
+    model_params = cfg.load_model_file(model_file)
     lx = model_params["lx"]
     ly = model_params["ly"]
     lz = model_params["lz"]
@@ -69,7 +81,9 @@ def get_aggregates(
                 site_to_visit = to_visit.pop()
                 cluster.add(site_to_visit)
                 visited_sites.add(site_to_visit)
-                neighbour_sites = get_neighbouring_particles(site_to_visit, full_sites, lx, ly, lz)
+                neighbour_sites = get_neighbouring_particles(
+                    site_to_visit, full_sites, lx, ly, lz
+                )
                 neighbours_to_visit = neighbour_sites - visited_sites
                 to_visit |= neighbours_to_visit
             all_clusters.append(cluster)

@@ -68,7 +68,7 @@ def load_structure(
 
 
 def get_full_sites(site_orientations):
-    return np.where(site_orientations != -1)[0]
+    return np.where(site_orientations[1, :] != -1)[0]
 
 
 # ----- RUN SIMULATIONS FROM PYTHON  -----

@@ -8,6 +8,8 @@ from geometry import geometry
 from geometry.cubic import CubicGeometry
 from geometry.triangular import TriangularGeometry
 
+from typing import Any
+
 LATTICE_NAMES = ["chain", "triangular", "cubic"]
 
 class ContactMapWrapper:
@@ -52,7 +54,7 @@ class ContactMapWrapper:
         self,
         n_types=1,
         n_orientations=6,
-        lattice_geometry=TriangularGeometry(),
+        particle_geometry:Any=TriangularGeometry(),
         init_energy=0.0,
     ):
         self.n_types = n_types
@@ -60,7 +62,7 @@ class ContactMapWrapper:
         self.n_states = self.n_types * self.n_orientations
         self.contact_map = np.zeros(self.n_states**2)
         self.contact_map += init_energy
-        self.geometry = lattice_geometry
+        self.geometry = particle_geometry
 
     # Different lattices for which we can use this class
     @classmethod
@@ -69,7 +71,7 @@ class ContactMapWrapper:
 
     @classmethod
     def cubic(cls, n_types, init_energy = 0.0):
-        return cls(n_types, 24, CubicGeometry(), init_energy = init_energy)
+        return cls(n_types, 24, CubicGeometry, init_energy = init_energy)
 
     # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
     def get_one_face_coeff(self, orientation, type):

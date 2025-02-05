@@ -11,9 +11,13 @@ TODOS:
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from geometry.particle_geometry import ParticleGeometry
+from geometry.lattice_geometry import LatticeGeometry
 
 # Globals
 ID_ROT = R.identity()
+
+# PARTICLE PARAMETERS
 # scipy convention is positive = counter-clockwise when looking at axis through + sign
 # At this point I encourage you to play with the cube to understand why we define rotations like
 # this
@@ -24,149 +28,32 @@ C2Z = C4ZM * C4ZM
 C4XM_POWERS = [C4XM**i for i in range(4)]
 BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C4ZM, C4Y]  # , C2Z, C2Z * C4Z, C2Z * C4Y]
 ALL_BOND_ORIENTATIONS = [*BOND_ORIENTATIONS_POSITIVE, C2Z, C2Z * C4ZM, C2Z * C4Y]
+ORIENTATION_0_VECTORS = np.array([1, 0, 0], [0, 1, 0])
+BONDS = [
+    (1, 0, 0),
+    (0, 1, 0),
+    (0, 0, 1),
+    (-1, 0, 0),
+    (0, -1, 0),
+    (0, 0, -1),
+]
+
+# LATTICE PARAMETERS
+BASIS_VECTORS = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+
 
 
 class CubicGeometry:
-    def __init__(self):
+    particle = ParticleGeometry(
+        orientation_0_vectors=ORIENTATION_0_VECTORS,
+        bonds=BONDS,
+        face_0_permutation_rotations=BOND_ORIENTATIONS_POSITIVE,
+        rotations_around_face_0=C4XM_POWERS,
+        opposite_face_rotation=C2Z,
+    )
+
+    def __init__(
+        self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
+    ):
         # We keep track of only x and y internal vectors, z is redundant
-        self.orientation_0_vectors = np.array([[1, 0, 0], [0, 1, 0]])
-        self.n_orientations = 24
-        self.orientation_rotations = self.gen_face_orientations()
-        self.bond_to_bond_index = {
-            ( 1,  0,  0): 0,
-            ( 0,  1,  0): 1,
-            ( 0,  0,  1): 2,
-            (-1,  0,  0): 3,
-            ( 0, -1,  0): 4,
-            ( 0,  0, -1): 5,
-        }
-        self.rotation_to_bond = self.gen_bond_rotations()
-
-    def gen_face_orientations(self):
-        # Rotation operations are defined as quaternions and compositions of quaternions
-        rotations = [ID_ROT for i in range(self.n_orientations)]
-        # Generate first rotation
-        # Generate the faces/orientations along + directions
-        for i, bond_rotation in enumerate(BOND_ORIENTATIONS_POSITIVE):
-            for j in range(4):
-                face_index = i* 4 + j
-                rotations[face_index] = (
-                    C4XM_POWERS[j] * BOND_ORIENTATIONS_POSITIVE[i]
-                )
-                rotations[self.get_opposite_face(face_index)] = (
-                    C2Z * rotations[face_index]
-                )
-        return R.concatenate(rotations)
-
-    def gen_bond_rotations(self):
-        """
-        Generate a list associating which bond (1, 0, 0) maps to under every rotation.
-        """
-        all_rotated_bonds = []
-        zero_bond = np.array([1, 0, 0])
-        for rot in self.orientation_rotations:
-            # Change type to round coefficients to 0, 1, or -1
-            new_bond_arr = rot.apply(zero_bond).astype(int)
-            new_bond = tuple(new_bond_arr)
-            all_rotated_bonds.append(self.bond_to_bond_index[new_bond])
-        return all_rotated_bonds
-
-    def identify_orientation(self, rotation):
-        """
-        Identifies which orientation the rotation `rotation` puts the particle in, defined as
-        the face which takes the place of face 0.
-        Returns -1 if the supplied rotation does not put the particle in one of its 24 possible
-        orientations.
-        """
-        for i, rot in enumerate(self.orientation_rotations):
-            if rot.approx_equal(rotation):
-                return i
-        return -1
-
-    def apply_rotation(self, rotation_idx, orientation):
-        """
-        Applies rotation rotation_idx to particle orientation orientation, and returns the new
-        orientation of the particle.
-        """
-        # Mind the order when composing rotations!
-        new_rot = (
-            self.orientation_rotations[rotation_idx]
-            * self.orientation_rotations[orientation]
-        )
-        return self.identify_orientation(new_rot)
-
-    def get_equivalent_face_pairs(
-        self, face_1, face_2
-    ):
-        """
-        From the faces in contact of particle 1 at lattice site (0,0,0) and of particle 2 at site
-        (1,0,0), fill list `all_face_pairs` with all the [face_1, face_2]
-        combinations reproducing the contact between the 2 particles still occupying the same
-        spots.
-        """
-        all_face_pairs = []
-        opposite_face_2 = self.get_opposite_face(face_2)
-        for rot in C4XM_POWERS:
-            orientation_1 = self.identify_orientation(
-                rot * self.orientation_rotations[face_1]
-            )
-            orientation_2 = self.identify_orientation(
-                rot * self.orientation_rotations[opposite_face_2]
-            )
-            all_face_pairs.append(
-                [orientation_1, self.get_opposite_face(orientation_2)]
-            )
-        return all_face_pairs
-
-    def get_bond_index(self, bond_vector):
-        bond = tuple(bond_vector)
-        if bond not in self.bond_to_bond_index.keys():
-            print("Invalid bond vector supplied!")
-            return None
-        bond_index = self.bond_to_bond_index[bond]
-        return bond_index
-
-    def get_equivalent_orientations_from_orientations(
-        self, orientation_1, orientation_2
-    ):
-        all_equivalent_orientation_pairs = []
-        # ref_orientation_1, ref_orientation_2 = self.face_face_to_ref_bond(
-        #     face1, face2, bond
-        # )
-        # If face1 n
-        # Apply all possible rotations to the contact we are considering
-        all_equivalent_orientation_pairs.extend(
-            self.get_equivalent_face_pairs(
-                orientation_1, orientation_2
-            )
-        )
-
-        return np.vstack(all_equivalent_orientation_pairs)
-
-    def get_reverse_orientations_from_orientations(self, orientation_1, orientation_2):
-        all_opposite_orientation_pairs = []
-        if orientation_1 != self.get_opposite_face(orientation_2):
-            orientation_1_reverse = self.get_opposite_face(orientation_1)
-            orientation_2_reverse = self.get_opposite_face(orientation_2)
-            return self.get_equivalent_orientations_from_orientations(
-                orientation_2_reverse, orientation_1_reverse
-            )
-        else:
-            return []
-    #
-    # def get_equivalent_orientations_from_faces(self, face1, face2):
-    #     """
-    #     For a face-face contact between `face1` and `face2`,
-    #     generates all the (orientation, orientation) pairs reproducing this contact through bond
-    #     0 as a 2-column array.
-    #     """
-    #     # A note on how this works: if face1 and face2 are in contact, then they also are in
-    #     # contact through bond 0. So we can consider the case where orientation1 = face1 and
-    #     # orientation2 = opposite(face2).
-    #     # We don't need to consider bonds different from 0: the C++ code already does that!
-    #     orientation_2 = self.get_opposite_face(face2)
-    #
-    #     return self.get_equivalent_orientations_from_orientations(face1, orientation_2)
-    #
-    def get_opposite_face(self, orientation):
-        return (orientation + 12) % 24
+        self.lattice = LatticeGeometry(BASIS_VECTORS, BONDS, lx, ly, lz, lattice_spacing)

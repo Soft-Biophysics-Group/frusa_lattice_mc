@@ -10,7 +10,8 @@ src/frusa_lattice_mc.egg-info/SOURCES.txt
 src/frusa_lattice_mc.egg-info/dependency_links.txt
 src/frusa_lattice_mc.egg-info/top_level.txt
 src/geometry/cubic.py
-src/geometry/geometry.py
+src/geometry/lattice_geometry.py
+src/geometry/particle_geometry.py
 src/geometry/test.py
 src/geometry/triangular.py
 src/interactions/cubic_interactions.py

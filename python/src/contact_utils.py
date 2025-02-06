@@ -4,13 +4,13 @@
 from sys import exception
 import numpy as np
 from numpy.typing import NDArray
-from geometry import geometry
-from geometry.cubic import CubicGeometry
+from geometry.cubic import CubicLattice, CubicParticle
 from geometry.triangular import TriangularGeometry
 
 from typing import Any
 
 LATTICE_NAMES = ["chain", "triangular", "cubic"]
+
 
 class ContactMapWrapper:
     """
@@ -54,7 +54,7 @@ class ContactMapWrapper:
         self,
         n_types=1,
         n_orientations=6,
-        particle_geometry:Any=TriangularGeometry(),
+        particle_geometry: Any = TriangularGeometry(),
         init_energy=0.0,
     ):
         self.n_types = n_types
@@ -66,12 +66,12 @@ class ContactMapWrapper:
 
     # Different lattices for which we can use this class
     @classmethod
-    def triangular(cls, n_types, init_energy = 0.0):
-        return cls(n_types, 6, TriangularGeometry(), init_energy = init_energy)
+    def triangular(cls, n_types, init_energy=0.0):
+        return cls(n_types, 6, TriangularGeometry(), init_energy=init_energy)
 
     @classmethod
-    def cubic(cls, n_types, init_energy = 0.0):
-        return cls(n_types, 24, CubicGeometry, init_energy = init_energy)
+    def cubic(cls, n_types, init_energy=0.0):
+        return cls(n_types, 24, CubicParticle(), init_energy=init_energy)
 
     # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
     def get_one_face_coeff(self, orientation, type):
@@ -86,7 +86,6 @@ class ContactMapWrapper:
         coeff_1 = self.get_one_face_coeff(face1, type1)
         coeff_2 = self.get_one_face_coeff(face2, type2)
         return coeff_1 + coeff_2 * self.n_types * self.n_orientations
-
 
     # ----- MORE CONVENIENT ACCESS TO COEFFICIENTS -----
     def __getitem__(self, faces_types):
@@ -137,18 +136,14 @@ class ContactMapWrapper:
         TODO: Implement triangular lattice
         """
 
-        return self.geometry.get_equivalent_face_pairs(
-            face1, face2
-        )
+        return self.geometry.get_equivalent_face_pairs(face1, face2)
 
     # ----- GETTING 2D CONTACT MATRICES -----
     def get_two_species_contact_matrix(self, type1, type2):
         contact_map = np.zeros((self.n_orientations, self.n_orientations))
         for face1 in range(self.n_orientations):
             for face2 in range(self.n_orientations):
-                contact_map[face1, face2] = self[
-                    face1, type1, face2, type2
-                ]
+                contact_map[face1, face2] = self[face1, type1, face2, type2]
         return contact_map
 
     def get_single_species_contact_matrix(self, type):
@@ -163,9 +158,7 @@ class ContactMapWrapper:
 
         for face1 in range(self.n_orientations):
             for face2 in range(self.n_orientations):
-                self[face1, type1, face2, type2] = contact_matrix[
-                    face1, face2
-                ]
+                self[face1, type1, face2, type2] = contact_matrix[face1, face2]
                 # self[
                 #     self.geometry.get_opposite_orientation(face2),
                 #     type2,
@@ -174,7 +167,7 @@ class ContactMapWrapper:
                 # ] = contact_matrix[face1, face2]
         return
 
-    def set_single_species_contacts(self, type:int, contact_matrix):
+    def set_single_species_contacts(self, type: int, contact_matrix):
         """
         Set couplings of particle species with index type, from numpy array contact_matrix.
         contact_matrix has to be symmetric, or upper/lower triangular, otherwise the
@@ -197,7 +190,7 @@ class ContactMapWrapper:
 
         return
 
-    # ----- GETTING THE FORMATTED COUPLINGS FOR JSON INPUT ----- 
+    # ----- GETTING THE FORMATTED COUPLINGS FOR JSON INPUT -----
     def get_formatted_couplings(self):
         """Returns the contact  matrix in a format"""
         return list(self.contact_map)
@@ -244,28 +237,24 @@ def block_block_pauli_x(n_faces: int, n_types: int):
 
 # ---------- CHAIN FUNCTIONS ----------
 def chain_LEL_1type(one_to_one, two_to_two, one_to_two):
-    """ 
-        Returns orientation-based 1D interaction matrix.
-        Parameters:
-        - one_to_one: face 1 to face 1 interaction
-        - two_to_two: face 2 to face 2 interaction
-        - one_to_two: face 1 to face 2 interaction
     """
-    face_mat = np.array([
-        [one_to_one, one_to_two],
-        [one_to_two, two_to_two]])
+    Returns orientation-based 1D interaction matrix.
+    Parameters:
+    - one_to_one: face 1 to face 1 interaction
+    - two_to_two: face 2 to face 2 interaction
+    - one_to_two: face 1 to face 2 interaction
+    """
+    face_mat = np.array([[one_to_one, one_to_two], [one_to_two, two_to_two]])
     return face_to_or(face_mat)
 
 
 def chain_LEL_2types(mat_11, mat_21, mat_22):
-    full_face_matrix = np.block([
-        [mat_11,   mat_21],
-        [mat_21.T, mat_22]
-    ])
+    full_face_matrix = np.block([[mat_11, mat_21], [mat_21.T, mat_22]])
     return np.matmul(block_block_pauli_x(2, 2), full_face_matrix)
 
 
 # ---------- TRIANGULAR LATTICE FUNCTIONS ----------
+
 
 def get_camembert_cmap(e_crystal, e_defect, e_repel):
     cmap_wrapper = ContactMapWrapper.triangular(1)
@@ -273,7 +262,7 @@ def get_camembert_cmap(e_crystal, e_defect, e_repel):
     contact_map_matrix += e_repel
     # Crystal contacts: opposite faces every time
     for face in range(6):
-        contact_map_matrix[face, (face + 3)%6 ] = e_crystal
+        contact_map_matrix[face, (face + 3) % 6] = e_crystal
     # Line contacts
     contact_map_matrix[0, 2] = e_defect
     contact_map_matrix[1, 5] = e_defect
@@ -286,4 +275,3 @@ def get_camembert_cmap(e_crystal, e_defect, e_repel):
     print(cmap_wrapper.get_single_species_contact_matrix(0))
 
     return cmap_wrapper.get_formatted_couplings()
-

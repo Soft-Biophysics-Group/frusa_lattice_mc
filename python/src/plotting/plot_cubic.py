@@ -9,12 +9,12 @@ So far only supports one type of cubes.
 import config as cfg
 from pathlib import Path
 from geometry.cubic import CubicGeometry
-from geometry.geometry import lattice_site_to_lattice_coords_3d
 import bpy
 import shutil
 import sys
 import mathutils
 import numpy as np
+from geometry.cubic import CubicGeometry
 
 path_to_config = Path(__file__).parent.parent
 
@@ -57,12 +57,16 @@ def plot_cube_from_site_orientation(
     site_index: int, orientation: int, lx: int, ly: int
 ):
     # The factor of 2 is due to the size of the cubes
-    site_coords = 2 * lattice_site_to_lattice_coords_3d(site_index, lx, ly)
-    rotation = CubicGeometry().orientation_rotations[orientation]
+    cubic_lattice = CubicGeometry(lx=lx, ly=ly).lattice
+    site_coords = 2 * cubic_lattice.lattice_site_to_lattice_coords(site_index)
+    rotation = CubicGeometry.particle.orientation_rotations[orientation]
     euler_angles = rotation.as_euler("xyz")
 
     plot_cube(site_coords, euler_angles)
     return
+
+def save_blender_fig(blend_file_path: str | Path):
+    bpy.ops.wm.save_as_mainfile(filepath=str(blend_file_path))
 
 def deleteAllObjects():
     """

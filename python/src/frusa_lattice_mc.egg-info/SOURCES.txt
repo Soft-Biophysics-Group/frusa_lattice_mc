@@ -5,6 +5,7 @@ src/contact_utils.py
 src/json_dump.py
 src/lattice_utils.py
 src/analysis/analyze_3d_size.py
+src/analysis/analyze_records.py
 src/frusa_lattice_mc.egg-info/PKG-INFO
 src/frusa_lattice_mc.egg-info/SOURCES.txt
 src/frusa_lattice_mc.egg-info/dependency_links.txt

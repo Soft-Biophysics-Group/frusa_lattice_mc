@@ -5,10 +5,11 @@ build:
 
 python/.venv:
 	(\
-	python -m venv "python/.venv";\
-	source python/.venv/bin/activate;\
-	python -m pip install -r python/requirements.txt;\
-	python -m pip install -e python;\
+	cd python;\
+	python -m venv ".venv";\
+	source .venv/bin/activate;\
+	python -m pip install -r requirements.txt;\
+	python -m pip install -e .;\
 	)
 
 all: build python/.venv

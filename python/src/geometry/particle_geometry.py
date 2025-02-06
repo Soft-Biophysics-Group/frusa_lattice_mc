@@ -13,21 +13,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 
-# Globals
-ID_ROT = R.identity()
-# scipy convention is positive = counter-clockwise when looking at axis through + sign
-# At this point I encourage you to play with the cube to understand why we define rotations like
-# this
-C4XM = R.from_euler("x", -90, degrees=True)
-C4Y = R.from_euler("y", 90, degrees=True)
-C4ZM = R.from_euler("z", -90, degrees=True)
-C2Z = C4ZM * C4ZM
-C4XM_POWERS = [C4XM**i for i in range(4)]
-BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C4ZM, C4Y]  # , C2Z, C2Z * C4Z, C2Z * C4Y]
-ORIENTATION_0_VECTORS = np.array([[1, 0, 0], [0, 1, 0]])
-OPPOSITE_FACE_ROTATION = C2Z
-
-
 class ParticleGeometry:
     def __init__(
         self,
@@ -39,8 +24,8 @@ class ParticleGeometry:
     ):
         # We keep track of only x and y internal vectors, z is redundant
         self.orientation_0_vectors = orientation_0_vectors
-        self.n_orientations = len(face_0_permutation_rotations) * len(
-            rotations_around_face_0
+        self.n_orientations = (
+            len(face_0_permutation_rotations) * len(rotations_around_face_0) * 2
         )
         self.orientation_rotations = self.gen_face_orientations(
             face_0_permutation_rotations,
@@ -67,6 +52,8 @@ class ParticleGeometry:
                 rotations[face_index] = (
                     rotations_around_face_0[j] * face_0_permutation_rotations[i]
                 )
+                print(face_index)
+                print(self.get_opposite_face_index(face_index))
                 rotations[self.get_opposite_face_index(face_index)] = (
                     opposite_face_rotation * rotations[face_index]
                 )
@@ -165,4 +152,4 @@ class ParticleGeometry:
             return []
 
     def get_opposite_face_index(self, orientation):
-        return (orientation + self.n_orientations // 2) % 24
+        return (orientation + (self.n_orientations // 2)) % 24

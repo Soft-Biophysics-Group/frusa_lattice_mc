@@ -8,6 +8,7 @@ python/.venv:
 	python -m venv "python/.venv";\
 	source python/.venv/bin/activate;\
 	python -m pip install requirements.txt\
+	python -m pip install -e python\
 	)
 
 all: build python/.venv

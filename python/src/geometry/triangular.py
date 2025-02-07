@@ -11,9 +11,48 @@ TODOS:
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from geometry.particle_geometry import ParticleGeometry
+from geometry.lattice_geometry import LatticeGeometry
+
+# Globals
+ID_ROT = R.identity()
+C6Z = R.from_euler("z", 60, degrees=True)
+C2Z = R.from_euler("z", 180, degrees=True)
+ORIENTATION_0_VEC = np.array([[1, 0, 0]])
+BONDS = [
+    (1, 0, 0),
+    (0, 1, 0),
+    (0, -1, 0),
+    (-1, 0, 0),
+    (-1, -1, 0),
+    (1, -1, 0),
+]
+BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C6Z, C6Z**2]
+BOND_ROTATIONS = [
+    *BOND_ORIENTATIONS_POSITIVE,
+    *[C2Z * rot for rot in BOND_ORIENTATIONS_POSITIVE],
+]
+SR32: float = np.sqrt(3) / 2
+BASIS_VECTORS = np.array([[1, 0.5, 0.], [0, SR32, 0.]])
+
+class TriangularParticle(ParticleGeometry):
+    def __init__(self):
+        super().__init__(
+            ORIENTATION_0_VEC,
+            BONDS,
+            BOND_ROTATIONS,
+            BOND_ORIENTATIONS_POSITIVE,
+            rotations_around_face_0=[ID_ROT],
+            opposite_face_rotation=C2Z,
+        )
 
 
-class TriangularGeometry:
+class TriangularLattice(LatticeGeometry):
+    def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0):
+        super().__init__(BASIS_VECTORS, BONDS, lx, ly, 1, lattice_spacing)
+
+
+class TriangularGeometry_bak:
     def __init__(self):
         # We keep track of only x and y internal vectors, z is redundant
         self.orientation_0_vector = np.array([[1, 0]])

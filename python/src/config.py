@@ -70,6 +70,12 @@ def load_structure(
 def get_full_sites(site_orientations):
     return np.where(site_orientations[1, :] != -1)[0]
 
+def get_full_sites_characteristics(site_orientations):
+    sites = get_full_sites(site_orientations)
+    types = site_orientations[0, sites]
+    orientations = site_orientations[1, sites]
+    return np.vstack([sites, types, orientations]).T
+
 
 # ----- RUN SIMULATIONS FROM PYTHON  -----
 

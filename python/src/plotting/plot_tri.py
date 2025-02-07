@@ -5,11 +5,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
 import numpy as np
-from geometry.geometry import (
-    lattice_coords_to_lattice_site_2d,
-    lattice_site_to_lattice_coords_2d,
-    get_full_sites_characteristics,
-)
+from geometry.triangular import TriangularLattice, TriangularParticle
 from pathlib import Path
 import config as cfg
 from matplotlib.axes import Axes
@@ -61,33 +57,14 @@ class ParticleRepresentation:
     """
     # 2 vertices, one in front and one in back
     # Here particle length is normalized to 1
-    def __init__(self, lattice_spacing=1.0):
+    def __init__(self, lx:int = 1, ly:int = 1, lattice_spacing=1.0):
         """
         How the faces permute when we change the particle orientation.
         Directly lifted from triangular.h
         """
         self.lattice_spacing = lattice_spacing
         self.radius = 0.5 / sr32 * self.lattice_spacing
-        self.permutations = np.array(
-            [
-                [0, 1, 2, 3, 4, 5],
-                [1, 2, 3, 4, 5, 0],
-                [2, 3, 4, 5, 0, 1],
-                [3, 4, 5, 0, 1, 2],
-                [4, 5, 0, 1, 2, 3],
-                [5, 0, 1, 2, 3, 4],
-            ]
-        )
-        self.opposite_bonds = np.array([3, 4, 5, 0, 1, 2])
-        self.bonds = np.array([
-            [1, 0],
-            [1, 0],
-            [-1, 1],
-            [-1, 0],
-            [0, -1],
-            [1, -1]
-        ])
-
+        self.lattice = TriangularLattice(lx, ly, lattice_spacing)
         # Face colors in the reference orientation (0)
         self.colors = [
             "bf9c76ff",
@@ -103,29 +80,21 @@ class ParticleRepresentation:
         self.rotation_matrix = np.array([[1 / 2, -sr32], [sr32, 1 / 2]])
         self.face_0_corners = np.array(
             [
-                # [[0.5 * self.lattice_spacing, 0.5 * self.lattice_spacing], [-sr32, sr32]]
                 [0.5 * self.lattice_spacing, 0.5 * self.lattice_spacing],
                 [-0.25 / sr32 * self.lattice_spacing, 0.25 / sr32 * self.lattice_spacing],
             ]
         )
         self.all_face_corners = self.init_face_coords()
-        self.lattice_vectors_in_cartesian = np.array([[1, 0.5], [0, sr32]])
 
-    # ----- GEOMETRY -----
-    def lattice_to_cartesian(self, x_lattice: int, y_lattice: int) -> int:
-        return (
-            x_lattice * self.lattice_vectors_in_cartesian[:, 0]
-            + y_lattice * self.lattice_vectors_in_cartesian[:, 1]
-        )
+    @classmethod
+    def from_model_file(
+        cls, model_file=cfg.default_model_params_file, lattice_spacing=1.0
+    ):
+        model_dict = cfg.load_model_file(model_file)
+        lx = model_dict["lx"]
+        ly = model_dict["ly"]
 
-    def rotate_point(self, coords, n_steps=1):
-        """
-        Applies `n_steps` pi/3 rotation steps to cartesian coordinates coords in the clockwise
-        direction.
-        """
-        for i in range(n_steps):
-            coords = np.matmul(self.rotation_matrix, coords)
-        return coords
+        return cls(lx, ly, lattice_spacing)
 
     def init_face_coords(self):
         """
@@ -134,81 +103,18 @@ class ParticleRepresentation:
         all_faces_corners = []
         for face_nr in range(self.n_faces):
             face_corners = np.copy(self.face_0_corners)
+            rotation = TriangularParticle().orientation_rotations[face_nr]
             for i in range(2):
                 this_corner = face_corners[:, i]
-                face_corners[:, i] = self.rotate_point(this_corner, face_nr)
+                face_corners[:, i] = rotation.apply(this_corner)
             all_faces_corners.append(face_corners)
         return all_faces_corners
-
-    def get_bond(self, bond_vector):
-        """
-        If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,
-        this returns an unique index indicating the direction of this "bond"
-        """
-        matching_coeffs = self.bonds == bond_vector
-        matching_vectors = np.prod(matching_coeffs, axis=1)
-        if matching_vectors.sum() != 1:
-            print("The vector does not correspond to a bond!")
-            return -1
-        else:
-            return np.argmax(matching_vectors)
-
-    def get_neighbour_sites(self, site_index, lx, ly):
-        """
-        Return a 1D array of site indices corresponding to the neighbours of site_index.
-        The jth element of this array is the neighbour of site_index following the jth bond.
-        """
-        x, y = lattice_site_to_lattice_coords_2d(site_index, lx)
-        neighbours = []
-        for bond in self.bonds:
-            x_neighbour, y_neighbour = np.array([x, y]) + bond
-            # Quick and dirty implementation of periodic boundary conditions
-            if x_neighbour >= lx:
-                x_neighbour -= lx
-            if x_neighbour < 0:
-                x_neighbour += lx
-            if y_neighbour >= ly:
-                y_neighbour -= ly
-            if y_neighbour < 0:
-                y_neighbour += ly
-
-            neighbour_index = lattice_coords_to_lattice_site_2d(x_neighbour, y_neighbour, lx)
-            neighbours.append(neighbour_index)
-        return neighbours
-
-    def get_faces_in_contact(
-        self, site_1, site_2, orientation_1, orientation_2, lx, ly
-    ):
-        """
-        If `site_1` and `site_2` are the indices of 2 neighbouring sites, containing particles with
-        respective orientations `orientation_1` and `orientation_2`, this returns the faces of
-        the particles which are in contact.
-        If either of the sites is empty, the associated face will be -1.
-        """
-        neighbours = self.get_neighbour_sites(site_1, lx, ly)
-        if site_2 in neighbours:
-            bond_index = np.where(np.array(neighbours) == site_2)[0][0]
-        else:
-            print("The sites are not neighbours!")
-            return -1, -1
-
-        if orientation_1 == -1:
-            face_1 = -1
-        else:
-            face_1 = self.permutations[bond_index, orientation_1]
-        if orientation_2 == -1:
-            face_2 = -1
-        else:
-            face_2 = self.permutations[(bond_index+3)%6, orientation_2]
-
-        return face_1, face_2
 
     # ----- SINGLE-PARTICLE PLOTTING ----- 
     def plot_particle_outline(
         self,
         x_center_lattice: int,
         y_center_lattice: int,
-        lx: int,
         ax: Axes,
         squared: bool = False,
         fill_color: str = ""
@@ -216,13 +122,13 @@ class ParticleRepresentation:
         """
         Plots the outline of a particle, optionally filled with color `fill_color`
         """
-        x_center, y_center = self.lattice_to_cartesian(
+        x_center, y_center = self.lattice.lattice_to_cartesian(
             x_center_lattice, y_center_lattice
         )
         if fill_color == "":
             fill = False
         if squared:
-            x_center = square_coordinates(x_center, lx)
+            x_center = square_coordinates(x_center)
         h = mpatches.RegularPolygon(
             (x_center, y_center),
             self.n_faces,
@@ -237,7 +143,6 @@ class ParticleRepresentation:
         self,
         x_center_lattice: int,
         y_center_lattice: int,
-        lx:int,
         orientation: int,
         ax: Axes,
         squared:bool = False,
@@ -251,15 +156,15 @@ class ParticleRepresentation:
         a_length = self.radius / 2
         # Get the edge corresponding to face 0 in current orientation
         # And deduce the arrow orientation in lattice coordinates
-        edge = np.where(self.permutations[orientation] == 0)[0][0]
         arrow_vector = np.array([a_length, 0])
-        arrow_vector = self.rotate_point(arrow_vector, edge)
+        orientation_rotation = TriangularParticle().orientation_rotations[orientation]
+        arrow_vector = orientation_rotation.apply(arrow_vector)
         # FancyArrow uses arrow base location as input, so we'll need that
-        x_center_cartesian, y_center_cartesian = self.lattice_to_cartesian(
+        x_center_cartesian, y_center_cartesian = self.lattice.lattice_to_cartesian(
             x_center_lattice, y_center_lattice
         )
         if squared:
-            x_center_cartesian = square_coordinates(x_center_cartesian, lx)
+            x_center_cartesian = square_coordinates(x_center_cartesian)
         x_arrow_base = x_center_cartesian - arrow_vector[0] / 2
         y_arrow_base = y_center_cartesian - arrow_vector[1] / 2
 
@@ -280,7 +185,6 @@ class ParticleRepresentation:
         face_1,
         face_2,
         bond,
-        lx,
         ax,
         squared:bool = False,
         cmap=CAMEMBERT_CONTACTS_CMAP,
@@ -295,9 +199,11 @@ class ParticleRepresentation:
         it.
         """
         centered_face_corners = self.all_face_corners[bond]
-        x_center_cartesian, y_center_cartesian = self.lattice_to_cartesian(x_center, y_center)
+        x_center_cartesian, y_center_cartesian = self.lattice.lattice_to_cartesian(
+            x_center, y_center
+        )
         if squared:
-            x_center_cartesian = square_coordinates(x_center_cartesian, lx)
+            x_center_cartesian = square_coordinates(x_center_cartesian)
         particles_face_corners = centered_face_corners + np.array(
             [
                 [x_center_cartesian, x_center_cartesian],
@@ -345,14 +251,9 @@ class ParticleRepresentation:
         else:
             fig = ax.get_figure()
         results = cfg.load_structure(results_index, results_folder, results_file)
-        lx = cfg.load_model_file()["lx"]
-        for (
-            site,
-            _,
-            _,
-        ) in get_full_sites_characteristics(results):
-            x_lattice, y_lattice = lattice_site_to_lattice_coords_2d(site, lx)
-            self.plot_particle_outline(x_lattice, y_lattice, lx, ax, squared = squared)
+        for site in cfg.get_full_sites(results):
+            x_lattice, y_lattice = self.lattice.lattice_site_to_lattice_coords(site)
+            self.plot_particle_outline(x_lattice, y_lattice, ax, squared = squared)
 
         return fig, ax
 
@@ -387,29 +288,30 @@ class ParticleRepresentation:
         """
         fig, ax = plt.subplots()
         results = cfg.load_structure(results_index, results_folder,  results_file)
-        lx = cfg.load_model_file()["lx"]
-        ly = cfg.load_model_file()["ly"]
 
         for (
             site,
             ptype,
             orientation,
-        ) in get_full_sites_characteristics(results):
-            x_lattice, y_lattice = lattice_site_to_lattice_coords_2d(site, lx)
+        ) in cfg.get_full_sites_characteristics(results):
+            x_lattice, y_lattice = self.lattice.lattice_site_to_lattice_coords(site)
             color = ARROW_COLORS[ptype]
-            self.plot_particle_outline(x_lattice, y_lattice, lx, ax, squared)
+            self.plot_particle_outline(x_lattice, y_lattice, ax, squared)
             self.plot_particle_orientation(
-                x_lattice, y_lattice, lx, orientation, ax, color=color, squared=squared
+                x_lattice, y_lattice, orientation, ax, color=color, squared=squared
             )
 
         # Adjusting the viewing window
         x_min = -self.radius * 1.1
         y_min = -self.radius * 1.1
         if squared:
-            x_max = lx + self.radius
-            y_max = ly * sr32 + self.radius
+            x_max = self.lattice.lx + self.radius
+            y_max = self.lattice.ly * sr32 + self.radius
         else:
-            x_max, y_max = self.lattice_to_cartesian(lx, ly) + self.side_length
+            x_max, y_max = (
+                self.lattice.lattice_to_cartesian(self.lattice.lx, self.lattice.ly)
+                + self.side_length
+            )
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(y_min, y_max)
 
@@ -447,9 +349,9 @@ class ParticleRepresentation:
         lx = cfg.load_model_file()["lx"]
         ly = cfg.load_model_file()["ly"]
 
-        for site, _, orientation in get_full_sites_characteristics(results):
-            x_1, y_1 = lattice_site_to_lattice_coords_2d(site, lx)
-            neighbours = self.get_neighbour_sites(site, lx, ly)
+        for site, _, orientation in cfg.get_full_sites_characteristics(results):
+            x_1, y_1 = self.lattice.lattice_site_to_lattice_coords(site)
+            neighbours = self.lattice.get_neighbour_sites(site)
 
             for bond, neighbour in enumerate(neighbours):
                 # Let's avoid plotting the same contact twice
@@ -461,9 +363,8 @@ class ParticleRepresentation:
                 )
         return
 
-
-def square_coordinates(x_cartesian, lx):
-    if x_cartesian >= lx:
-        return x_cartesian - lx
-    else:
-        return x_cartesian
+    def square_coordinates(self, x_cartesian):
+        if x_cartesian >= self.lattice.lx:
+            return x_cartesian - self.lattice.lx
+        else:
+            return x_cartesian

@@ -30,7 +30,7 @@ class LatticeGeometry:
         self, x_lattice: int, y_lattice: int, z_lattice: int = 1
     ) -> ArrayLike:
         return (
-            x_lattice * self.lattice_vectors_in_cartesian[:, 0]
+              x_lattice * self.lattice_vectors_in_cartesian[:, 0]
             + y_lattice * self.lattice_vectors_in_cartesian[:, 1]
             + z_lattice * self.lattice_vectors_in_cartesian[:, 2]
         )

@@ -10,25 +10,11 @@ output file, go to the last line of the script and give a file location as argum
 """
 
 import config as cfg
-from geometry.cubic import CubicGeometry, ALL_BOND_ORIENTATIONS
+from geometry.cubic import CubicParticle
 
-
-def gen_bond_permutations():
-    cg = CubicGeometry()
-    all_bond_permutations = []
-    for bond_rotation in ALL_BOND_ORIENTATIONS:
-        these_permutations = []
-        for orientation_rotation in cg.orientation_rotations:
-            permuted_orientation_rotation = bond_rotation * orientation_rotation
-            these_permutations.append(
-                cg.identify_orientation(permuted_orientation_rotation)
-            )
-        all_bond_permutations.append(these_permutations)
-
-    return all_bond_permutations
 
 def format_bond_permutations():
-    all_bond_permutations = gen_bond_permutations()
+    all_bond_permutations = CubicParticle().gen_bond_permutations()
     permutations_str = "{\n"
     for permutations in all_bond_permutations:
         permutations_str += "{" + str(permutations)[1:-1] + "},\n"

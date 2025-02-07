@@ -30,14 +30,13 @@ BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C4ZM, C4Y]  # , C2Z, C2Z * C4Z, C2Z * C4Y]
 ALL_BOND_ORIENTATIONS = [*BOND_ORIENTATIONS_POSITIVE, C2Z, C2Z * C4ZM, C2Z * C4Y]
 ORIENTATION_0_VECTORS = np.array([[1, 0, 0], [0, 1, 0]])
 BONDS = [
-    (1, 0, 0),
-    (0, 1, 0),
-    (0, 0, 1),
-    (-1, 0, 0),
-    (0, -1, 0),
-    (0, 0, -1),
+    (-1,  0,  0),
+    ( 0, -1,  0),
+    ( 0,  0, -1),
+    ( 0,  0,  1),
+    ( 0,  1,  0),
+    ( 1,  0,  0),
 ]
-
 # LATTICE PARAMETERS
 BASIS_VECTORS = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
 
@@ -54,6 +53,7 @@ class CubicParticle(ParticleGeometry):
         super().__init__(
             orientation_0_vectors=ORIENTATION_0_VECTORS,
             bonds=BONDS,
+            bond_rotations=ALL_BOND_ORIENTATIONS,
             face_0_permutation_rotations=BOND_ORIENTATIONS_POSITIVE,
             rotations_around_face_0=C4XM_POWERS,
             opposite_face_rotation=C2Z,
@@ -61,18 +61,10 @@ class CubicParticle(ParticleGeometry):
 
 
 class CubicGeometry:
-    particle = ParticleGeometry(
-        orientation_0_vectors=ORIENTATION_0_VECTORS,
-        bonds=BONDS,
-        face_0_permutation_rotations=BOND_ORIENTATIONS_POSITIVE,
-        rotations_around_face_0=C4XM_POWERS,
-        opposite_face_rotation=C2Z,
-    )
+    particle = CubicParticle()
 
     def __init__(
         self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
     ):
         # We keep track of only x and y internal vectors, z is redundant
-        self.lattice = LatticeGeometry(
-            BASIS_VECTORS, BONDS, lx, ly, lz, lattice_spacing
-        )
+        self.lattice = CubicLattice(lx, ly, lz, lattice_spacing)

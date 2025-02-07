@@ -18,6 +18,7 @@ class ParticleGeometry:
         self,
         orientation_0_vectors,
         bonds,
+        bond_rotations,
         face_0_permutation_rotations,
         rotations_around_face_0,
         opposite_face_rotation,
@@ -35,7 +36,9 @@ class ParticleGeometry:
         )
         self.bonds = bonds
         self.bond_to_bond_index = {bond: i for i, bond in enumerate(self.bonds)}
+        self.bond_rotations = bond_rotations
         self.rotation_to_bond = self.gen_bond_rotations()
+        self.bond_permutations = self.gen_bond_permutations()
 
     def gen_face_orientations(
         self,
@@ -49,12 +52,10 @@ class ParticleGeometry:
         # Generate the faces/orientations along + directions
         for i, bond_rotation in enumerate(face_0_permutation_rotations):
             for j in range(len(rotations_around_face_0)):
-                face_index = i * 4 + j
+                face_index = i * len(rotations_around_face_0) + j
                 rotations[face_index] = (
                     rotations_around_face_0[j] * face_0_permutation_rotations[i]
                 )
-                print(face_index)
-                print(self.get_opposite_face_index(face_index))
                 rotations[self.get_opposite_face_index(face_index)] = (
                     opposite_face_rotation * rotations[face_index]
                 )
@@ -65,13 +66,33 @@ class ParticleGeometry:
         Generate a list associating which bond (1, 0, 0) maps to under every rotation.
         """
         all_rotated_bonds = []
-        zero_bond = np.array([1, 0, 0])
+        zero_bond = self.bonds[0]
         for rot in self.orientation_rotations:
             # Change type to round coefficients to 0, 1, or -1
-            new_bond_arr = rot.apply(zero_bond).astype(int)
+            print(rot.as_euler('xyz', degrees=True))
+            # new_bond_arr = rot.apply(zero_bond).astype(int)
+            new_bond_arr = rot.apply(zero_bond)
+            print(f"\t{new_bond_arr}")
             new_bond = tuple(new_bond_arr)
             all_rotated_bonds.append(self.bond_to_bond_index[new_bond])
         return all_rotated_bonds
+
+    def gen_bond_permutations(self):
+        """
+        Returns an array describing how the particle orientations are permuted when a given bond
+        is considered.
+        """
+        all_bond_permutations = []
+        for bond_rotation in self.bond_rotations:
+            these_permutations = []
+            for orientation_rotation in self.orientation_rotations:
+                permuted_orientation_rotation = bond_rotation * orientation_rotation
+                these_permutations.append(
+                    self.identify_orientation(permuted_orientation_rotation)
+                )
+            all_bond_permutations.append(these_permutations)
+
+        return all_bond_permutations
 
     def identify_orientation(self, rotation):
         """
@@ -126,6 +147,10 @@ class ParticleGeometry:
         bond_index = self.bond_to_bond_index[bond]
         return bond_index
 
+    def get_faces_in_contact(self, orientation1, orientation2, bond):
+        
+        return
+
     def get_equivalent_orientations_from_orientations(
         self, orientation_1, orientation_2
     ):
@@ -153,4 +178,4 @@ class ParticleGeometry:
             return []
 
     def get_opposite_face_index(self, orientation):
-        return (orientation + (self.n_orientations // 2)) % 24
+        return (orientation + (self.n_orientations // 2)) % self.n_orientations

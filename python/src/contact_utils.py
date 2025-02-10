@@ -107,6 +107,7 @@ class ContactMapWrapper:
         # If we are in 3D, some pairs of faces might be equivalent to the one we are looking at
         # through rotational invariance. If so, we must generate these.
         equiv_faces = self.get_equivalent_face_pairs(face1, face2)
+        print(equiv_faces)
         # All equivalent contacts with particle 1 at the center and through bond 0
         for this_face1, this_face2 in equiv_faces:
             int_coeff = self.get_interaction_coeff(this_face1, type1, this_face2, type2)
@@ -257,21 +258,14 @@ def chain_LEL_2types(mat_11, mat_21, mat_22):
 
 
 def get_camembert_cmap(e_crystal, e_defect, e_repel):
-    cmap_wrapper = ContactMapWrapper.triangular(1)
-    contact_map_matrix = cmap_wrapper.get_single_species_contact_matrix(0)
-    contact_map_matrix += e_repel
-    # Crystal contacts: opposite faces every time
-    for face in range(6):
-        contact_map_matrix[face, (face + 3) % 6] = e_crystal
+    cmap_wrapper = ContactMapWrapper.triangular(1, init_energy = e_repel)
+    print("Hi")
+    for face in range(3):
+        cmap_wrapper[face, face+3] = e_crystal
     # Line contacts
-    contact_map_matrix[0, 2] = e_defect
-    contact_map_matrix[1, 5] = e_defect
-    # We also need the symmetric contacts!
-    contact_map_matrix[2, 0] = e_defect
-    contact_map_matrix[5, 1] = e_defect
-    print(contact_map_matrix)
+    cmap_wrapper[0, 4] = e_defect
+    cmap_wrapper[1, 5] = e_defect
 
-    cmap_wrapper.set_single_species_contacts(0, contact_map_matrix)
     print(cmap_wrapper.get_single_species_contact_matrix(0))
 
     return cmap_wrapper.get_formatted_couplings()

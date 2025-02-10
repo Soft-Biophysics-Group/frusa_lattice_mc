@@ -10,9 +10,9 @@ from json_dump import *
 import contact_utils as cu
 import config as cfg
 from pathlib import Path
-
+from contact_utils import get_camembert_cmap
 ### Key parameter: how we will name this run
-run_name = "01_crystal"
+run_name = "test_run"
 
 ### Define model parameters
 
@@ -25,8 +25,8 @@ model_params = {}
 model_params["lattice_name"] = "triangular"
 
 # Lattice dimensions
-model_params["lx"] = 10
-model_params["ly"] = 10  # Has to be 1 for chain
+model_params["lx"] = 40
+model_params["ly"] = 40  # Has to be 1 for chain
 model_params["lz"] = 1  # Has to be 1 for square & triangular
 
 # ---------- MODEL PARAMETERS ----------
@@ -35,28 +35,18 @@ model_params["lz"] = 1  # Has to be 1 for square & triangular
 model_params["n_types"] = 1
 
 # Number of particles of each type
-model_params["n_particles"] = [10]
+model_params["n_particles"] = [400]
 
 # Couplings is its own beast. Should be gotten with the appropriate helper
 # function.
 
-# First, create a cmap_wrapper object with the appropriate number of particle types
-cmap_wrapper = cu.ContactMapWrapper.triangular(model_params["n_types"])
-# Fetch the couplings in matrix form for convenience
-# This matrix has to be, after the manipulations we make to it, symmetric or triangular.
-# No such limitation applies to a two-species contact matrix.
-cmap_matrix = cmap_wrapper.get_single_species_contact_matrix(0)
+# Parameters I got from the draft of Lara's paper
+e_crystal = -18.7
+e_defect = 1/0.55 * e_crystal
+e_repel = 10
 
-# Here couplings are trivially easy: we just need to set every matrix coefficient to the same
-# (negative) value.
-interaction_e = -10.
-cmap_matrix += interaction_e
-
-# Chuck the interaction coefficient back in the cmap_wrapper.
-# It takes care of figuring out which coefficients go where in the flattened couplings array.
-cmap_wrapper.set_single_species_contacts(0, cmap_matrix)
-# And process the couplings into flattened form
-model_params["couplings"] = cmap_wrapper.get_formatted_couplings()
+# I even made a specific function for these couplings!
+model_params["couplings"] = cu.get_camembert_cmap(e_crystal, e_defect, e_repel)
 
 # Initialization option
 model_params["initialize_option"] = "random"
@@ -103,30 +93,34 @@ moves_dict["rotate_and_swap_w_empty"] = 1/3
 
 model_params["move_probas"] = moves_dict
 
-make_json_file(model_params, cfg.input_path/"model_params.json")
+make_json_file(model_params, cfg.input_path/"test_model_params.json")
 
 ### Define mc parameters
 
 mc_params = {}
 
 # Number of MC steps used for equilibration
-mc_params["mcs_eq"] = 1000
+# Lara used 12k steps per particle, in our program the number of steps is given per site
+# so for a start 12k * 400 / 40^2
+mc_params["mcs_eq"] = 3000
 
 # Number of MC steps used for averaging
-mc_params["mcs_av"] = 10
+mc_params["mcs_av"] = 100
 
 # Type of cooling schedule
+# Options: "exponential", "linear", "inverse"
 # if exponential chosen: specify log10(T) as initial and final temperatures
-mc_params["cooling_schedule"] = "exponential"
+# if inverse chosen: specify 1 / T as initial and final temperatures, in decreasing order.
+mc_params["cooling_schedule"] = "inverse"
 
 # Initial annealing temperature
-mc_params["Ti"] = np.log10(20)
+mc_params["Ti"] = 0
 
 # Final annealing temperature
-mc_params["Tf"] = 0
+mc_params["Tf"] = 1
 
 # Number of annealing steps
-mc_params["Nt"] = 10
+mc_params["Nt"] = 200
 
 # Option to collect state checkpoints at the end of each temperature cycle
 mc_params["checkpoint_option"] = True
@@ -142,4 +136,4 @@ if mc_params["checkpoint_option"]:
 # Output location of the final state configuration (must end with "/")
 mc_params["final_structure_address"] = str(structures_path.resolve())+"/"
 
-make_json_file(mc_params, cfg.input_path/"mc_params.json")
+make_json_file(mc_params, cfg.input_path/"test_mc_params.json")

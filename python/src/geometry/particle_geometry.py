@@ -27,6 +27,7 @@ class ParticleGeometry:
             len(face_0_permutation_rotations) * len(rotations_around_face_0) * 2
         )
         self.face_0_permutation_rotations = face_0_permutation_rotations
+        self.rotations_around_face_0 = rotations_around_face_0
         self.orientation_rotations = self.gen_face_orientations(
             face_0_permutation_rotations,
             rotations_around_face_0,
@@ -106,7 +107,7 @@ class ParticleGeometry:
         """
         all_face_pairs = []
         opposite_face_2 = self.get_opposite_face_index(face_2)
-        for rot in self.face_0_permutation_rotations:
+        for rot in self.rotations_around_face_0:
             orientation_1 = self.identify_orientation(
                 rot * self.orientation_rotations[face_1]
             )

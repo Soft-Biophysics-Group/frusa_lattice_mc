@@ -48,6 +48,9 @@ namespace simulation_space{
       else if(parameters.cooling_schedule=="linear"){
         cooling_option = 1;
       }
+      else if(parameters.cooling_schedule=="inverse"){
+        cooling_option = 2;
+      }
       else{
         throw parameters.cooling_schedule;
       }
@@ -107,6 +110,9 @@ namespace simulation_space{
           break;
         case 1:
           T = T_array[i];
+          break;
+        case 2:
+          T = 1 / T_array[i];
           break;
       }
 

@@ -52,11 +52,10 @@ class CubicParticle(ParticleGeometry):
     def __init__(self):
         super().__init__(
             orientation_0_vectors=ORIENTATION_0_VECTORS,
-            bonds=BONDS,
-            bond_rotations=ALL_BOND_ORIENTATIONS,
             face_0_permutation_rotations=BOND_ORIENTATIONS_POSITIVE,
             rotations_around_face_0=C4XM_POWERS,
             opposite_face_rotation=C2Z,
+            bond_rotations=ALL_BOND_ORIENTATIONS,
         )
 
 

@@ -5,7 +5,7 @@ from sys import exception
 import numpy as np
 from numpy.typing import NDArray
 from geometry.cubic import CubicLattice, CubicParticle
-from geometry.triangular import TriangularGeometry
+from geometry.triangular import TriangularLattice, TriangularParticle
 
 from typing import Any
 
@@ -54,7 +54,7 @@ class ContactMapWrapper:
         self,
         n_types=1,
         n_orientations=6,
-        particle_geometry: Any = TriangularGeometry(),
+        particle_geometry: Any = TriangularParticle(),
         init_energy=0.0,
     ):
         self.n_types = n_types
@@ -67,7 +67,7 @@ class ContactMapWrapper:
     # Different lattices for which we can use this class
     @classmethod
     def triangular(cls, n_types, init_energy=0.0):
-        return cls(n_types, 6, TriangularGeometry(), init_energy=init_energy)
+        return cls(n_types, 6, TriangularParticle(), init_energy=init_energy)
 
     @classmethod
     def cubic(cls, n_types, init_energy=0.0):

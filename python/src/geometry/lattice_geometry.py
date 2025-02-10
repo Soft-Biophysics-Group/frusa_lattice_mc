@@ -1,16 +1,17 @@
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 import config as cfg
+from collections.abc import Mapping
+from scipy.spatial.transform import Rotation as R
 
 from typing import TypeAlias
-Bond: TypeAlias = NDArray[np.int_]
-
+Bond: TypeAlias = tuple[int, int, int]
 
 class LatticeGeometry:
     def __init__(
         self,
         basis_vectors: ArrayLike,
-        bonds: ArrayLike,
+        bonds: list[Bond],
         lx: int,
         ly: int,
         lz: int = 1,
@@ -20,7 +21,10 @@ class LatticeGeometry:
             basis_vectors, dtype=np.float64
         )
         self.lattice_spacing: float = lattice_spacing
-        self.bonds: NDArray[np.int_] = np.array(bonds, dtype = np.int_)
+        self.bonds: list[Bond] = bonds
+        self.bond_to_bond_index: Mapping[Bond, int] = {
+            bond: i for i, bond in enumerate(self.bonds)
+        }
         self.lx: int = lx
         self.ly: int = ly
         self.lz: int = lz
@@ -40,14 +44,15 @@ class LatticeGeometry:
         If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,
         this returns an unique index indicating the direction of this "bond"
         """
-        bond_vector: NDArray[np.int_] = np.array(bond, dtype=int)
-        matching_coeffs: NDArray[np.bool_] = (self.bonds == bond_vector)
-        matching_vectors: NDArray[np.bool_] = np.prod(matching_coeffs, axis=1)
-        if matching_vectors.sum() != 1:
+        # Turn contents of bond into ints
+        bond_arr = np.array(bond, dtype=int)
+        # And then into tuple for hashing
+        bond_tup = tuple(bond_arr)
+        if bond not in self.bond_to_bond_index.keys():
             print("The vector does not correspond to a bond!")
             return -1
         else:
-            return int(np.argmax(matching_vectors))
+            return self.bond_to_bond_index[bond_tup]
 
     def lattice_site_to_lattice_coords(self, site_index: int) -> NDArray[np.int_]:
         z_lattice = site_index // self.ly // self.lx

@@ -20,12 +20,12 @@ C6Z = R.from_euler("z", 60, degrees=True)
 C2Z = R.from_euler("z", 180, degrees=True)
 ORIENTATION_0_VEC = np.array([[1, 0, 0]])
 BONDS = [
-    (1, 0, 0),
-    (0, 1, 0),
-    (0, -1, 0),
-    (-1, 0, 0),
-    (-1, -1, 0),
-    (1, -1, 0),
+    ( 1,  0, 0),
+    ( 0,  1, 0),
+    (-1,  1, 0),
+    (-1,  0, 0),
+    ( 0, -1, 0),
+    ( 1, -1, 0),
 ]
 BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C6Z, C6Z**2]
 BOND_ROTATIONS = [

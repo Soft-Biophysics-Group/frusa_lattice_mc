@@ -4,10 +4,6 @@ Few functions to get the size of aggregates on 3D lattices.
 """
 
 import numpy as np
-from geometry.geometry import (
-    lattice_site_to_lattice_coords_3d,
-    lattice_coords_to_lattice_site_3d,
-)
 from pathlib import Path
 import config as cfg
 

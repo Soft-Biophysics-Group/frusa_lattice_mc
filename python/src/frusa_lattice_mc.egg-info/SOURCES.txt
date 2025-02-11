@@ -6,6 +6,7 @@ src/json_dump.py
 src/lattice_utils.py
 src/analysis/analyze_3d_size.py
 src/analysis/analyze_records.py
+src/designs/triangular.py
 src/frusa_lattice_mc.egg-info/PKG-INFO
 src/frusa_lattice_mc.egg-info/SOURCES.txt
 src/frusa_lattice_mc.egg-info/dependency_links.txt
@@ -13,10 +14,10 @@ src/frusa_lattice_mc.egg-info/top_level.txt
 src/geometry/cubic.py
 src/geometry/lattice_geometry.py
 src/geometry/particle_geometry.py
-src/geometry/test.py
 src/geometry/triangular.py
 src/interactions/cubic_interactions.py
 src/plotting/__init__.py
 src/plotting/plot_chain.py
 src/plotting/plot_cubic.py
 src/plotting/plot_tri.py
+test/test_geometry_cubic.py

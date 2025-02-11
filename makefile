@@ -1,9 +1,14 @@
-build:
+all: build python/.venv compile_command.json
+
+build: src/* include/*
 	mkdir -p build
 	cmake . -DMODEL_TYPE="lattice_particles" -B build
 	cmake --build build
 
-python/.venv:
+compile_command.json: build
+	cmake . -DMODEL_TYPE="lattice_particles" -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B build
+
+python/.venv: python/requirements.txt
 	(\
 	cd python;\
 	python -m venv ".venv";\
@@ -11,8 +16,6 @@ python/.venv:
 	python -m pip install -r requirements.txt;\
 	python -m pip install -e .;\
 	)
-
-all: build python/.venv
 
 .PHONY clean:
 	rm -rf build

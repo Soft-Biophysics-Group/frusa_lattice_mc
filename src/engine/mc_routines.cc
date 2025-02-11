@@ -48,6 +48,9 @@ namespace simulation_space{
       else if(parameters.cooling_schedule=="linear"){
         cooling_option = 1;
       }
+      else if(parameters.cooling_schedule=="inverse"){
+        cooling_option = 2;
+      }
       else{
         throw parameters.cooling_schedule;
       }
@@ -59,10 +62,10 @@ namespace simulation_space{
     }
 
     // Define the array of temperatures for the annealing
-    double dT = (parameters.Tf-parameters.Ti)/parameters.Nt;
+    double dT = (parameters.Tf - parameters.Ti) / (parameters.Nt - 1);
 
-    for(int i=0;i<parameters.Nt;i++){
-      T_array.push_back(parameters.Ti+i*dT);
+    for (int i = 0; i < parameters.Nt; i++) {
+      T_array.push_back(parameters.Ti + i * dT);
     }
   }
 
@@ -107,6 +110,9 @@ namespace simulation_space{
           break;
         case 1:
           T = T_array[i];
+          break;
+        case 2:
+          T = 1.0 / T_array[i];
           break;
       }
 

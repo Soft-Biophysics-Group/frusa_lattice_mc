@@ -107,7 +107,6 @@ class ContactMapWrapper:
         # If we are in 3D, some pairs of faces might be equivalent to the one we are looking at
         # through rotational invariance. If so, we must generate these.
         equiv_faces = self.get_equivalent_face_pairs(face1, face2)
-        print(equiv_faces)
         # All equivalent contacts with particle 1 at the center and through bond 0
         for this_face1, this_face2 in equiv_faces:
             int_coeff = self.get_interaction_coeff(this_face1, type1, this_face2, type2)

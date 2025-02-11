@@ -25,28 +25,29 @@ class ContactMapWrapper:
     through bond 0.
     The typical workflow when designing an interaction matrix will be:
     1. Create a class instance using the constructor associated to the lattice you will be
-    working with
-    2. Get the empty single-species and species-pair interaction matrices using the
-    `get_single_species_contact_matrix` and `get_two_species_contact_matrix` methods.
-    3. Setting the coefficients of the interaction matrices by hand.
-    4. Fill up the flattened `contact_map` member array using the `set_single_species_contacts`
-    and `set_two_species_contacts` method
-    5. Get the properly formatted couplings using the `get_formatted_couplings` method.
+    working with.
+    2. Set the coefficients of the contact map directly from the `ContactMapWrapper` instance.
+    If you have a `cmap` contact map wrapper object, there are two ways of doing this:
+        - `cmap[face1, face2]` will directly set the face1, face2 of the species 0 - species 0
+          matrix coefficient. Useful for single species cmaps.
+        - `cmap[face1, type1, face2, type2]` if you have more than 1 type/species of particle
+    3. Get the properly formatted couplings using the `get_formatted_couplings` method.
 
-    If you only need to set a couple of faces, you can do so using the syntax:
-    `cmap_wrapper[face_1, type_1, face_2, type_2] = energy`.
     The __setitem__ function takes care of setting all the coefficients redundant with the
-    initial geometry as well: i.e. the ones corresponding to particle 2 on the left and 1 on the
+    initial geometry, i.e. the ones corresponding to particle 2 on the left and 1 on the
     right, the ones which should be equal through rotational invariance, etc...
 
     ## Constructors:
-    - `triangular(n_types)`: creates a class instance for a triangular lattice containing
-      `n_types` different particle types.
-    - `cubic(n_types)`: creates a class instance for a cubic lattice containing
-      `n_types` different particle types.
-    - `__init(n_types, n_orientations)__`: creates a class instance for `n_types`
-      different particle types and `n_orientations` particle orientations.
-      Usually not called directly, but used by class constructors.
+    - `triangular(n_types, init_energy)`: creates a class instance for a triangular lattice
+      containing `n_types` different particle types, with all face pairs having initial energy
+      `init_energy`.
+    - `cubic(n_types, init_energy)`: creates a class instance for a cubic lattice containing
+      `n_types` different particle types, with all face pairs having initial energy
+      `init_energy`.
+    - `__init(n_types, n_orientations, init_energy)__`: creates a class instance for `n_types`
+      different particle types and `n_orientations` particle orientations, with all face pairs
+      having initial energy `init_energy`. Usually not called directly, but used by class
+      constructors.
     """
 
     # ----- CONSTRUCTORS -----

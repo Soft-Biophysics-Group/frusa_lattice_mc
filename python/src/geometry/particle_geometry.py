@@ -120,10 +120,16 @@ class ParticleGeometry:
         return all_face_pairs
 
     def get_faces_in_contact(self, orientation1, orientation2, bond):
-        face_1 = self.bond_permutations[bond][orientation1]
-        face_2 = self.get_opposite_face_index(
-            self.bond_permutations[bond][orientation2]
-        )
+        if orientation1 == -1:
+            face_1 = -1
+        else:
+            face_1 = self.bond_permutations[bond][orientation1]
+        if orientation2 == -1:
+            face_2 = -1
+        else:
+            face_2 = self.get_opposite_face_index(
+                self.bond_permutations[bond][orientation2]
+            )
         return face_1, face_2
 
     def get_equivalent_orientations_from_orientations(

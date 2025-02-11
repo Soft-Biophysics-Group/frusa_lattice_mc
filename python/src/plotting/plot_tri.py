@@ -179,22 +179,22 @@ class ParticleRepresentation:
         )
         ax.add_artist(arrow)
 
-    def plot_contact_camembert(
+    def plot_contact(
         self,
         x_center,
         y_center,
-        face_1,
-        face_2,
         bond,
         ax,
+        color,
         squared:bool = False,
-        cmap=CAMEMBERT_CONTACTS_CMAP,
     ):
         """
         Plots the contact between particles into different colors depending on their relative
         orientations.
         This is mostly used when trying to make "camembert" aggregates: we want to easily
         visualize crystalline domains and the defect lines between them.
+
+        contact_to_colors maps every possible pair of faces to a contact color
 
         Note that this sometimes displays incorrect colors, but I have not had the time to debug
         it.
@@ -212,12 +212,11 @@ class ParticleRepresentation:
                 [0                 , 0                 ]
             ]
         )
-        if face_1 == -1 or face_2 == -1:
-            color = cmap[-1]
-        else:
-            color = cmap[CAMEMBERT_CONTACTS[face_1, face_2]]
 
-        ax.plot(particles_face_corners[0, :], particles_face_corners[1, :], color=color)
+        # print(particles_face_corners)
+        ax.plot(
+            particles_face_corners[0, :], particles_face_corners[1, :], color=color
+        )
         return
 
     # ----- PLOTTING SIMULATION RESULTS -----
@@ -319,9 +318,10 @@ class ParticleRepresentation:
 
         return fig, ax
 
-    def plot_all_contacts_camembert(
+    def plot_contacts(
         self,
         ax: Axes,
+        contact_to_color,
         results_index: int = -1,
         results_folder: str | Path = "",
         results_file: str | Path = "",
@@ -331,6 +331,9 @@ class ParticleRepresentation:
         Plots the contacts between particles to visualise crystalline domains and defects lines.
         Needs to be put on top of an existing `ax` Axes objects, because this will never be
         useful on its own.
+
+        `contact_to_color` is a mappable mapping a pair of faces to a color numpy accepts
+        (typically a color name or a hex code)
 
         ## Where this looks for structures
 
@@ -348,20 +351,25 @@ class ParticleRepresentation:
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
         results = cfg.load_structure(results_index, results_folder, results_file)
-        lx = cfg.load_model_file()["lx"]
-        ly = cfg.load_model_file()["ly"]
 
         for site, _, orientation in cfg.get_full_sites_characteristics(results):
             x_1, y_1, _= self.lattice.lattice_site_to_lattice_coords(site)
+            # print(f"site {site}, coordinates {x_1, y_1}")
             neighbours = self.lattice.get_neighbour_sites(site)
 
             for bond, neighbour in enumerate(neighbours):
+                x_2, y_2, _= self.lattice.lattice_site_to_lattice_coords(neighbour)
+                # print( f"\tbond {bond}, neighbour {neighbour} ({x_2, y_2})")
                 neighbour_orientation = results[1, neighbour]
+                    # f"\tbond {bond}, neighbour {neighbour} ({x_2, y_2}), with orientation {neighbour_orientation}"
                 # Let's avoid plotting the same contact twice
                 face_1, face_2 = TriangularParticle().get_faces_in_contact(
                     orientation, neighbour_orientation, bond
                 )
-                self.plot_contact_camembert(x_1, y_1, face_1, face_2, bond, ax, squared)
+                # print(f"\t\tfaces:{face_1}, {face_2}")
+                color = contact_to_color[face_1, face_2]
+                # print(f"\t\t\t{color}")
+                self.plot_contact(x_1, y_1, bond, ax, color, squared)
         return
 
     def square_coordinates(self, x_cartesian):

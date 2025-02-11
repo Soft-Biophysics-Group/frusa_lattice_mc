@@ -1,4 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
 """
 Vincent Ouazan-Reboul, 2025
 Tools to implement geometry of cubic particles, in order to easily generate contact maps and plot
@@ -17,11 +16,10 @@ class ParticleGeometry:
     def __init__(
         self,
         orientation_0_vectors,
-        bonds,
-        bond_rotations,
         face_0_permutation_rotations,
         rotations_around_face_0,
         opposite_face_rotation,
+        bond_rotations
     ):
         # We keep track of only x and y internal vectors, z is redundant
         self.orientation_0_vectors = orientation_0_vectors
@@ -34,10 +32,7 @@ class ParticleGeometry:
             rotations_around_face_0,
             opposite_face_rotation,
         )
-        self.bonds = bonds
-        self.bond_to_bond_index = {bond: i for i, bond in enumerate(self.bonds)}
         self.bond_rotations = bond_rotations
-        self.rotation_to_bond = self.gen_bond_rotations()
         self.bond_permutations = self.gen_bond_permutations()
 
     def gen_face_orientations(
@@ -60,22 +55,6 @@ class ParticleGeometry:
                     opposite_face_rotation * rotations[face_index]
                 )
         return R.concatenate(rotations)
-
-    def gen_bond_rotations(self):
-        """
-        Generate a list associating which bond (1, 0, 0) maps to under every rotation.
-        """
-        all_rotated_bonds = []
-        zero_bond = self.bonds[0]
-        for rot in self.orientation_rotations:
-            # Change type to round coefficients to 0, 1, or -1
-            print(rot.as_euler('xyz', degrees=True))
-            # new_bond_arr = rot.apply(zero_bond).astype(int)
-            new_bond_arr = rot.apply(zero_bond)
-            print(f"\t{new_bond_arr}")
-            new_bond = tuple(new_bond_arr)
-            all_rotated_bonds.append(self.bond_to_bond_index[new_bond])
-        return all_rotated_bonds
 
     def gen_bond_permutations(self):
         """
@@ -139,17 +118,12 @@ class ParticleGeometry:
             )
         return all_face_pairs
 
-    def get_bond_index(self, bond_vector):
-        bond = tuple(bond_vector)
-        if bond not in self.bond_to_bond_index.keys():
-            print("Invalid bond vector supplied!")
-            return None
-        bond_index = self.bond_to_bond_index[bond]
-        return bond_index
-
     def get_faces_in_contact(self, orientation1, orientation2, bond):
-        
-        return
+        face_1 = self.bond_permutations[bond][orientation1]
+        face_2 = self.get_opposite_face_index(
+            self.bond_permutations[bond][orientation2]
+        )
+        return face_1, face_2
 
     def get_equivalent_orientations_from_orientations(
         self, orientation_1, orientation_2

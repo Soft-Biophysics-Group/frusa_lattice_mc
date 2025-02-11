@@ -20,3 +20,6 @@ venv/
 *.egg-info/
 *Launch*
 typings/
+python/examples/triangular/figures/test_camembert.svg
+python/examples/triangular/figures/test_fiber_1spec.svg
+python/examples/triangular/figures/test_liquid.svg

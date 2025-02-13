@@ -4,7 +4,7 @@ Storing the contact map designs for cubic lattice particles (i.e. hexagons).
 
 from contact_utils import ContactMapWrapper
 
-CRYSTAL_CONTACTS = [(4 * i, (i + 12) % 24) for i in range(3)]
+CRYSTAL_CONTACTS = [(4 * i, (4 * i + 12) % 24) for i in range(3)]
 ALL_TRUE_CAMEMBERT = {
     "Rminus_flag": True,
     "Gminus_flag": True,

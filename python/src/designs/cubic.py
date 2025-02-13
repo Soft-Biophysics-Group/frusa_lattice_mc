@@ -30,6 +30,7 @@ HEDGEHOG_CONTACTS = [
     (16, 13),
     (16, 14),
     (16, 15),
+    # These 4 should be removable w/o creating issues. I'm too much of a coward to try though!
     (20, 12),
     (20, 13),
     (20, 14),

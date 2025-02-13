@@ -32,12 +32,12 @@ BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C4ZM, C4Y]  # , C2Z, C2Z * C4Z, C2Z * C4Y]
 ALL_BOND_ORIENTATIONS = [*BOND_ORIENTATIONS_POSITIVE, C2Z, C2Z * C4ZM, C2Z * C4Y]
 ORIENTATION_0_VECTORS = np.array([[1, 0, 0], [0, 1, 0]])
 BONDS = [
-    (-1,  0,  0),
-    ( 0, -1,  0),
-    ( 0,  0, -1),
     ( 0,  0,  1),
     ( 0,  1,  0),
     ( 1,  0,  0),
+    (-1,  0,  0),
+    ( 0, -1,  0),
+    ( 0,  0, -1),
 ]
 # LATTICE PARAMETERS
 BASIS_VECTORS = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])

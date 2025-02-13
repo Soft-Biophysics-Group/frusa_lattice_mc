@@ -19,7 +19,8 @@ from geometry.cubic import CubicGeometry, CubicLattice, CubicParticle
 path_to_config = Path(__file__).parent.parent
 
 ALL_CONTACTS = [(i, j) for i in range(24) for j in range(24)]
-DEFAULT_MATERIAL = (14, 0, 255, 0.1)
+# DEFAULT_MATERIAL = (14, 0, 255, 0.1)
+DEFAULT_MATERIAL = (14, 0, 255, 1.0)
 
 # Getting blender executable
 blender_bin = shutil.which("Blender")
@@ -59,16 +60,22 @@ def plot_cube(
     coords=[0.0, 0.0, 0.0],
     euler_angles_xyz=[0.0, 0.0, 0.0],
     path_to_cube: Path | str = path_to_numbered_cube,
+    collection_name = "Cubes"
 ):
     """
     Puts an object (typically a decorated cube) located at path_to_cube at coordinates coords.
     Euler angles should be given in degrees.
     """
+    collection = get_or_create_collection(collection_name)
+
     bpy.ops.wm.obj_import(filepath=str(path_to_cube))
     cube = bpy.context.selected_objects[0]
     cube.location = coords
     new_rotation_euler = mathutils.Euler(euler_angles_xyz)
     cube.rotation_euler.rotate(new_rotation_euler)
+
+
+    collection.objects.link(cube)
 
     return cube
 
@@ -130,13 +137,15 @@ def create_material(name="CustomMaterial", color=DEFAULT_MATERIAL):
 
     # Get the Principled BSDF node
     bsdf = mat.node_tree.nodes.get("Principled BSDF")
+    mat.show_transparent_back = True  # Enables rendering backfaces
 
     if bsdf:
         bsdf.inputs["Base Color"].default_value = color  # Set color & alpha
         bsdf.inputs["Alpha"].default_value = color[3]  # Set transparency
 
     # Enable transparency settings
-    mat.blend_method = "BLEND"  # Enables alpha blending (smooth transparency)
+    # mat.blend_method = "BLEND"  # Enables alpha blending (smooth transparency)
+    mat.blend_method = 'HASHED'
     # mat.shadow_method = "HASHED"  # Ensures shadows work with transparency
     mat.use_backface_culling = False  # Show both sides
 
@@ -178,28 +187,29 @@ def plot_square(
     obj = bpy.data.objects.new(name="Square", object_data=mesh)
     collection.objects.link(obj)
     bpy.context.collection.objects.link(obj)
-    mesh.from_pydata(vertices, edges, faces)
+    mesh.from_pydata(vertices, [], faces)
     mesh.update()
 
-    # Create an edge-only object
-    edge_mesh = bpy.data.meshes.new(name="EdgeMesh")
-    edge_obj = bpy.data.objects.new(name="Edges", object_data=edge_mesh)
-    bpy.context.collection.objects.link(edge_obj)
-    # Create edges as a separate mesh
-    edge_mesh.from_pydata(vertices, edges, [])
-    edge_mesh.update()
-
+    # # Create an edge-only object
+    # edge_mesh = bpy.data.meshes.new(name="EdgeMesh")
+    # edge_obj = bpy.data.objects.new(name="Edges", object_data=edge_mesh)
+    # bpy.context.collection.objects.link(edge_obj)
+    # # Create edges as a separate mesh
+    # edge_mesh.from_pydata(vertices, edges, [])
+    # edge_mesh.update()
+    #
     # Move the object to the given location
-    obj.location = face_cart_coords
+    obj.location = face_cart_coords + 1e-3
     obj.data.materials.append(material)
 
-    # Create edge material and assign it
-    edge_color = (0.0, 0.0, 0.0, 1.0)
-    edge_mat = create_material(name="EdgeMaterial", color=edge_color)
-    edge_obj.data.materials.append(edge_mat)
-    edge_obj.location = face_cart_coords
-
-    return obj, edge_obj
+    # # Create edge material and assign it
+    # edge_color = (1.0, 0.0, 0.0, 1.0)
+    # edge_mat = create_material(name="EdgeMaterial", color=edge_color)
+    # edge_obj.data.materials.append(edge_mat)
+    # edge_obj.location = face_cart_coords
+    #
+    return obj
+    # return obj, edge_obj
 
 
 def plot_grain_boundary(
@@ -207,6 +217,7 @@ def plot_grain_boundary(
     site_2,
     orientation_1,
     orientation_2,
+    bond_index,
     lattice,
     boundary_contacts,
     material,
@@ -216,32 +227,28 @@ def plot_grain_boundary(
 
     site_1_lattice_coords = lattice.lattice_site_to_lattice_coords(site_1)
     site_2_lattice_coords = lattice.lattice_site_to_lattice_coords(site_2)
-    bond_lattice_coords = site_2_lattice_coords - site_1_lattice_coords
-    # Case of periodic boundary conditions: put norm of bond back to 1
-    # And invert its direction
-    if np.abs(bond_lattice_coords.sum()) != 1.0:
-        bond_lattice_coords //= -bond_lattice_coords.sum()
-    bond_index = lattice.get_bond(bond_lattice_coords)
+    # bond_lattice_coords = site_2_lattice_coords - site_1_lattice_coords
+    # # Case of periodic boundary conditions: put norm of bond back to 1
+    # # And invert its direction
+    # if np.abs(bond_lattice_coords.sum()) != 1.0:
+    #     bond_lattice_coords //= -bond_lattice_coords.sum()
+    # bond_index = lattice.get_bond(bond_lattice_coords)
     face_1, face_2 = CubicParticle().get_faces_in_contact(
         orientation_1, orientation_2, bond_index
     )
-    all_boundary_contacts = [
-        CubicParticle().get_equivalent_face_pairs(f1, f2)
-        for f1, f2 in boundary_contacts
-    ]
 
-    for one_equiv_contact in all_boundary_contacts:
-        if (face_1, face_2) in one_equiv_contact:
-            site_1_coords = 2 * lattice.lattice_site_to_lattice_coords(site_1)
-            # Factor of 2 is because of rescaling in blender
-            face_cart_coords = site_1_coords + bond_lattice_coords
-            plot_square(
-                face_cart_coords,
-                bond_lattice_coords,
-                lattice,
-                material,
-                collection_name=collection_name,
-            )
+    if [face_1, face_2] in boundary_contacts:
+        bond = lattice.bonds[bond_index]
+        site_1_coords = 2 * lattice.lattice_site_to_lattice_coords(site_1)
+        # Factor of 2 is because of rescaling in blender
+        face_cart_coords = site_1_coords + bond
+        plot_square(
+            face_cart_coords,
+            bond,
+            lattice,
+            material,
+            collection_name=collection_name,
+        )
 
     return
 
@@ -268,9 +275,14 @@ def plot_all_grain_boundaries(
     orientations = results[1, :]
     full_sites = cfg.get_full_sites(results)
 
+    all_boundary_contacts = []
+    for f1, f2 in boundary_contacts:
+        all_boundary_contacts.extend(CubicParticle().get_equivalent_face_pairs(f1, f2))
+        all_boundary_contacts.extend(CubicParticle().get_equivalent_face_pairs(f2, f1))
+
     for site_1 in full_sites:
         orientation_1 = orientations[site_1]
-        for site_2 in lattice.get_neighbour_sites(site_1):
+        for bond_index, site_2 in enumerate(lattice.get_neighbour_sites(site_1)):
             orientation_2 = orientations[site_2]
             if orientation_2 != -1:
                 plot_grain_boundary(
@@ -278,8 +290,9 @@ def plot_all_grain_boundaries(
                     site_2,
                     orientation_1,
                     orientation_2,
+                    bond_index,
                     lattice,
-                    boundary_contacts,
+                    all_boundary_contacts,
                     material,
                     collection_name = collection_name
                 )

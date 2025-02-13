@@ -3,6 +3,7 @@ from numpy.typing import ArrayLike, NDArray
 import config as cfg
 from collections.abc import Mapping
 from scipy.spatial.transform import Rotation as R
+from pathlib import Path
 
 from typing import TypeAlias
 Bond: TypeAlias = tuple[int, int, int]

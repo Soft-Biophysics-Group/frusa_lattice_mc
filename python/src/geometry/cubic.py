@@ -13,6 +13,8 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from geometry.particle_geometry import ParticleGeometry
 from geometry.lattice_geometry import LatticeGeometry
+import config as cfg
+from pathlib import Path
 
 # Globals
 ID_ROT = R.identity()
@@ -46,6 +48,16 @@ class CubicLattice(LatticeGeometry):
         self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
     ):
         super().__init__(BASIS_VECTORS, BONDS, lx, ly, lz, lattice_spacing)
+
+    @classmethod
+    def from_model_file(cls, model_file: str | Path = cfg.default_model_params_file,
+                        lattice_spacing: float = 1.0):
+        model_params = cfg.load_model_file(model_file)
+        lx = model_params["lx"]
+        ly = model_params["ly"]
+        lz = model_params["lz"]
+
+        return cls(lx, ly, lz, lattice_spacing)
 
 
 class CubicParticle(ParticleGeometry):

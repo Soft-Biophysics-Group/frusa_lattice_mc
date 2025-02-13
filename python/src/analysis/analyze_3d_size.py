@@ -6,34 +6,7 @@ Few functions to get the size of aggregates on 3D lattices.
 import numpy as np
 from pathlib import Path
 import config as cfg
-
-
-def get_neighbouring_particles(site, full_sites, lx, ly, lz):
-    """
-    Returns a set of the sites neighbouring `site` and containing a particle
-    - `site` is the address of a site on the 3d lattice
-    - `full_sites` is a list of full sites, typically obtained through `config.get_full_sites`
-      function
-    - lx, ly, lz are the lattice dimensions, which you can obtain using the
-      `config.load_model_file` function
-    """
-    neighbours = set()
-
-    x, y, z = lattice_site_to_lattice_coords_3d(site, lx, ly)
-    xp1 = ((x + 1) % lx, y, z)
-    yp1 = (x, (y + 1) % ly, z)
-    zp1 = (x, y, (z + 1) % lz)
-    xm1 = (x - 1 if x > 0 else lx - 1, y, z)
-    ym1 = (x, y - 1 if y > 0 else ly - 1, z)
-    zm1 = (x, y, z - 1 if z > 0 else lz - 1)
-
-    for neigh_coords in [xp1, yp1, zp1, xm1, ym1, zm1]:
-        xn, yn, zn = neigh_coords
-        neigh_site = lattice_coords_to_lattice_site_3d(xn, yn, zn, lx, ly)
-        if neigh_site in full_sites:
-            neighbours.add(neigh_site)
-
-    return neighbours
+from geometry.cubic import CubicLattice
 
 
 def get_aggregates(
@@ -58,10 +31,8 @@ def get_aggregates(
         struct_index=struct_index, struct_folder=struct_folder, struct_file=struct_file
     )
     full_sites = cfg.get_full_sites(site_orientations)
-    model_params = cfg.load_model_file(model_file)
-    lx = model_params["lx"]
-    ly = model_params["ly"]
-    lz = model_params["lz"]
+    full_sites_set = set(full_sites)
+    lattice = CubicLattice.from_model_file(model_file)
 
     visited_sites = set()
     first_shell = set()
@@ -77,10 +48,11 @@ def get_aggregates(
                 site_to_visit = to_visit.pop()
                 cluster.add(site_to_visit)
                 visited_sites.add(site_to_visit)
-                neighbour_sites = get_neighbouring_particles(
-                    site_to_visit, full_sites, lx, ly, lz
+                neighbour_sites = lattice.get_neighbour_sites(
+                    site_to_visit
                 )
-                neighbours_to_visit = neighbour_sites - visited_sites
+                full_neighbour_sites = full_sites_set.intersection(set(neighbour_sites))
+                neighbours_to_visit = full_neighbour_sites - visited_sites
                 to_visit |= neighbours_to_visit
             all_clusters.append(cluster)
 

@@ -15,7 +15,7 @@ parent_path = Path(__file__).parent.parent.parent.absolute().resolve()
 
 # ----- OFTEN-USED PATHS -----
 input_path = parent_path/"input/"
-default_model_params_file = input_path/"model_params.json"
+default_model_params_file: Path = input_path / "model_params.json"
 default_mc_params_file = input_path/"mc_params.json"
 
 data_path = parent_path/"data/"

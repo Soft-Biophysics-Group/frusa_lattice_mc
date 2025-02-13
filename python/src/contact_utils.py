@@ -259,7 +259,6 @@ def chain_LEL_2types(mat_11, mat_21, mat_22):
 
 def get_camembert_cmap(e_crystal, e_defect, e_repel):
     cmap_wrapper = ContactMapWrapper.triangular(1, init_energy = e_repel)
-    print("Hi")
     for face in range(3):
         cmap_wrapper[face, face+3] = e_crystal
     # Line contacts

@@ -55,20 +55,22 @@ def load_structure(
     and line 2 to particle orientation.
     orientation -1 always corresponds to an empty site, irrespective of particle type.
     """
-    if struct_folder == "":
-        struct_folder = structures_path
-    struct_folder = Path(struct_folder)
     if struct_file != "":
         file_path = struct_file
-    if struct_index != -1:
-        file_path = struct_folder / f"structure_{struct_index}.dat"
     else:
-        file_path = struct_folder / "final_structure.dat"
+        if struct_folder == "":
+            struct_folder = structures_path
+        struct_folder = Path(struct_folder)
+        if struct_index != -1:
+            file_path = struct_folder / f"structure_{struct_index}.dat"
+        else:
+            file_path = struct_folder / "final_structure.dat"
     return np.loadtxt(file_path, dtype=int)
 
 
 def get_full_sites(site_orientations):
     return np.where(site_orientations[1, :] != -1)[0]
+
 
 def get_full_sites_characteristics(site_orientations):
     sites = get_full_sites(site_orientations)

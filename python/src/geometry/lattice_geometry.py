@@ -48,7 +48,7 @@ class LatticeGeometry:
         bond_arr = np.array(bond, dtype=int)
         # And then into tuple for hashing
         bond_tup = tuple(bond_arr)
-        if bond not in self.bond_to_bond_index.keys():
+        if bond_tup not in self.bond_to_bond_index.keys():
             print("The vector does not correspond to a bond!")
             return -1
         else:
@@ -83,24 +83,29 @@ class LatticeGeometry:
             z_neighbour: int
             x_neighbour, y_neighbour, z_neighbour = np.array([x, y, z]) + bond
             # Quick and dirty implementation of periodic boundary conditions
-            if x_neighbour >= self.lx:
-                x_neighbour -= self.lx
-            if x_neighbour < 0:
-                x_neighbour += self.lx
-            if y_neighbour >= self.ly:
-                y_neighbour -= self.ly
-            if y_neighbour < 0:
-                y_neighbour += self.ly
-            if z_neighbour >= self.lz:
-                z_neighbour -= self.lz
-            if z_neighbour < 0:
-                z_neighbour += self.lz
-
+            x_neighbour, y_neighbour, z_neighbour = self.apply_pbc(
+                x_neighbour, y_neighbour, z_neighbour
+            )
             neighbour_index = self.lattice_coords_to_lattice_site(
                 x_neighbour, y_neighbour, z_neighbour
             )
             neighbours.append(neighbour_index)
         return neighbours
+
+    def apply_pbc(self, x, y, z):
+        if x >= self.lx:
+            x -= self.lx
+        if x < 0:
+            x += self.lx
+        if y >= self.ly:
+            y -= self.ly
+        if y < 0:
+            y += self.ly
+        if z >= self.lz:
+            z -= self.lz
+        if z < 0:
+            z += self.lz
+        return x, y, z
 
 
 # def get_full_sites_characteristics(results):

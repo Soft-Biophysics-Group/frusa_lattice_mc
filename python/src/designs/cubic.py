@@ -4,7 +4,7 @@ Storing the contact map designs for cubic lattice particles (i.e. hexagons).
 
 from contact_utils import ContactMapWrapper
 
-CRYSTAL_CONTACTS = [(4 * i, i + 3 % 6) for i in range(3)]
+CRYSTAL_CONTACTS = [(4 * i, (i + 12) % 24) for i in range(3)]
 ALL_TRUE_CAMEMBERT = {
     "Rminus_flag": True,
     "Gminus_flag": True,
@@ -13,6 +13,29 @@ ALL_TRUE_CAMEMBERT = {
     "Gplus_flag" : True,
     "Bplus_flag" : True,
 }
+HEDGEHOG_CONTACTS = [
+    (4 , 12),
+    (4 , 13),
+    (4 , 14),
+    (4 , 15),
+    (8 , 12),
+    (8 , 13),
+    (8 , 14),
+    (8 , 15),
+    (12, 20),
+    (12, 21),
+    (12, 22),
+    (12, 23),
+    (16, 12),
+    (16, 13),
+    (16, 14),
+    (16, 15),
+    (20, 12),
+    (20, 13),
+    (20, 14),
+    (20, 15),
+]
+
 
 
 def set_crystal_contacts(crystal_e:float, cmap: ContactMapWrapper):
@@ -59,30 +82,7 @@ def gen_triple_vortex_camembert_contacts(crystal_e:float, defect_e:float, mismat
 
 
 def set_hedgehog_camembert_contacts(defect_e: float, cmap: ContactMapWrapper):
-    camembert_contacts = [
-        (4 , 12),
-        (4 , 13),
-        (4 , 14),
-        (4 , 15),
-        (8 , 12),
-        (8 , 13),
-        (8 , 14),
-        (8 , 15),
-        (12, 20),
-        (12, 21),
-        (12, 22),
-        (12, 23),
-        (16, 12),
-        (16, 13),
-        (16, 14),
-        (16, 15),
-        (20, 12),
-        (20, 13),
-        (20, 14),
-        (20, 15),
-    ]
-
-    for contact in camembert_contacts:
+    for contact in HEDGEHOG_CONTACTS:
         cmap[*contact] = defect_e
 
     return 

@@ -12,7 +12,7 @@ from matplotlib.axes import Axes
 from contact_utils import ContactMapWrapper
 
 # Global color sets
-ARROW_COLORS = ["blue", "red", "green"]
+ARROW_COLORS = ["black", "blue", "red", "green"]
 # colormap of camembert contacts: forbidden contacts are in red, crystal in cyan, line in blue,
 # nothing in orange
 CAMEMBERT_CONTACTS_CMAP = ["red", "cyan", "blue", "orange"]

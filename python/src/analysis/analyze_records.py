@@ -26,3 +26,19 @@ def get_temperature_energy_records(
     all_e_sorted = np.array(all_e_records)[sorting_inds]
 
     return all_T_sorted, np.hstack(all_e_sorted)
+
+def get_average_energies(averages_folder: str | Path = ""):
+
+    all_T = []
+    all_avg_e = []
+    avgs_path = Path(averages_folder)
+    for f in avgs_path.iterdir():
+        this_avg = np.loadtxt(f)
+        all_T.append(this_avg[0])
+        all_avg_e.append(this_avg[1])
+    # Sort by decreasing order of temperature
+    sorting_inds = np.argsort(all_T)[::-1]
+    all_T_sorted = np.array(all_T)[sorting_inds]
+    all_e_sorted = np.array(all_avg_e)[sorting_inds]
+
+    return all_T_sorted, np.hstack(all_e_sorted)

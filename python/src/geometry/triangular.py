@@ -9,10 +9,14 @@ TODOS:
 """
 
 # mathutils is provided by bpy
+from pathlib import Path
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from geometry.particle_geometry import ParticleGeometry
+
+import config as cfg
 from geometry.lattice_geometry import LatticeGeometry
+from geometry.particle_geometry import ParticleGeometry
 
 # Globals
 ID_ROT = R.identity()
@@ -37,6 +41,18 @@ BASIS_VECTORS = np.array([[1, 0.5, 0.], [0, SR32, 0.]])
 class TriangularLattice(LatticeGeometry):
     def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0):
         super().__init__(BASIS_VECTORS, BONDS, lx, ly, 1, lattice_spacing)
+
+    @classmethod
+    def from_model_file(
+        cls,
+        model_file: str | Path = cfg.default_model_params_file,
+        lattice_spacing: float = 1.0,
+    ):
+        model_params = cfg.load_model_file(model_file)
+        lx = model_params["lx"]
+        ly = model_params["ly"]
+
+        return cls(lx, ly, lattice_spacing)
 
 
 class TriangularParticle(ParticleGeometry):

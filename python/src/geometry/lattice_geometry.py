@@ -107,16 +107,3 @@ class LatticeGeometry:
         if z < 0:
             z += self.lz
         return x, y, z
-
-
-# def get_full_sites_characteristics(results):
-#     """
-#     Taking in a results array which has the same format as the one returned by the c++ program,
-#     returns a 3D array with the occupied site as the first column, the particle type as the
-#     second, and the particle orientation as the third.
-#     """
-#     full_sites = []
-#     for site, (ptype, orientation) in enumerate(results.T):
-#         if orientation != -1:
-#             full_sites.append([site, ptype, orientation])
-#     return np.vstack(full_sites)

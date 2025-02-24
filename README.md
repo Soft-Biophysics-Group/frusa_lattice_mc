@@ -8,31 +8,6 @@ Used by Vincent for:
 
 - Camembert simulations
 
-## Important: compiling the code for the cluster
-
-The cluster uses an x86_64 linux architecture, but the version of the C++ compiler on it does
-not support some of the C++20 features used in this code.
-
-To overcome this, I have compiled it on my M3 macbook, which involved setting up a
-cross-compilation toolchain in `toolchain-x86_64-linux.cmake`.
-
-Before you use it on macOS, make sure to install the x86 cross-compiler by running the
-MacPorts command:
-`sudo port install x86_64-elf-gcc x86_64-elf-binutils `.
-
-Then, add the installed files to your PATH variable:
-`export PATH=/opt/local/bin:$PATH` (has to be done for every shell session, or added to your
-`.bashrc`/`.zshrc` file
-
-Finally, run the commands:
-`cmake -DMODEL_TYPE="lattice_particles" -DCMAKE_TOOLCHAIN_FILE=toolchain-x86_64-linux.cmake -B build`
-
-
-
-## Notes during code annotation
-
-* Only chain and triangular lattices are so far implemented!!!
-
 ## Future
 
 * Next: Change the geometry class to accept user input
@@ -87,8 +62,18 @@ Used for parsing command-line arguments, mostly to choose input files.
 (Source)[https://github.com/CLIUtils/CLI11]
 
 
-## Building using cmake
+## Building
 
+The simplest way to build the C++ and python code at the same time is to use the associated
+makefile.
+The command `make all` will both build the C++ code in `build/app/frusa_mc` and install the
+Python code virtual environment, which will be able to resolve all of the local paths.
+
+**Note that the Python code is unusable if you do not install the virtual environment. See
+the README in `python/` for details**.
+
+
+### Building only the C++ code using Cmake
 To build `frusa_mc` executable, simply use
 
 ```
@@ -97,7 +82,7 @@ cmake --build .
 ```
 If `-DMODEL_TYPE` flag is omitted, the `default` library is used.
 
-### Existing `model` classes
+## Existing `model` classes
 
 Currently, the available `<MODEL_NAME>` options are:
 

@@ -6,10 +6,6 @@
 *.envrc
 *.blend
 *.blend1
-*.png
-*.svg
-*.obj
-*.mtl
 
 /build*/
 /test/build*/

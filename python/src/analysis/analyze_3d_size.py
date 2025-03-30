@@ -57,3 +57,13 @@ def get_aggregates(
             all_clusters.append(cluster)
 
     return all_clusters
+
+def get_agg_sizes(aggregates: list[set[int]]):
+    all_sizes = {}
+    for agg in aggregates:
+        agg_size = len(agg)
+        if agg_size in all_sizes.keys():
+            all_sizes[agg_size] += 1
+        else:
+            all_sizes[agg_size] = 1
+    return all_sizes

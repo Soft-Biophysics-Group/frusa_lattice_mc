@@ -8,5 +8,5 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 illum 2
-map_Kd full_cube_oneAxis.png
-map_d full_cube_oneAxis.png
+map_Kd one_cube_oneAxis.png
+map_d one_cube_oneAxis.png

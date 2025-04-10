@@ -30,28 +30,48 @@ ALL_TRUE_CAMEMBERT = {
     "Bplus_flag": True,
 }
 HEDGEHOG_CONTACTS = [
-    (4, 12),
-    (4, 13),
-    (4, 14),
-    (4, 15),
-    (8, 12),
-    (8, 13),
-    (8, 14),
-    (8, 15),
+    (12, 4),
+    (12, 5),
+    (12, 6),
+    (12, 7),
+    (12, 8),
+    (12, 9),
+    (12, 10),
+    (12, 11),
+    (12, 16),
+    (12, 17),
+    (12, 18),
+    (12, 19),
     (12, 20),
     (12, 21),
     (12, 22),
     (12, 23),
-    (16, 12),
-    (16, 13),
-    (16, 14),
-    (16, 15),
-    # These 4 should be removable w/o creating issues. I'm too much of a coward to try though!
-    (20, 12),
-    (20, 13),
-    (20, 14),
-    (20, 15),
 ]
+# HEDGEHOG_CONTACTS = [
+#     (4, 12),
+#     (4, 13),
+#     (4, 14),
+#     (4, 15),
+#     (8, 12),
+#     (8, 13),
+#     (8, 14),
+#     (8, 15),
+#     (12, 20),
+#     (12, 21),
+#     (12, 22),
+#     (12, 23),
+#     (16, 12),
+#     (16, 13),
+#     (16, 14),
+#     (16, 15),
+#     # These 4 should be removable w/o creating issues. I'm too much of a coward to try though!
+#     (20, 12),
+#     (20, 13),
+#     (20, 14),
+#     (20, 15),
+# ]
+EXTRA_HEDGEHOG_DEFECT_CONTACTS = [(12, 12), (12, 13), (12, 14), (12, 15)]
+
 
 def set_contacts(
     cmap: ContactMapWrapper, contact_list: list[tuple[int, int]], value: float
@@ -113,6 +133,14 @@ def set_hedgehog_camembert_contacts(defect_e: float, cmap: ContactMapWrapper):
 
     return 
 
+def set_hedgehog_camembert_contacts_w_extra(defect_e: float, cmap: ContactMapWrapper):
+    for contact in HEDGEHOG_CONTACTS:
+        cmap[*contact] = defect_e
+    for contact in EXTRA_HEDGEHOG_DEFECT_CONTACTS:
+        cmap[*contact] = defect_e
+
+    return 
+
 def gen_hedgehog_camembert_cmap(crystal_e:float, defect_e:float, mismatch_e:float):
     cmap = ContactMapWrapper.cubic(1, mismatch_e)
     set_crystal_contacts(crystal_e, cmap)
@@ -127,5 +155,15 @@ def gen_hedgehog_camembert_cmap_crystal_one_axis(
     cmap = ContactMapWrapper.cubic(1, mismatch_e)
     set_crystal_one_axis_contacts(crystal_e, cmap)
     set_hedgehog_camembert_contacts(defect_e, cmap)
+
+    return cmap
+
+
+def gen_hedgehog_camembert_cmap_extra_contacts(
+    crystal_e: float, defect_e: float, mismatch_e: float
+):
+    cmap = ContactMapWrapper.cubic(1, mismatch_e)
+    set_crystal_one_axis_contacts(crystal_e, cmap)
+    set_hedgehog_camembert_contacts_w_extra(defect_e, cmap)
 
     return cmap

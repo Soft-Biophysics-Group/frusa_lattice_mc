@@ -1,10 +1,11 @@
 import config as cfg
-from geometry.cubic import CubicGeometry
+from geometry import ParticleGeometry
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from plotting.plot_cubic import place_cube_copy_from_site_orientation, save_blender_fig
+from plotting import BlenderPlot
+from plotting.cubic import path_to_numbered_cube
 
-cp = CubicGeometry.particle
+cp = ParticleGeometry.from_lattice_name("cubic")
 
 print("Testing generated rotation against printed cube")
 all_rots_euler = np.array(
@@ -12,11 +13,12 @@ all_rots_euler = np.array(
 )
 print(f"Rotations in Euler angle, xyz order: {all_rots_euler}")
 
-print("Testing generated rotated bonds")
-print(cp.rotation_to_bond)
+# No idea what this was for. Commenting it out
+# print("Testing generated rotated bonds")
+# print(cp.rotation_to_bond)
 
-# Should be rotation associated to orientation 15
-test_rot = R.from_euler('xyz', (90, 180, 0), degrees = True)
+# Should be rotation associated to orientation 13
+test_rot = R.from_euler("xyz", (90, 180, 0), degrees=True)
 print("\nTesting a newly-generated rotation against one of the cubes'")
 test_rot_index = cp.identify_orientation(test_rot)
 print(f"Rotation identified as index {test_rot_index}")
@@ -32,9 +34,11 @@ print(
 )
 
 # Let's print all rotations to be safe, and plot them if we want to
-plot_flag = True
-for i, rotation in enumerate(cp.orientation_rotations):
-    print(rotation.as_euler("xyz"))
-    place_cube_copy_from_site_orientation(i*2, i, 8, 12)
 
-save_blender_fig("./test_cubic_orientation.blend")
+blender_plot = BlenderPlot.from_lattice_name("cubic", 12, 2, 1, path_to_numbered_cube)
+
+for i, rotation in enumerate(cp.orientation_rotations):
+    print(rotation.as_euler("xyz", degrees = True))
+    blender_plot.place_obj_copy_from_site_orientation(i * 2, i)
+
+blender_plot.save("./test_cubic_orientation.blend")

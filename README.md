@@ -8,31 +8,6 @@ Used by Vincent for:
 
 - Camembert simulations
 
-## Important: compiling the code for the cluster
-
-The cluster uses an x86_64 linux architecture, but the version of the C++ compiler on it does
-not support some of the C++20 features used in this code.
-
-To overcome this, I have compiled it on my M3 macbook, which involved setting up a
-cross-compilation toolchain in `toolchain-x86_64-linux.cmake`.
-
-Before you use it on macOS, make sure to install the x86 cross-compiler by running the
-MacPorts command:
-`sudo port install x86_64-elf-gcc x86_64-elf-binutils `.
-
-Then, add the installed files to your PATH variable:
-`export PATH=/opt/local/bin:$PATH` (has to be done for every shell session, or added to your
-`.bashrc`/`.zshrc` file
-
-Finally, run the commands:
-`cmake -DMODEL_TYPE="lattice_particles" -DCMAKE_TOOLCHAIN_FILE=toolchain-x86_64-linux.cmake -B build`
-
-
-
-## Notes during code annotation
-
-* Only chain and triangular lattices are so far implemented!!!
-
 ## Future
 
 * Next: Change the geometry class to accept user input
@@ -105,11 +80,11 @@ Currently, the available `<MODEL_NAME>` options are:
 * `fields_chain` - concentration fields on a 1D lattice
 * `fields_square` - concentration fields on a 2d square lattice
 * `fields_hexagonal` - concentration fields on a 2d hexagonal lattice
-* `lattice_particles` - discrete particles on a lattice of your choice
+* particles` - discrete particles on a lattice of your choice
 
 ## Using the `lattice_particles` model
 
-The `lattice_particles` model consists of 2 portions: the C++ part which does the
+The `particles` model consists of 2 portions: the C++ part which does the
 computational heavy lifting, and the Python part which can be used to generate the contact
 maps in various geometries and visualise the simulation results.
 

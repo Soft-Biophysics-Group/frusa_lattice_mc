@@ -1,3 +1,7 @@
+"""Generic class for describing lattice geometry.
+
+Typically not used on its own, but rather through its lattice-specific children classes.
+"""
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 import config as cfg
@@ -9,6 +13,25 @@ from typing import TypeAlias
 Bond: TypeAlias = tuple[int, int, int]
 
 class LatticeGeometry:
+    """Generic class for lattice geometry representation.
+
+    Lattices are made of sites with unique indices, which are the hashing of the site location
+    in lattice coordinates.
+    Each site is linked to its nearest neighbours with bond vectors, which are given in an
+    arbitrary, but consistent, order.
+
+    Attributes:
+        lattice_vectors_in_cartesian: 1D array of floats. Lattice basis vectors in cartesian
+            coordinates
+        lattice_spacing: float. Distance between 2 nearest neighbours in Cartesian coordinates
+        bonds: list of tuples of 3 ints. Element i is the i-th vector linking one lattice site
+            with one of its nenearest neighbours, in lattice coordinates.
+        bond_to_bond_index: dict mapping a bond (tuple of 3 ints) to its arbitrary index, as
+            defined in bonds.
+        lx: int. Number of lattice sites in the x direction in lattice coordinates.
+        ly: int. Number of lattice sites in the y direction in lattice coordinates.
+        lz: int. Number of lattice sites in the z direction in lattice coordinates.
+    """
     def __init__(
         self,
         basis_vectors: ArrayLike,
@@ -18,6 +41,19 @@ class LatticeGeometry:
         lz: int = 1,
         lattice_spacing: float = 1.0,
     ):
+        """Generic constructor for LatticeGeometry class.
+
+        Args:
+            basis_vectors: array of floats. Basis vectors of the lattice.
+            bonds: list of bonds (tuple of 3 ints). List of vectors linking one site to its
+                nearest neighbours, in lattice coordinates.
+            lx: dimensions of the lattice in the x direction, in lattice coordinates.
+            ly: dimensions of the lattice in the y direction, in lattice coordinates.
+            lz: dimensions of the lattice in the z direction, in lattice coordinates.
+                Optional, defaults to 1 (for 2D lattices)
+            lattice_spacing: optional float. Cartesian distance between 2 lattice nearest
+                neighbours. Defaults to 1.0
+        """
         self.lattice_vectors_in_cartesian: NDArray[np.float64] = np.array(
             basis_vectors, dtype=np.float64
         )
@@ -41,8 +77,7 @@ class LatticeGeometry:
         )
 
     def get_bond(self, bond: ArrayLike) -> int:
-        """
-        If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,
+        """If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,
         this returns an unique index indicating the direction of this "bond"
         """
         # Turn contents of bond into ints
@@ -67,8 +102,7 @@ class LatticeGeometry:
         return x_lattice + y_lattice * self.lx + z_lattice * self.lx * self.ly
 
     def get_neighbour_sites(self, site_index: int) -> list[int]:
-        """
-        Return a 1D array of site indices corresponding to the neighbours of site_index.
+        """Return as 1D array of site indices corresponding to the neighbours of site_index.
         The jth element of this array is the neighbour of site_index following the jth bond.
         """
         x: int

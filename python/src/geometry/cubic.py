@@ -39,6 +39,7 @@ BONDS = [
     ( 0, -1,  0),
     ( 0,  0, -1),
 ]
+
 # LATTICE PARAMETERS
 BASIS_VECTORS = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
 
@@ -50,8 +51,11 @@ class CubicLattice(LatticeGeometry):
         super().__init__(BASIS_VECTORS, BONDS, lx, ly, lz, lattice_spacing)
 
     @classmethod
-    def from_model_file(cls, model_file: str | Path = cfg.default_model_params_file,
-                        lattice_spacing: float = 1.0):
+    def from_model_file(
+        cls,
+        model_file: str | Path = cfg.default_model_params_file,
+        lattice_spacing: float = 1.0,
+    ):
         model_params = cfg.load_model_file(model_file)
         lx = model_params["lx"]
         ly = model_params["ly"]

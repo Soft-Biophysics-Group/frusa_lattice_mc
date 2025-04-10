@@ -1,26 +1,56 @@
-"""
-Vincent Ouazan-Reboul, 2025
-Tools to implement geometry of cubic particles, in order to easily generate contact maps and plot
-simulation results
+"""Generic class describing lattice particles.
 
-TODOS:
-- Find a better way to explain the docstrings
+Uses: easy generation of contact maps and plotting of simulation results.
 """
 
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from numpy.typing import NDArray
 
 
 class ParticleGeometry:
+    """Generic class describing an abstract lattice particle.
+
+    Attributes:
+        orientation_0_vectors: array of int. Orientation of the particle's first 2 internal axes in
+            orientation 0, in lattice coordinates.
+        n_orientations: int, number of particle orientations.
+        face_0_permutation_rotations: list of rotations which permute the face / feature 0
+            (occupying position 0 in orientation 0) with other faces. Should only cover the
+            "positive-oriented" faces, i.e. the ones along positive bond directions (+x, +y,
+            +z) for cubes for instance
+        rotations_around_face_0: list of all possible rotations which do not change permute
+            faces. Ex: quarter turn rotations around one face of a cube.
+        orientation_rotations: list of the rotations defining all possible orientations of the
+            particle.
+        bond_rotations: list of rotations which permute face 0 with the different possible bonds
+            linking a particle to its nearest neighbours
+    """
     def __init__(
         self,
-        orientation_0_vectors,
+        orientation_0_vectors: NDArray[np.int_],
         face_0_permutation_rotations,
         rotations_around_face_0,
         opposite_face_rotation,
         bond_rotations
     ):
+        """Creates abstract lattice particle object.
+
+        Args:
+            orientation_0_vectors: array of int. Orientation of the particle's first 2 internal
+                axes in orientation 0, in lattice coordinates.
+            face_0_permutation_rotations: list of rotations which permute the face / feature 0
+                (occupying position 0 in orientation 0) with other faces. Should only cover the
+                "positive-oriented" faces, i.e. the ones along positive bond directions (+x, +y,
+                +z) for cubes for instance.
+            rotations_around_face_0: list of all possible rotations which do not change permute
+                faces. Ex: quarter turn rotations around one face of a cube.
+            opposite_face_rotation: rotation which maps one face to its opposite on the
+                particle.
+            bond_rotations: list of rotations which permute face 0 with the different possible
+                bonds linking a particle to its nearest neighbours
+        """
         # We keep track of only x and y internal vectors, z is redundant
         self.orientation_0_vectors = orientation_0_vectors
         self.n_orientations = (
@@ -42,6 +72,8 @@ class ParticleGeometry:
         rotations_around_face_0,
         opposite_face_rotation,
     ):
+        """Generates all the possible orientations of the particle.
+        """
         # Rotation operations are defined as quaternions and compositions of quaternions
         rotations = [R.identity() for i in range(self.n_orientations)]
         # Generate first rotation
@@ -58,8 +90,7 @@ class ParticleGeometry:
         return R.concatenate(rotations)
 
     def gen_bond_permutations(self):
-        """
-        Returns an array describing how the particle orientations are permuted when a given bond
+        """ Returns an array describing how the particle orientations are permuted when a given bond
         is considered.
         """
         all_bond_permutations = []
@@ -75,8 +106,7 @@ class ParticleGeometry:
         return all_bond_permutations
 
     def identify_orientation(self, rotation):
-        """
-        Identifies which orientation the rotation `rotation` puts the particle in, defined as
+        """Identifies which orientation the rotation `rotation` puts the particle in, defined as
         the face which takes the place of face 0.
         Returns -1 if the supplied rotation does not put the particle in one of its 24 possible
         orientations.
@@ -87,8 +117,7 @@ class ParticleGeometry:
         return -1
 
     def apply_rotation(self, rotation_idx, orientation):
-        """
-        Applies rotation rotation_idx to particle orientation orientation, and returns the new
+        """Applies rotation rotation_idx to particle orientation orientation, and returns the new
         orientation of the particle.
         """
         # Mind the order when composing rotations!

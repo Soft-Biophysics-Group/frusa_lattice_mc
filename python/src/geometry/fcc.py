@@ -11,10 +11,6 @@ TODOS:
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from geometry.particle_geometry import ParticleGeometry
-from geometry.lattice_geometry import LatticeGeometry
-import config as cfg
-from pathlib import Path
 
 # Globals
 # Base rotations
@@ -54,34 +50,3 @@ BONDS = [
 
 # LATTICE PARAMETERS
 BASIS_VECTORS = np.array([[0.5, 0.5, 0.0], [0.0, 0.5, 0.5], [0.5, 0.0, 0.5]])
-
-
-class FccLattice(LatticeGeometry):
-    def __init__(
-        self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
-    ):
-        super().__init__(BASIS_VECTORS, BONDS, lx, ly, lz, lattice_spacing)
-
-    @classmethod
-    def from_model_file(
-        cls,
-        model_file: str | Path = cfg.default_model_params_file,
-        lattice_spacing: float = 1.0,
-    ):
-        model_params = cfg.load_model_file(model_file)
-        lx = model_params["lx"]
-        ly = model_params["ly"]
-        lz = model_params["lz"]
-
-        return cls(lx, ly, lz, lattice_spacing)
-
-class FccParticle(ParticleGeometry):
-    def __init__(self):
-        super().__init__(
-            orientation_0_vectors=ORIENTATION_0_VECTORS,
-            face_0_permutation_rotations=BOND_ORIENTATIONS_POSITIVE,
-            rotations_around_face_0=[FACE_ROTATION,],
-            opposite_face_rotation=C2Z,
-            bond_rotations=ALL_BOND_ORIENTATIONS,
-        )
-

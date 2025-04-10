@@ -11,8 +11,6 @@ TODOS:
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from geometry.particle_geometry import ParticleGeometry
-from geometry.lattice_geometry import LatticeGeometry
 
 # Globals
 ID_ROT = R.identity()
@@ -34,20 +32,8 @@ BOND_ROTATIONS = [
 ]
 SR32: float = np.sqrt(3) / 2
 BASIS_VECTORS = np.array([[1, 0.5, 0.], [0, SR32, 0.]])
-class TriangularLattice(LatticeGeometry):
-    def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0):
-        super().__init__(BASIS_VECTORS, BONDS, lx, ly, 1, lattice_spacing)
 
 
-class TriangularParticle(ParticleGeometry):
-    def __init__(self):
-        super().__init__(
-            ORIENTATION_0_VEC,
-            BOND_ORIENTATIONS_POSITIVE,
-            rotations_around_face_0=[ID_ROT],
-            opposite_face_rotation=C2Z,
-            bond_rotations=BOND_ROTATIONS
-        )
 
 
 class TriangularGeometry_bak:

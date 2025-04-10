@@ -5,9 +5,10 @@ Typically not used on its own, but rather through its lattice-specific children 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 import config as cfg
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 from scipy.spatial.transform import Rotation as R
 from pathlib import Path
+from . import cubic, triangular, fcc
 
 from typing import TypeAlias
 Bond: TypeAlias = tuple[int, int, int]
@@ -32,12 +33,17 @@ class LatticeGeometry:
         ly: int. Number of lattice sites in the y direction in lattice coordinates.
         lz: int. Number of lattice sites in the z direction in lattice coordinates.
     """
+
+    # New way I'm trying out of specializing the class.
+    # See: https://peps.python.org/pep-0487/#subclass-registration
+    _lattices: MutableMapping[str, type["LatticeGeometry"]] = {}
+
     def __init__(
         self,
-        basis_vectors: ArrayLike,
-        bonds: list[Bond],
-        lx: int,
-        ly: int,
+        basis_vectors: ArrayLike | None = None,
+        bonds: list[Bond] | None = None,
+        lx: int = 1,
+        ly: int = 1,
         lz: int = 1,
         lattice_spacing: float = 1.0,
     ):
@@ -58,13 +64,58 @@ class LatticeGeometry:
             basis_vectors, dtype=np.float64
         )
         self.lattice_spacing: float = lattice_spacing
-        self.bonds: list[Bond] = bonds
+        self.bonds: list[Bond]
+        if bonds is not None:
+            self.bonds = bonds
+        else:
+            self.bonds = [(1, 0, 0)]
         self.bond_to_bond_index: Mapping[Bond, int] = {
             bond: i for i, bond in enumerate(self.bonds)
         }
         self.lx: int = lx
         self.ly: int = ly
         self.lz: int = lz
+
+    # ----- SUBCLASSES -----
+    # Magic code to register lattices upon creation:
+    # inspired by https://stackoverflow.com/a/52433482
+    @classmethod
+    def get_implemented_lattices(cls):
+        return list(cls._lattices)
+
+    def __init_subclass__(cls, lattice: str) -> None:
+        cls.lattice: str = lattice
+        cls._lattices[lattice] = cls
+
+    @classmethod
+    def from_lattice_name(
+        cls,
+        lattice_name: str,
+        lx: int,
+        ly: int,
+        lz: int = 1,
+        lattice_spacing: float = 1.0,
+    ):
+        if lattice_name in cls._lattices.keys():
+            return cls._lattices[lattice_name](
+                lx=lx, ly=ly, lz=lz, lattice_spacing=lattice_spacing
+            )
+        else:
+            raise RuntimeError("Invalid lattice type selected")
+
+    @classmethod
+    def from_model_file(
+        cls,
+        model_file: str | Path = cfg.default_model_params_file,
+        lattice_spacing: float = 1.0,
+    ):
+        model_params = cfg.load_model_file(model_file)
+        lx: int = model_params["lx"]
+        ly: int = model_params["ly"]
+        lz: int = model_params["lz"]
+        lattice_name = model_params["lattice_name"]
+
+        return cls.from_lattice_name(lattice_name, lx, ly, lz, lattice_spacing)
 
     # ----- GEOMETRY -----
     def lattice_to_cartesian(
@@ -127,7 +178,7 @@ class LatticeGeometry:
             neighbours.append(neighbour_index)
         return neighbours
 
-    def apply_pbc(self, x, y, z):
+    def apply_pbc(self, x: int, y: int, z: int) -> tuple[int, int, int]:
         if x >= self.lx:
             x -= self.lx
         if x < 0:
@@ -143,14 +194,28 @@ class LatticeGeometry:
         return x, y, z
 
 
-# def get_full_sites_characteristics(results):
-#     """
-#     Taking in a results array which has the same format as the one returned by the c++ program,
-#     returns a 3D array with the occupied site as the first column, the particle type as the
-#     second, and the particle orientation as the third.
-#     """
-#     full_sites = []
-#     for site, (ptype, orientation) in enumerate(results.T):
-#         if orientation != -1:
-#             full_sites.append([site, ptype, orientation])
-#     return np.vstack(full_sites)
+# ----- LATTICE SPECIALIZATIONS -----
+
+
+# The lz = 1.0 is here for conssistency. I put it last so that it doesn't get in the way.
+class TriangularLattice(LatticeGeometry, lattice="triangular"):
+    def __init__(
+        self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0, lz: int = 1
+    ):
+        super().__init__(
+            triangular.BASIS_VECTORS, triangular.BONDS, lx, ly, 1, lattice_spacing
+        )
+
+
+class CubicLattice(LatticeGeometry, lattice="cubic"):
+    def __init__(
+        self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
+    ):
+        super().__init__(cubic.BASIS_VECTORS, cubic.BONDS, lx, ly, lz, lattice_spacing)
+
+
+class FccLattice(LatticeGeometry, lattice="fcc"):
+    def __init__(
+        self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
+    ):
+        super().__init__(fcc.BASIS_VECTORS, fcc.BONDS, lx, ly, lz, lattice_spacing)

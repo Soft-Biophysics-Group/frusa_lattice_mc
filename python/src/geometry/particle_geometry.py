@@ -7,6 +7,10 @@ Uses: easy generation of contact maps and plotting of simulation results.
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from numpy.typing import NDArray
+from collections.abc import MutableMapping
+import config as cfg
+from pathlib import Path
+from . import cubic, triangular, fcc
 
 
 class ParticleGeometry:
@@ -27,13 +31,17 @@ class ParticleGeometry:
         bond_rotations: list of rotations which permute face 0 with the different possible bonds
             linking a particle to its nearest neighbours
     """
+
+    _lattices: MutableMapping[str, type["ParticleGeometry"]] = {}
+
+    # ----- CREATION -----
     def __init__(
         self,
         orientation_0_vectors: NDArray[np.int_],
         face_0_permutation_rotations,
         rotations_around_face_0,
         opposite_face_rotation,
-        bond_rotations
+        bond_rotations,
     ):
         """Creates abstract lattice particle object.
 
@@ -105,6 +113,36 @@ class ParticleGeometry:
 
         return all_bond_permutations
 
+    # ----- SPECIALIZATION -----
+    @classmethod
+    def get_implemented_lattices(cls):
+        return list(cls._lattices)
+
+    def __init_subclass__(cls, lattice: str) -> None:
+        cls.lattice: str = lattice
+        cls._lattices[lattice] = cls
+
+    @classmethod
+    def from_lattice_name(
+        cls,
+        lattice_name: str,
+    ):
+        if lattice_name in cls._lattices.keys():
+            return cls._lattices[lattice_name]()
+        else:
+            raise RuntimeError("Invalid lattice type selected")
+
+    @classmethod
+    def from_model_file(
+        cls,
+        model_file: str | Path = cfg.default_model_params_file,
+    ):
+        model_params = cfg.load_model_file(model_file)
+        lattice_name = model_params["lattice_name"]
+
+        return cls.from_lattice_name(lattice_name)
+
+    # ----- UTILITIES -----
     def identify_orientation(self, rotation):
         """Identifies which orientation the rotation `rotation` puts the particle in, defined as
         the face which takes the place of face 0.
@@ -149,6 +187,8 @@ class ParticleGeometry:
         return all_face_pairs
 
     def get_faces_in_contact(self, orientation1, orientation2, bond):
+        """Determines along which faces two particles in contact are touching.
+        Returns -1 if either of the sites is empty"""
         if orientation1 == -1:
             face_1 = -1
         else:
@@ -188,4 +228,42 @@ class ParticleGeometry:
             return []
 
     def get_opposite_face_index(self, orientation):
+        """Standardized way to get the face opposite to a given face"""
         return (orientation + (self.n_orientations // 2)) % self.n_orientations
+
+
+# ----- SPECIALIZATION -----
+
+class CubicParticle(ParticleGeometry, lattice="cubic"):
+    def __init__(self):
+        super().__init__(
+            orientation_0_vectors=cubic.ORIENTATION_0_VECTORS,
+            face_0_permutation_rotations=cubic.BOND_ORIENTATIONS_POSITIVE,
+            rotations_around_face_0=cubic.C4XM_POWERS,
+            opposite_face_rotation=cubic.C2Z,
+            bond_rotations=cubic.ALL_BOND_ORIENTATIONS,
+        )
+
+
+class FccParticle(ParticleGeometry, lattice="fcc"):
+    def __init__(self):
+        super().__init__(
+            orientation_0_vectors=fcc.ORIENTATION_0_VECTORS,
+            face_0_permutation_rotations=fcc.BOND_ORIENTATIONS_POSITIVE,
+            rotations_around_face_0=[
+                fcc.FACE_ROTATION,
+            ],
+            opposite_face_rotation=fcc.C2Z,
+            bond_rotations=fcc.ALL_BOND_ORIENTATIONS,
+        )
+
+
+class TriangularParticle(ParticleGeometry, lattice="triangular"):
+    def __init__(self):
+        super().__init__(
+            triangular.ORIENTATION_0_VEC,
+            triangular.BOND_ORIENTATIONS_POSITIVE,
+            rotations_around_face_0=[triangular.ID_ROT],
+            opposite_face_rotation=triangular.C2Z,
+            bond_rotations=triangular.BOND_ROTATIONS,
+        )

@@ -4,14 +4,7 @@ Functions to plot the results of simulations of FCC particles.
 So far only supports one type of particles.
 """
 
-import config as cfg
 from pathlib import Path
-from geometry.fcc import FccLattice, FccParticle
-import bpy
-import shutil
-import sys
-import mathutils
-import numpy as np
 
 path_to_config = Path(__file__).parent.parent
 

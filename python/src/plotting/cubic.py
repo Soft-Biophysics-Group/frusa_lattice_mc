@@ -6,15 +6,9 @@ So far only supports one type of cubes.
 
 # pyright: basic
 
-import config as cfg
 from pathlib import Path
-from geometry.cubic import CubicGeometry
 import bpy
-import shutil
-import sys
-import mathutils
 import numpy as np
-from geometry.cubic import CubicGeometry, CubicLattice, CubicParticle
 
 path_to_config = Path(__file__).parent.parent
 

@@ -15,7 +15,7 @@ import numpy as np
 from collections.abc import Callable
 from typing import Any
 
-from . import plot_cubic, plot_fcc
+from . import cubic, fcc
 
 DEFAULT_MATERIAL = (14, 0, 255, 1.0)
 
@@ -46,9 +46,29 @@ class BlenderPlot:
         bpy.ops.file.pack_all()
         bpy.ops.wm.obj_import(filepath=str(self.particle_model_file))
         self.obj = bpy.context.selected_objects[0]
-        self.original_materials = list(obj.data.materials)
+        self.original_materials = list(self.obj.data.materials)
 
         return
+
+    @classmethod
+    def from_lattice_name(
+        cls,
+        lattice_name: str,
+        lx: int,
+        ly: int,
+        lz: int,
+        particle_model_file: str | Path,
+    ):
+        particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
+        lattice_geometry = LatticeGeometry.from_lattice_name(lattice_name, lx, ly, lz)
+        boundary_plot_method = load_boundary_method(lattice_name)
+
+        return cls(
+            particle_geometry,
+            lattice_geometry,
+            particle_model_file,
+            boundary_plot_method,
+        )
 
     @classmethod
     def from_model_file(
@@ -59,12 +79,9 @@ class BlenderPlot:
         model_params = cfg.load_model_file(model_file)
         lattice_name = model_params["lattice_name"]
         particle_geometry, lattice_geometry = get_particle_lattice(model_params)
+        plot_boundary_method = load_boundary_method(lattice_name)
 
         # Pick the right boundary method
-        if lattice_name == "cubic":
-            plot_boundary_method = plot_cubic.plot_grain_boundary
-        else:
-            raise RuntimeError("No boundary plotting method implemented for this lattice")
 
         return cls(
             particle_geometry,
@@ -74,8 +91,7 @@ class BlenderPlot:
         )
 
     def place_obj_copy_from_site_orientation(self, site_index: int, orientation: int):
-        # The factor of 2 is due to the size of the cubes
-        site_coords = self.lattice_geometry.lattice_site_to_lattice_coords(site_index)
+        site_coords = 2 * self.lattice_geometry.lattice_site_to_lattice_coords(site_index)
         rotation = self.particle_geometry.orientation_rotations[orientation]
         euler_angles = rotation.as_euler("xyz")
 
@@ -154,6 +170,15 @@ class BlenderPlot:
 
     def save(self, save_file):
         bpy.ops.wm.save_as_mainfile(filepath=str(save_file))
+
+
+def load_boundary_method(lattice_name: str):
+    if lattice_name == "cubic":
+        return cubic.plot_grain_boundary
+    else:
+        raise RuntimeError("No boundary plotting method implemented for this lattice")
+
+    return
 
 
 def duplicate_shift_rotate_obj(

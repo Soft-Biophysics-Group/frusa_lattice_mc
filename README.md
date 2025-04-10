@@ -10,6 +10,7 @@ Used by Vincent for:
 
 ## Future
 
+* Next, key:  Add a description of how the geometry works.
 * Next: Change the geometry class to accept user input
 * When time: perform small refactor of the particles.update library, which is particularly
   ugly and reuses code

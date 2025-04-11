@@ -1,6 +1,6 @@
 # Blender 4.3.2
 # www.blender.org
-mtllib one_rhombic_numbered.mtl
+mtllib one_rhombic.mtl
 o Cube.032
 v 0.000000 -0.000000 -1.000000
 v -1.000000 -0.000000 -0.000000

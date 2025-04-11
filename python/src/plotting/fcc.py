@@ -20,3 +20,6 @@ path_to_numbered_rhombic = (
 path_to_one_axis_rhombic = (
     src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_one_axis.obj"
 )
+
+def plot_boundary(*args, **kwargs):
+    return

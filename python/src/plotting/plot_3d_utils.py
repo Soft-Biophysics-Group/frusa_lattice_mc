@@ -36,6 +36,7 @@ class BlenderPlot:
             bpy.app.binary_path = blender_bin
         else:
             print("Unable to find blender!")
+        self.clear()
 
         self.particle_geometry = particle_geometry
         self.lattice_geometry = lattice_geometry
@@ -46,7 +47,11 @@ class BlenderPlot:
         bpy.ops.file.pack_all()
         bpy.ops.wm.obj_import(filepath=str(self.particle_model_file))
         self.obj = bpy.context.selected_objects[0]
+        # Hide the original object from view and selection
+        self.obj.hide_viewport = True
+        self.obj.hide_select = True
         self.original_materials = list(self.obj.data.materials)
+
 
         return
 
@@ -91,12 +96,17 @@ class BlenderPlot:
         )
 
     def place_obj_copy_from_site_orientation(self, site_index: int, orientation: int):
-        site_coords = 2 * self.lattice_geometry.lattice_site_to_lattice_coords(site_index)
+        x_lattice, y_lattice, z_lattice = self.lattice_geometry.lattice_site_to_lattice_coords(
+            site_index
+        )
+        site_coords_cartesian = self.lattice_geometry.lattice_to_cartesian(
+            x_lattice, y_lattice, z_lattice
+        )
         rotation = self.particle_geometry.orientation_rotations[orientation]
         euler_angles = rotation.as_euler("xyz")
 
         duplicate_shift_rotate_obj(
-            self.obj, self.original_materials, site_coords, euler_angles
+            self.obj, self.original_materials, site_coords_cartesian, euler_angles
         )
 
         return
@@ -175,6 +185,8 @@ class BlenderPlot:
 def load_boundary_method(lattice_name: str):
     if lattice_name == "cubic":
         return cubic.plot_grain_boundary
+    elif lattice_name == "fcc":
+        return fcc.plot_boundary
     else:
         raise RuntimeError("No boundary plotting method implemented for this lattice")
 
@@ -205,9 +217,13 @@ def duplicate_shift_rotate_obj(
     for mat in original_materials:
         obj_copy.data.materials.append(mat)  # Assign each material
 
+    # Unhide obj_copy
+    obj_copy.hide_viewport = False
+    obj_copy.hide_select = False
+
     collection.objects.link(obj_copy)
 
-    return obj
+    return
 
 
 # Code created with the help of ChatGPT. Use with caution

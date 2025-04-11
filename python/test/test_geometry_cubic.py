@@ -35,7 +35,7 @@ print(
 
 # Let's print all rotations to be safe, and plot them if we want to
 
-blender_plot = BlenderPlot.from_lattice_name("cubic", 12, 2, 1, path_to_numbered_cube)
+blender_plot = BlenderPlot.from_lattice_name("cubic", 8, 12, 1, path_to_numbered_cube)
 
 for i, rotation in enumerate(cp.orientation_rotations):
     print(rotation.as_euler("xyz", degrees = True))

@@ -1,10 +1,12 @@
 import config as cfg
-from geometry.fcc import FccParticle
+from geometry import ParticleGeometry, LatticeGeometry
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-# from plotting.plot_cubic import plot_cube_from_site_orientation, save_blender_fig
+from plotting import BlenderPlot
+from plotting.fcc import path_to_numbered_rhombic
 
-p = FccParticle()
+p = ParticleGeometry.from_lattice_name("fcc")
+print(len(p.orientation_rotations))
 
 print("Testing generated rotation against printed dodecahedron")
 all_rots_euler = np.array(
@@ -32,9 +34,11 @@ print(
 )
 
 # Let's print all rotations to be safe, and plot them if we want to
-plot_flag = True
-for i, rotation in enumerate(p.orientation_rotations):
-    print(rotation.as_euler("xyz"))
-    plot_cube_from_site_orientation(i*2, i, 8, 12)
 
-save_blender_fig("./test_cubic_orientation.blend")
+blender_plot = BlenderPlot.from_lattice_name("fcc", 8, 12, 1, path_to_numbered_rhombic)
+
+for i, rotation in enumerate(p.orientation_rotations):
+    print(rotation.as_euler("xyz", degrees = True))
+    blender_plot.place_obj_copy_from_site_orientation(i * 2, i)
+
+blender_plot.save("./test_rhombic_orientations.blend")

@@ -18,14 +18,15 @@ ID_ROT = R.identity()
 # scipy convention is positive = counter-clockwise when looking at axis through + sign
 # At this point I encourage you to play with the dodecahedron to understand why we define
 # rotations like this
+C4Z = R.from_euler("z", -90, degrees=True)
 C2Z = R.from_euler("z", 180, degrees=True)
 # 2pi/3 clockwise rotation around axis (+1, 0, +1)
 C3XZM = R.from_euler("xy", [-90, -90], degrees=True)
 # 2pi/3 counterclockwise rotation around axis (+1, 0, -1)
 C3XMZ = R.from_euler("xy", [90, 90], degrees=True)
-FACE_ROTATION = R.from_euler("zx", [-90, -90], degrees=True)
+FACE_ROTATION = R.from_euler("xz", [180, 90], degrees=True)
 
-BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C3XZM, C3XZM**2, C3XMZ, C3XMZ**2, C2Z]
+BOND_ORIENTATIONS_POSITIVE = [ID_ROT, C3XZM, C3XZM**2, C3XMZ, C3XMZ**2, C4Z]
 BOND_ORIENTATIONS_NEGATIVE = [
     C2Z * orientation for orientation in BOND_ORIENTATIONS_POSITIVE
 ]
@@ -49,4 +50,5 @@ BONDS = [
 ]
 
 # LATTICE PARAMETERS
-BASIS_VECTORS = np.array([[0.5, 0.5, 0.0], [0.0, 0.5, 0.5], [0.5, 0.0, 0.5]])
+# Careful: these are column vectors!
+BASIS_VECTORS = np.array([[1.0, 0.0, 1.0], [1.0, 1.0, 0.0], [0.0, 1.0, 1.0]])

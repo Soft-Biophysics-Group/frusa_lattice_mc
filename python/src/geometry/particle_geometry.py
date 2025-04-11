@@ -251,6 +251,7 @@ class FccParticle(ParticleGeometry, lattice="fcc"):
             orientation_0_vectors=fcc.ORIENTATION_0_VECTORS,
             face_0_permutation_rotations=fcc.BOND_ORIENTATIONS_POSITIVE,
             rotations_around_face_0=[
+                fcc.ID_ROT,
                 fcc.FACE_ROTATION,
             ],
             opposite_face_rotation=fcc.C2Z,

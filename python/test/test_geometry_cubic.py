@@ -2,7 +2,7 @@ import config as cfg
 from geometry.cubic import CubicGeometry
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from plotting.plot_cubic import plot_cube_from_site_orientation, save_blender_fig
+from plotting.plot_cubic import place_cube_copy_from_site_orientation, save_blender_fig
 
 cp = CubicGeometry.particle
 
@@ -35,6 +35,6 @@ print(
 plot_flag = True
 for i, rotation in enumerate(cp.orientation_rotations):
     print(rotation.as_euler("xyz"))
-    plot_cube_from_site_orientation(i*2, i, 8, 12)
+    place_cube_copy_from_site_orientation(i*2, i, 8, 12)
 
 save_blender_fig("./test_cubic_orientation.blend")

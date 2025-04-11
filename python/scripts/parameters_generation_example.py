@@ -5,12 +5,10 @@ Example python file to generate a .json input file for the frusa_mc program.
 Simulates a few particles with uniform interactions on a triangular lattice.
 """
 
-import numpy as np
 from json_dump import *
 import contact_utils as cu
 import config as cfg
 from pathlib import Path
-from contact_utils import get_camembert_cmap
 ### Key parameter: how we will name this run
 run_name = "test_run"
 

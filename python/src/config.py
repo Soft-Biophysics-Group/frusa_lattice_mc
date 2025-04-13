@@ -28,7 +28,7 @@ exec_path = parent_path/"build/app/frusa_mc"
 python_path = parent_path/"python"
 
 # ----- STANDARDIZED FUNCTIONS TO LOAD FILES -----
-def load_model_file(model_file=default_model_params_file):
+def load_model_file(model_file: str | Path=default_model_params_file):
     model_file_str = str(model_file)
     with open(model_file_str, "r") as f:
         params = json.load(f)

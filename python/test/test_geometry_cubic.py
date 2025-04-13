@@ -1,4 +1,3 @@
-import config as cfg
 from geometry import ParticleGeometry
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -35,7 +34,10 @@ print(
 
 # Let's print all rotations to be safe, and plot them if we want to
 
-blender_plot = BlenderPlot.from_lattice_name("cubic", 8, 12, 1, path_to_numbered_cube)
+lx = 8
+ly = 12
+lz = 1
+blender_plot = BlenderPlot.from_lattice_name("cubic", lx, ly, lz)
 
 for i, rotation in enumerate(cp.orientation_rotations):
     print(rotation.as_euler("xyz", degrees = True))

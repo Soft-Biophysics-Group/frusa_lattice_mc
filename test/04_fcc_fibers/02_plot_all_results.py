@@ -21,5 +21,5 @@ def plot_one_run(
     return
 
 
-for face_index in range(24):
+for face_index in range(12):
     plot_one_run(face_index)

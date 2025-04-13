@@ -1,12 +1,10 @@
-"""Vincent Ouazan-Reboul, 2025/04/04
+""" Vincent Ouazan-Reboul, 2025/04/04
 
 Make dimer-forming particles accross all possible faces.
 """
-
 from contact_utils import ContactMapWrapper
 from geometry import ParticleGeometry
 from json_dump import *
-import config as cfg
 from pathlib import Path
 import numpy as np
 
@@ -26,12 +24,12 @@ def gen_params(face:int):
 
 # Options:
 # "chain", "square", "triangular", "cubic", "bcc", "fcc"
-    model_params["lattice_name"] = "cubic"
+    model_params["lattice_name"] = "fcc"
 
 # Lattice dimensions
-    model_params["lx"] = 10
-    model_params["ly"] = 10  # Has to be 1 for chain
-    model_params["lz"] = 10  # Has to be 1 for square & triangular
+    model_params["lx"] = 11
+    model_params["ly"] = 11  # Has to be 1 for chain
+    model_params["lz"] = 11  # Has to be 1 for square & triangular
 
 # ---------- MODEL PARAMETERS ----------
 
@@ -44,8 +42,10 @@ def gen_params(face:int):
 # Couplings is its own beast. Should be gotten with the appropriate helper
 # function.
 
-    cu = ContactMapWrapper.from_lattice_name("cubic", model_params["n_types"], e_repel)
-    cu[face, face] = e_attract
+    cu = ContactMapWrapper.from_lattice_name(
+        model_params["lattice_name"], init_energy=e_repel
+    )
+    cu[face, face + 13] = e_attract
     model_params["couplings"] = cu.get_formatted_couplings()
 
 # Initialization option
@@ -117,7 +117,7 @@ def gen_params(face:int):
     mc_params["Ti"] = np.log10(20)
 
 # Final annealing temperature
-    mc_params["Tf"] = np.log10(5e-2)
+    mc_params["Tf"] = np.log10(0.05)
 
 # Number of annealing steps
     mc_params["Nt"] = 100
@@ -140,5 +140,5 @@ def gen_params(face:int):
 
 # Create all the possible single-orientation, dimer-forming contact maps and the
 # associated input.
-for face in range(ParticleGeometry.from_lattice_name("cubic").n_orientations):
+for face in range(12):
     gen_params(face)

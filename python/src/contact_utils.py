@@ -1,11 +1,11 @@
 # Andrey Zelenskiy, Vincent Ouazan-Reboul, 2024
 # Functions and classes to generate contact maps for input of `frusa_mc`.
 # pyright: basic
-from sys import exception
 import numpy as np
 from numpy.typing import NDArray
-from geometry.cubic import CubicLattice, CubicParticle
-from geometry.triangular import TriangularLattice, TriangularParticle
+from geometry import ParticleGeometry
+import config as cfg
+from pathlib import Path
 
 from typing import Any
 
@@ -55,7 +55,7 @@ class ContactMapWrapper:
         self,
         n_types=1,
         n_orientations=6,
-        particle_geometry: Any = TriangularParticle(),
+        particle_geometry: Any = ParticleGeometry.from_lattice_name("triangular"),
         init_energy=0.0,
     ):
         self.n_types = n_types
@@ -65,14 +65,44 @@ class ContactMapWrapper:
         self.contact_map += init_energy
         self.geometry = particle_geometry
 
+    @classmethod
+    def from_lattice_name(cls, lattice_name: str, n_types = 1, init_energy = 0.0):
+        particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
+        return cls(
+            n_types,
+            particle_geometry.n_orientations,
+            particle_geometry,
+            init_energy
+        )
+
+    @classmethod
+    def from_model_file(cls, model_file: str | Path = cfg.default_model_params_file):
+        model_params = cfg.load_model_file(model_file)
+        instance = cls.from_lattice_name(
+            model_params["lattice_name"], model_params["n_types"]
+        )
+        instance.contact_map = np.copy(model_params["couplings"])
+
+        return instance
+
     # Different lattices for which we can use this class
     @classmethod
     def triangular(cls, n_types, init_energy=0.0):
-        return cls(n_types, 6, TriangularParticle(), init_energy=init_energy)
+        return cls(
+            n_types,
+            6,
+            ParticleGeometry.from_lattice_name("triangular"),
+            init_energy=init_energy,
+        )
 
     @classmethod
     def cubic(cls, n_types, init_energy=0.0):
-        return cls(n_types, 24, CubicParticle(), init_energy=init_energy)
+        return cls(
+            n_types,
+            24,
+            ParticleGeometry.from_lattice_name("cubic"),
+            init_energy=init_energy,
+        )
 
     # ----- GETTER FUNCTION FOR COEFFICIENTS IN FLATTENED ARRAY -----
     def get_one_face_coeff(self, orientation, type):

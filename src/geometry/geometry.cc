@@ -2,6 +2,7 @@
 #include "triangular.h"
 #include "cubic.h"
 #include "chain.h"
+#include "fcc.h"
 #include "vector_utils.h"
 #include <stdexcept>
 #include <string>
@@ -30,7 +31,12 @@ bond_struct::bond_struct(lattice_options lattice)
       bond_array = cubic_space::bond_struct::bond_array;
       bond_index = cubic_space::bond_struct::bond_index;
       opposite_bonds = cubic_space::bond_struct::opposite_bonds;
-    break;
+    case fcc:
+      bond_permutation = fcc_space::bond_struct::bond_permutation;
+      bond_array = fcc_space::bond_struct::bond_array;
+      bond_index = fcc_space::bond_struct::bond_index;
+      opposite_bonds = fcc_space::bond_struct::opposite_bonds;
+      break;
     default:
       throw(std::runtime_error(
           "Wrong lattice option received duting bond_structure creation"));
@@ -238,23 +244,27 @@ std::ostream &operator<<(std::ostream &out, Geometry &geometry) {
   return out;
 }
 
-void Geometry::set_lattice_properties() {
+void Geometry::set_lattice_properties()
+{
   switch (lattice_m) {
-  case lattice_options::chain:
-    n_neighbours_m = chain_space::n_neighbours;
-    n_orientations_m = chain_space::n_orientations;
-    break;
-  case lattice_options::triangular:
-    n_neighbours_m = triangular_space::n_neighbours;
-    n_orientations_m = triangular_space::n_orientations;
-    break;
-  case lattice_options::cubic:
-    n_neighbours_m = cubic_space::n_neighbours;
-    n_orientations_m = cubic_space::n_orientations;
-    break;
+    case lattice_options::chain:
+      n_neighbours_m = chain_space::n_neighbours;
+      n_orientations_m = chain_space::n_orientations;
+      break;
+    case lattice_options::triangular:
+      n_neighbours_m = triangular_space::n_neighbours;
+      n_orientations_m = triangular_space::n_orientations;
+      break;
+    case lattice_options::cubic:
+      n_neighbours_m = cubic_space::n_neighbours;
+      n_orientations_m = cubic_space::n_orientations;
+    case lattice_options::fcc:
+      n_neighbours_m = fcc_space::n_neighbours;
+      n_orientations_m = fcc_space::n_orientations;
+      break;
 
-  default:
-    throw(std::runtime_error("Invalid lattice option"));
+    default:
+      throw(std::runtime_error("Invalid lattice option"));
   }
 }
 

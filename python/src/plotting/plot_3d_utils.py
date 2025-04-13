@@ -1,5 +1,4 @@
-"""
-Vincent Ouazan-Reboul, 2025
+"""Vincent Ouazan-Reboul, 2025
 Generic functions to plot the simulation results of 3D particles using Blender.
 """
 
@@ -26,8 +25,9 @@ class BlenderPlot:
         self,
         particle_geometry: ParticleGeometry,
         lattice_geometry: LatticeGeometry,
-        particle_model_file: str | Path,
         plot_boundary_method,
+        particle_paths: dict[str, Path],
+        default_particle_path: Path | None = None,
     ) -> None:
         # Look for a Blender executable
         blender_bin = shutil.which("Blender")
@@ -40,18 +40,14 @@ class BlenderPlot:
 
         self.particle_geometry = particle_geometry
         self.lattice_geometry = lattice_geometry
-        self.particle_model_file = particle_model_file
         self.plot_grain_boundary_method = plot_boundary_method
 
-        # Load the particle and its material
-        bpy.ops.file.pack_all()
-        bpy.ops.wm.obj_import(filepath=str(self.particle_model_file))
-        self.obj = bpy.context.selected_objects[0]
-        # Hide the original object from view and selection
-        self.obj.hide_viewport = True
-        self.obj.hide_select = True
-        self.original_materials = list(self.obj.data.materials)
+        self.load_particle(default_particle_path)
 
+
+        self.particle_paths = particle_paths
+        if default_particle_path is None:
+            self.default_particle_path = list(self.particle_paths.values())[0]
 
         return
 
@@ -62,38 +58,48 @@ class BlenderPlot:
         lx: int,
         ly: int,
         lz: int,
-        particle_model_file: str | Path,
     ):
         particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
         lattice_geometry = LatticeGeometry.from_lattice_name(lattice_name, lx, ly, lz)
         boundary_plot_method = load_boundary_method(lattice_name)
+        particle_paths, default_particle_path = import_particle_paths(lattice_name)
+
 
         return cls(
             particle_geometry,
             lattice_geometry,
-            particle_model_file,
             boundary_plot_method,
+            particle_paths,
+            default_particle_path,
         )
 
     @classmethod
     def from_model_file(
         cls,
         model_file: str | Path = cfg.default_model_params_file,
-        particle_model_file: str | Path = "",
     ):
-        model_params = cfg.load_model_file(model_file)
+        model_params = cfg.load_model_file(Path(model_file))
         lattice_name = model_params["lattice_name"]
-        particle_geometry, lattice_geometry = get_particle_lattice(model_params)
-        plot_boundary_method = load_boundary_method(lattice_name)
+        lx = model_params["lx"]
+        ly = model_params["ly"]
+        lz = model_params["lz"]
 
-        # Pick the right boundary method
+        return cls.from_lattice_name(lattice_name, lx, ly, lz)
 
-        return cls(
-            particle_geometry,
-            lattice_geometry,
-            particle_model_file,
-            plot_boundary_method,
-        )
+    def load_particle(self, path_to_particle: Path | None = None):
+        # Load the particle and its material
+        if path_to_particle is None:
+            path_to_particle = self.default_particle_path
+
+        bpy.ops.file.pack_all()
+        bpy.ops.wm.obj_import(filepath=str(path_to_particle))
+        self.obj = bpy.context.selected_objects[0]
+        # Hide the original object from view and selection
+        self.obj.hide_viewport = True
+        self.obj.hide_select = True
+        self.original_materials = list(self.obj.data.materials)
+
+        return
 
     def place_obj_copy_from_site_orientation(self, site_index: int, orientation: int):
         x_lattice, y_lattice, z_lattice = self.lattice_geometry.lattice_site_to_lattice_coords(
@@ -117,7 +123,6 @@ class BlenderPlot:
         struct_folder: Path | str = "",
         struct_file: Path | str = "",
         fig_file: Path | str = "",
-        path_to_obj: Path | str = "",
     ):
         results = cfg.load_structure(
             struct_index=struct_index,
@@ -134,7 +139,7 @@ class BlenderPlot:
         if fig_file:
             bpy.ops.wm.save_as_mainfile(filepath=fig_file)
 
-        # Delete original cube
+        # Delete original cube: we most likely won't do anything with it anymore
         bpy.data.objects.remove(self.obj, do_unlink=True)
 
         return
@@ -180,6 +185,15 @@ class BlenderPlot:
 
     def save(self, save_file):
         bpy.ops.wm.save_as_mainfile(filepath=str(save_file))
+
+
+def import_particle_paths(lattice_name: str):
+    if lattice_name == "cubic":
+        return cubic.paths, cubic.paths["path_to_numbered_cube"]
+    elif lattice_name == "fcc":
+        return fcc.paths, fcc.paths["path_to_numbered_rhombic"]
+    else:
+        raise ValueError("No paths to particle models implemented for this lattice")
 
 
 def load_boundary_method(lattice_name: str):

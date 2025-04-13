@@ -34,7 +34,14 @@ path_to_transparent_cube = (
     Path(__file__).parent / "assets/oneCube/one_cube_transparent.obj"
 )
 path_to_one_axis_cube = Path(__file__).parent / "assets/oneCube/one_cube_one_axis.obj"
-#
+
+paths = {
+    "path_to_numbered_cube": path_to_numbered_cube,
+    "path_to_pm_cube": path_to_pm_cube,
+    "path_to_transparent_cube": path_to_transparent_cube,
+    "path_to_one_axis_cube": path_to_one_axis_cube,
+}
+
 #
 # # Code created with the help of ChatGPT. Use with caution
 # def get_or_create_collection(collection_name="Squares"):

@@ -1,11 +1,11 @@
-""" Vincent Ouazan-Reboul, 2025/04/04
+"""Vincent Ouazan-Reboul, 2025/04/04
 
 Make dimer-forming particles accross all possible faces.
 """
+
 from contact_utils import ContactMapWrapper
-from geometry.cubic import  CubicParticle, CubicLattice
+from geometry import ParticleGeometry
 from json_dump import *
-import contact_utils as cu
 import config as cfg
 from pathlib import Path
 
@@ -43,7 +43,7 @@ def gen_params(face:int):
 # Couplings is its own beast. Should be gotten with the appropriate helper
 # function.
 
-    cu = ContactMapWrapper.cubic(model_params["n_types"], e_repel)
+    cu = ContactMapWrapper.from_lattice_name("cubic", model_params["n_types"], e_repel)
     cu[face, face] = e_attract
     model_params["couplings"] = cu.get_formatted_couplings()
 
@@ -139,5 +139,5 @@ def gen_params(face:int):
 
 # Create all the possible single-orientation, dimer-forming contact maps and the
 # associated input.
-for face in range(CubicParticle().n_orientations):
+for face in range(ParticleGeometry.from_lattice_name("cubic").n_orientations):
     gen_params(face)

@@ -31,6 +31,7 @@ bond_struct::bond_struct(lattice_options lattice)
       bond_array = cubic_space::bond_struct::bond_array;
       bond_index = cubic_space::bond_struct::bond_index;
       opposite_bonds = cubic_space::bond_struct::opposite_bonds;
+      break;
     case fcc:
       bond_permutation = fcc_space::bond_struct::bond_permutation;
       bond_array = fcc_space::bond_struct::bond_array;
@@ -258,6 +259,7 @@ void Geometry::set_lattice_properties()
     case lattice_options::cubic:
       n_neighbours_m = cubic_space::n_neighbours;
       n_orientations_m = cubic_space::n_orientations;
+      break;
     case lattice_options::fcc:
       n_neighbours_m = fcc_space::n_neighbours;
       n_orientations_m = fcc_space::n_orientations;

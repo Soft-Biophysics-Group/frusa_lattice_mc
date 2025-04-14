@@ -1,5 +1,5 @@
 """ Vincent Ouazan-Rebo, 2025
-Storing the contact map designs for cubic lattice particles (i.e. hexagons).
+Storing the contact map designs for cubic lattice particles.
 """
 
 from contact_utils import ContactMapWrapper

@@ -574,6 +574,154 @@ class BlenderPlot:
 
         return
 
+    def gen_lozenge_boundary_mesh(
+        self,
+        site,
+        bond_orientation,
+        particle_center_cartesian_coords,
+        collection_name="Boundaries",
+        boundary_offset = 0.05
+    ):
+        # Do nothing if the particles don't touch
+        if bond_orientation == -1:
+            return
+
+        collection = get_or_create_collection(collection_name)
+
+        half_size = self.lattice_geometry.lattice_spacing / 2
+        extra_offset = boundary_offset
+        vertices = np.array(
+            [
+                [1 + extra_offset, -extra_offset, 0],
+                [0.5, 0.5, 0.5 + extra_offset],
+                [-extra_offset, 1 + extra_offset, 0],
+                [0.5, 0.5, -0.5 - extra_offset],
+            ]
+        )
+
+        rotation_to_apply = self.particle_geometry.bond_rotations[bond_orientation]
+        vertices = rotation_to_apply.inv().apply(vertices)
+
+        # Translate the lozenge to the right spot
+        vertices += particle_center_cartesian_coords
+
+        faces = [(0, 1, 2, 3)]
+        edges = [(0, 1), (1, 2), (2, 3), (3, 0)]
+
+        # Create a new mesh and object
+        mesh = bpy.data.meshes.new(name="SquareMesh")
+        # obj = bpy.data.objects.new(name="Square", object_data=mesh)
+        # collection.objects.link(obj)
+        # bpy.context.collection.objects.link(obj)
+        # solidify = obj.modifiers.new(name="Solidify", type='SOLIDIFY')
+        # solidify.thickness = 0.2  # Adjust thickness
+        # solidify.offset = 0  # 0 = centered, 1 = extrude outward only
+        mesh.from_pydata(vertices, edges, faces)
+        mesh.update()
+
+
+        # # Create an edge-only object
+        # edge_mesh = bpy.data.meshes.new(name="EdgeMesh")
+        # edge_obj = bpy.data.objects.new(name="Edges", object_data=edge_mesh)
+        # bpy.context.collection.objects.link(edge_obj)
+        # # Create edges as a separate mesh
+        # edge_mesh.from_pydata(vertices, edges, [])
+        # edge_mesh.update()
+        #
+        #
+        # if material is None:
+        #     material = create_material()
+        # obj.data.materials.append(material)
+        # # Create edge material and assign it
+        # edge_color = (0.0, 0.0, 0.0, 1.0)
+        # edge_mat = create_material(name="EdgeMaterial", color=edge_color)
+        # edge_obj.data.materials.append(edge_mat)
+        # edge_obj.location = np.zeros(3)
+
+
+        return mesh
+
+    def plot_all_boundaries_from_simulation_results(
+        self,
+        contacts_of_interest: list[tuple[int, int]],
+        fig_file: Path | str = "",
+        material = None,
+        thickness = 0.2,
+        boundary_offset = 0.1,
+        offset = 0.0,
+        use_rim_only = False
+    ):
+        all_meshes = []
+        # print(contacts_of_interest)
+
+        # for i, site_1 in enumerate(self.full_sites):
+        #     orientation_1 = self.orientations[site_1]
+        #     coords_cart_1 = self.particle_objs[i].location
+        #     for site_2 in self.full_sites:
+        #         print(site_2)
+        #         orientation_2 = self.orientations[site_2]
+        #         # print(site_1, orientation_1, site_2, orientation_2)
+        #         face_1, face_2, bond = (
+        #             self.lattice_geometry.get_faces_in_contact_and_bond(
+        #                 site_1, orientation_1, site_2, orientation_2
+        #             )
+        #         )
+        #         if bond == 1:
+        #             continue
+        #         for (
+        #             alt_face_1,
+        #             alt_face_2,
+        #         ) in self.particle_geometry.get_equivalent_face_pairs(face_1, face_2):
+        #             if (alt_face_1, alt_face_2) in contacts_of_interest:
+        #                 all_meshes.append(
+        #                     self.gen_lozenge_boundary_mesh(site_1, bond, coords_cart_1)
+        #                 )
+
+        for i, site_1 in enumerate(self.full_sites):
+            orientation_1 = self.orientations[site_1]
+            coords_cart_1 = self.particle_objs[i].location
+            neighbours_of_1 = self.lattice_geometry.get_neighbour_sites(site_1)
+            for neighbour in neighbours_of_1:
+                if neighbour in self.full_sites:
+                    site_2 = neighbour
+                    orientation_2 = self.orientations[site_2]
+                    face_1, face_2, bond = (
+                        self.lattice_geometry.get_faces_in_contact_and_bond(
+                            site_1, orientation_1, site_2, orientation_2
+                        )
+                    )
+                    for (
+                        alt_face_1,
+                        alt_face_2,
+                    ) in self.particle_geometry.get_equivalent_face_pairs(
+                        face_1, face_2
+                    ):
+                        if (alt_face_1, alt_face_2) in contacts_of_interest or (
+                            alt_face_2,
+                            alt_face_1,
+                        ) in contacts_of_interest:
+                            all_meshes.append(
+                                self.gen_lozenge_boundary_mesh(
+                                    site_1,
+                                    bond,
+                                    coords_cart_1,
+                                    boundary_offset=boundary_offset,
+                                )
+                            )
+
+        merge_boundaries_into_bmesh(
+            all_meshes,
+            thickness=thickness,
+            material=material,
+            use_rim_only=use_rim_only,
+            offset=offset,
+        )
+
+        if self.fig_file:
+            bpy.ops.wm.save_as_mainfile(filepath=self.fig_file)
+
+        return
+
     def clear(self):
         bpy.ops.object.select_all(action="SELECT")
         bpy.ops.object.delete()

@@ -8,10 +8,9 @@ For now, just one function: analyze the energy records of our MC simulations
 from pathlib import Path
 import numpy as np
 
+
 # Plotting the energy trace to see when the cube actually formed
-def get_temperature_energy_records(
-    records_folder: str | Path = ""
-):
+def get_temperature_energy_records(records_folder: str | Path = ""):
     all_T = []
     all_e_records = []
     records_path = Path(records_folder)
@@ -27,8 +26,8 @@ def get_temperature_energy_records(
 
     return all_T_sorted, np.hstack(all_e_sorted)
 
-def get_average_energies(averages_folder: str | Path = ""):
 
+def get_average_energies(averages_folder: str | Path = ""):
     all_T = []
     all_avg_e = []
     avgs_path = Path(averages_folder)

@@ -9,6 +9,8 @@ import numpy as np
 import subprocess
 import sys
 
+from numpy.typing import NDArray
+
 # Reliably make absolute paths to the right place.
 # #ILovePathLib <3 <3 <3
 parent_path = Path(__file__).parent.parent.parent.absolute().resolve()
@@ -44,14 +46,14 @@ def load_mc_file(mc_file=default_mc_params_file):
 
 def load_structure(
     struct_index: int = -1, struct_folder: str | Path = "", struct_file: str | Path = ""
-):
+) -> NDArray[np.int_]:
     """
     Load a configuration of the particles on the lattice recorded during the simulation.
     Default behavior (no parameters): loads the structure at the end of the simulation.
     If struct_index is specified: load structure with index struct_index.
     If struct_file is specified: overrides struct_index, directly fetches results in
     struct_file.
-    Returned structure is a dimensional numpy array, with line 1 corresponding to particle type
+    Returned structure is a (2, Nsites) dimensional numpy array, with line 1 corresponding to particle type
     and line 2 to particle orientation.
     orientation -1 always corresponds to an empty site, irrespective of particle type.
     """
@@ -68,7 +70,7 @@ def load_structure(
     return np.loadtxt(file_path, dtype=int)
 
 
-def get_full_sites(site_orientations):
+def get_full_sites(site_orientations: NDArray[np.int_]) -> NDArray[np.int_]:
     return np.where(site_orientations[1, :] != -1)[0]
 
 

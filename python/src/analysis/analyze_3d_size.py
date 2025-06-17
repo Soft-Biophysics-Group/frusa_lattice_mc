@@ -6,7 +6,7 @@ Few functions to get the size of aggregates on 3D lattices.
 import numpy as np
 from pathlib import Path
 import config as cfg
-from geometry.cubic import CubicLattice
+from geometry import LatticeGeometry
 
 
 def get_aggregates(
@@ -14,7 +14,7 @@ def get_aggregates(
     struct_folder: str | Path = "",
     struct_file: str | Path = "",
     model_file: str | Path = cfg.default_mc_params_file,
-):
+) -> list[set[int]]:
     """
     Returns a list of sets. Each list member is a cluster, represented by the set of the
     sites containing its constitueent particles.
@@ -32,33 +32,37 @@ def get_aggregates(
     )
     full_sites = cfg.get_full_sites(site_orientations)
     full_sites_set = set(full_sites)
-    lattice = CubicLattice.from_model_file(model_file)
+    lattice = LatticeGeometry.from_model_file(model_file)
 
     visited_sites = set()
     first_shell = set()
     to_visit = set()
     all_clusters = []
 
+    # Build clusters neighbour by neighbour
     for site in full_sites:
+        # Unvisited site starts a new cluster
         if site not in visited_sites:
             to_visit.add(site)
             cluster = set()
+            # We have built the whole cluster if we run out of sites to visit
             while len(to_visit) > 0:
-                # Build first shell of the cluster
                 site_to_visit = to_visit.pop()
+                # Using a set guarantees we don't have more than one copy of each site
                 cluster.add(site_to_visit)
                 visited_sites.add(site_to_visit)
-                neighbour_sites = lattice.get_neighbour_sites(
-                    site_to_visit
-                )
+                neighbour_sites = lattice.get_neighbour_sites(site_to_visit)
+                # Select only neighbouring sites that are full
                 full_neighbour_sites = full_sites_set.intersection(set(neighbour_sites))
+                # And visit only the unvisited ones
                 neighbours_to_visit = full_neighbour_sites - visited_sites
+                # Shorthand for set = union(set, other_set)
                 to_visit |= neighbours_to_visit
             all_clusters.append(cluster)
 
     return all_clusters
 
-def get_agg_sizes(aggregates: list[set[int]]):
+def get_agg_sizes(aggregates: list[set[int]]) -> dict[int, int]:
     all_sizes = {}
     for agg in aggregates:
         agg_size = len(agg)

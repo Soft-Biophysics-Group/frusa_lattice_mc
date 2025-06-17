@@ -129,7 +129,9 @@ class ContactMapWrapper:
 
         return self.contact_map[int_coeff]
 
-    def __setitem__(self, faces_types, value):
+    def __setitem__(
+        self, faces_types: tuple[int, int] | tuple[int, int, int, int], value: float
+    ):
         if len(faces_types) == 2:
             face1, face2 = faces_types
             type1, type2 = 0, 0
@@ -156,6 +158,14 @@ class ContactMapWrapper:
         #         this_face2, type2, this_face1, type1
         #     )
         #     self.contact_map[int_coeff] = value
+
+    def set_contacts(
+        self, contacts: list[tuple[int, int] | tuple[int, int, int, int]], value: float
+    ):
+        for contact in contacts:
+            self[contact] = value
+
+        return
 
     # -----SETTING EQUIVALENT COEFFICIENTS -----
     def get_equivalent_face_pairs(self, face1, face2):

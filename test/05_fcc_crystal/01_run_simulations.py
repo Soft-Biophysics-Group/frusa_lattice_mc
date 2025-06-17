@@ -16,7 +16,7 @@ def do_all_runs(overwrite=False, n_processes=6):
             f"./input/n_particles_{n_particles}_mc_params.json",
             overwrite,
         )
-        for n_particles in range(1, 1001, 10)
+        for n_particles in range(1, 991, 10)
     )
 
     with Pool(processes=n_processes) as p:

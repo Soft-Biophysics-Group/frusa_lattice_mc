@@ -9,6 +9,7 @@ from collections.abc import Mapping, MutableMapping
 from scipy.spatial.transform import Rotation as R
 from pathlib import Path
 from . import cubic, triangular, fcc
+from .particle_geometry import ParticleGeometry
 
 from typing import TypeAlias
 Bond: TypeAlias = tuple[int, int, int]
@@ -76,6 +77,7 @@ class LatticeGeometry:
         self.ly: int = ly
         self.lz: int = lz
 
+        self.particle_geometry: ParticleGeometry
     # ----- SUBCLASSES -----
     # Magic code to register lattices upon creation:
     # inspired by https://stackoverflow.com/a/52433482
@@ -97,9 +99,11 @@ class LatticeGeometry:
         lattice_spacing: float = 1.0,
     ):
         if lattice_name in cls._lattices.keys():
-            return cls._lattices[lattice_name](
+            inst =  cls._lattices[lattice_name](
                 lx=lx, ly=ly, lz=lz, lattice_spacing=lattice_spacing
             )
+            inst.particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
+            return inst
         else:
             raise RuntimeError("Invalid lattice type selected")
 
@@ -120,9 +124,9 @@ class LatticeGeometry:
     # ----- GEOMETRY -----
     def lattice_to_cartesian(
         self, x_lattice: int, y_lattice: int, z_lattice: int = 1
-    ) -> ArrayLike:
+    ) -> NDArray[np.float_]:
         return (
-              x_lattice * self.lattice_vectors_in_cartesian[:, 0]
+            x_lattice * self.lattice_vectors_in_cartesian[:, 0]
             + y_lattice * self.lattice_vectors_in_cartesian[:, 1]
             + z_lattice * self.lattice_vectors_in_cartesian[:, 2]
         )
@@ -133,13 +137,30 @@ class LatticeGeometry:
         """
         # Turn contents of bond into ints
         bond_arr = np.array(bond, dtype=int)
+        # print(f"before pbc {bond_arr}")
+        bond_arr = self.apply_pbc_vector(bond_arr)
+        # print(f"after pbc {bond_arr}")
         # And then into tuple for hashing
         bond_tup = tuple(bond_arr)
         if bond_tup not in self.bond_to_bond_index.keys():
-            print("The vector does not correspond to a bond!")
             return -1
         else:
             return self.bond_to_bond_index[bond_tup]
+
+    def get_bond_from_sites(self, site_1: int, site_2: int) -> int:
+        """Attempts to find the bond index between site_1 and site_2, taking site_1 as the
+        center of frame of reference. Returns -1 if the two sites are not neighbours.
+        """
+        site_1_lattice_coords = self.lattice_site_to_lattice_coords(site_1)
+        site_2_lattice_coords = self.lattice_site_to_lattice_coords(site_2)
+        bond_coords = site_2_lattice_coords - site_1_lattice_coords
+        print(bond_coords)
+
+        # bond_coords = np.array(self.apply_pbc(*bond_coords))
+        print(bond_coords)
+        bond = self.get_bond(bond_coords)
+
+        return bond
 
     def lattice_site_to_lattice_coords(self, site_index: int) -> NDArray[np.int_]:
         z_lattice = site_index // self.ly // self.lx
@@ -179,19 +200,82 @@ class LatticeGeometry:
         return neighbours
 
     def apply_pbc(self, x: int, y: int, z: int) -> tuple[int, int, int]:
-        if x >= self.lx:
-            x -= self.lx
-        if x < 0:
-            x += self.lx
-        if y >= self.ly:
-            y -= self.ly
-        if y < 0:
-            y += self.ly
-        if z >= self.lz:
-            z -= self.lz
-        if z < 0:
-            z += self.lz
+        x = np.mod(x, self.lx)
+        y = np.mod(y, self.ly)
+        z = np.mod(z, self.lz)
+
         return x, y, z
+
+    def apply_pbc_vector(self, vec: NDArray[np.float_]):
+        """Applies periodic boundary conditions to a vector linking 2 sites.
+
+        If the vector has components with magnitude larger than half of the lattice, we wrap
+        these components back
+        """
+
+        vec_pbc = np.copy(vec)
+        x, y, z = vec_pbc
+        if np.abs(x) >= self.lx // 2:
+            vec_pbc[0] = -np.sign(x) * (self.lx - np.abs(x))
+        if np.abs(y) >= self.ly // 2:
+            vec_pbc[1] = -np.sign(y) * (self.ly - np.abs(y))
+        if np.abs(z) >= self.lz // 2:
+            vec_pbc[2] = -np.sign(z) * (self.lz - np.abs(z))
+
+        return vec_pbc
+
+    def get_faces_in_contact_and_bond(
+        self,
+        site_1_index: int,
+        orientation_1: int,
+        site_2_index: int,
+        orientation_2: int,
+    ):
+        site_1_lattice_coords = np.array(
+            self.lattice_site_to_lattice_coords(site_1_index), dtype=int
+        )
+        site_2_lattice_coords = np.array(
+            self.lattice_site_to_lattice_coords(site_2_index), dtype=int
+        )
+
+        bond_lattice_coords = self.apply_pbc_vector(
+            site_2_lattice_coords - site_1_lattice_coords
+        )
+        bond_index = self.get_bond(bond_lattice_coords)
+
+        if bond_index == -1:
+            return (-1, -1, -1)
+
+        face_1, face_2 = self.particle_geometry.get_faces_in_contact(
+            orientation_1, orientation_2, bond_index
+        )
+
+        return face_1, face_2, bond_index
+
+    def get_site_after_translating(
+        self, site: int, translation_vec: list[int] | NDArray[np.int_]
+    ) -> int:
+        site_coords_lattice = self.lattice_site_to_lattice_coords(site)
+        translated_coords = site_coords_lattice + translation_vec
+        new_site_coords_lattice = self.apply_pbc(*translated_coords)
+        new_site = self.lattice_coords_to_lattice_site(*new_site_coords_lattice)
+
+        return new_site
+
+    def apply_translation_to_config(
+        self,
+        site_orientations: NDArray[np.int_],
+        translation_vec: list[int] | NDArray[np.int_],
+    ):
+        new_site_orientations = np.zeros_like(site_orientations)
+        new_site_orientations[1, :] += -1
+        full_sites: NDArray[np.int_] = cfg.get_full_sites(site_orientations)
+
+        for site in full_sites:
+            new_site = self.get_site_after_translating(site, translation_vec)
+            new_site_orientations[:, new_site] = site_orientations[:, site]
+
+        return new_site_orientations
 
 
 # ----- LATTICE SPECIALIZATIONS -----

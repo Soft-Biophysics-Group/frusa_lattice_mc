@@ -165,7 +165,9 @@ class ParticleGeometry:
         )
         return self.identify_orientation(new_rot)
 
-    def get_equivalent_face_pairs(self, face_1, face_2):
+    def get_equivalent_face_pairs(
+        self, face_1: int, face_2: int
+    ) -> list[tuple[int, int]]:
         """
         From the faces in contact of particle 1 at lattice site (0,0,0) and of particle 2 at site
         (1,0,0), fill list `all_face_pairs` with all the [face_1, face_2]
@@ -185,6 +187,22 @@ class ParticleGeometry:
                 [orientation_1, self.get_opposite_face_index(orientation_2)]
             )
         return all_face_pairs
+
+    def get_canonical_contact(self, face_1: int, face_2: int) -> frozenset[int]:
+        """Returns a unique, "canonical" form for a face to face contact in the form of a set.
+        Used to make contacts unique despite the presence of equivalent contacts due to the
+        symmetries of the particle pair.
+
+        Contacts are returned as sets: as they are symmetric, the ordering of the faces should
+        not matter.
+        """
+        equiv_contacts = self.get_equivalent_face_pairs(face_1, face_2)
+        canonical_contact = frozenset((face_1, face_2))
+        for contact in equiv_contacts:
+            if min(contact) < min(canonical_contact):
+                canonical_contact = frozenset(contact)
+
+        return canonical_contact
 
     def get_faces_in_contact(self, orientation1, orientation2, bond):
         """Determines along which faces two particles in contact are touching.

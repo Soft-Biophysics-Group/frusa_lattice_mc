@@ -9,6 +9,10 @@ import numpy as np
 import subprocess
 import sys
 
+from numpy.typing import NDArray
+
+from typing import TypedDict, cast
+
 # Reliably make absolute paths to the right place.
 # #ILovePathLib <3 <3 <3
 parent_path = Path(__file__).parent.parent.parent.absolute().resolve()
@@ -27,48 +31,92 @@ exec_path = parent_path/"build/app/frusa_mc"
 
 python_path = parent_path/"python"
 
+
 # ----- STANDARDIZED FUNCTIONS TO LOAD FILES -----
-def load_model_file(model_file: str | Path=default_model_params_file):
+
+# Better way to structure the json inputs / outputs in Python:
+# this way your type checker knows what to expect. It does not restrict what you do at runtime
+# though!
+class ModelParams(TypedDict, total=False):
+    lattice_name: str
+
+    lx: int
+    ly: int
+    lz: int
+
+    n_types:int
+    n_particles: list[int]
+
+    couplings: list[float]
+
+    initialize_option:str
+    state_av_option:bool
+    e_av_option: bool
+    e_record_option: bool
+
+    e_record_output: str
+    e_av_output: str
+
+    move_probas: dict[str, float]
+
+def load_model_file(model_file: str | Path = default_model_params_file) -> ModelParams:
     model_file_str = str(model_file)
     with open(model_file_str, "r") as f:
-        params = json.load(f)
+        params = cast(ModelParams, json.load(f))
     return params
 
 
-def load_mc_file(mc_file=default_mc_params_file):
+class McParams(TypedDict):
+    mcs_eq: int
+    mcs_av: int
+
+    cooling_schedule:str
+    Ti: float | int
+    Tf: float | int
+    Nt: int
+
+    checkpoint_option: bool
+    checkpoint_address: str
+    final_structure_address: str
+
+def load_mc_file(
+    mc_file: str | Path = default_mc_params_file,
+) -> McParams:
     mc_file_str = str(mc_file)
     with open(mc_file_str, "r") as f:
-        params = json.load(f)
+        params = cast(McParams, json.load(f))
     return params
 
 
 def load_structure(
-    struct_index: int = -1, struct_folder: str | Path = "", struct_file: str | Path = ""
-):
+    struct_index: int | None = None,
+    struct_folder: str | Path | None = None,
+    struct_file: str | Path | None = None,
+) -> NDArray[np.int_]:
     """
     Load a configuration of the particles on the lattice recorded during the simulation.
     Default behavior (no parameters): loads the structure at the end of the simulation.
     If struct_index is specified: load structure with index struct_index.
     If struct_file is specified: overrides struct_index, directly fetches results in
     struct_file.
-    Returned structure is a dimensional numpy array, with line 1 corresponding to particle type
+    Returned structure is a (2, Nsites) dimensional numpy array, with line 1 corresponding to particle type
     and line 2 to particle orientation.
     orientation -1 always corresponds to an empty site, irrespective of particle type.
     """
-    if struct_file != "":
+    if struct_file is not None:
         file_path = struct_file
     else:
-        if struct_folder == "":
+        if struct_folder is None:
             struct_folder = structures_path
         struct_folder = Path(struct_folder)
-        if struct_index != -1:
+        if struct_index is not None:
             file_path = struct_folder / f"structure_{struct_index}.dat"
         else:
             file_path = struct_folder / "final_structure.dat"
     return np.loadtxt(file_path, dtype=int)
 
 
-def get_full_sites(site_orientations):
+def get_full_sites(site_orientations: NDArray[np.int_]) -> NDArray[np.int_]:
     return np.where(site_orientations[1, :] != -1)[0]
 
 

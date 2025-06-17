@@ -102,9 +102,7 @@ def gen_params(n_particles: int):
     mc_params = {}
 
     # Number of MC steps used for equilibration
-    # Lara used 12k steps per particle, in our program the number of steps is given per site
-    # so for a start 12k * 400 / 40^2
-    mc_params["mcs_eq"] = 5 * model_params["n_particles"][0]
+    mc_params["mcs_eq"] = 10 * model_params["n_particles"][0]
 
     # Number of MC steps used for averaging
     mc_params["mcs_av"] = 100
@@ -143,7 +141,7 @@ def gen_params(n_particles: int):
 
 # Create all the possible single-orientation, dimer-forming contact maps and the
 # associated input.
-n_particles_max = 1000
+n_particles_max = 990
 step = 10
 n_particles_range = range(1, n_particles_max, step)
 for n_particles in n_particles_range:

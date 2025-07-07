@@ -123,13 +123,25 @@ class LatticeGeometry:
 
     # ----- GEOMETRY -----
     def lattice_to_cartesian(
-        self, x_lattice: int, y_lattice: int, z_lattice: int = 1
+        self,
+        x_lattice: int,
+        y_lattice: int,
+        z_lattice: int = 1,
+        linear_transform: NDArray[np.int_ | np.float_] | None = None,
     ) -> NDArray[np.float_]:
-        return (
-            x_lattice * self.lattice_vectors_in_cartesian[:, 0]
-            + y_lattice * self.lattice_vectors_in_cartesian[:, 1]
-            + z_lattice * self.lattice_vectors_in_cartesian[:, 2]
-        )
+        if linear_transform is not None:
+            new_lattice_vectors = self.lattice_vectors_in_cartesian @ linear_transform
+            return (
+                x_lattice * new_lattice_vectors[:, 0]
+                + y_lattice * new_lattice_vectors[:, 1]
+                + z_lattice * new_lattice_vectors[:, 2]
+            )
+        else:
+            return (
+                x_lattice * self.lattice_vectors_in_cartesian[:, 0]
+                + y_lattice * self.lattice_vectors_in_cartesian[:, 1]
+                + z_lattice * self.lattice_vectors_in_cartesian[:, 2]
+            )
 
     def get_bond(self, bond: ArrayLike) -> int:
         """If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,
@@ -199,10 +211,23 @@ class LatticeGeometry:
             neighbours.append(neighbour_index)
         return neighbours
 
-    def apply_pbc(self, x: int, y: int, z: int) -> tuple[int, int, int]:
-        x = np.mod(x, self.lx)
-        y = np.mod(y, self.ly)
-        z = np.mod(z, self.lz)
+    def apply_pbc(
+        self,
+        x: int,
+        y: int,
+        z: int,
+        linear_transform: NDArray[np.int_ | np.float_] | None = None,
+    ) -> tuple[int, int, int]:
+        if linear_transform is not None:
+            new_box_coords = linear_transform @ np.array([self.lx, self.ly, self.lz]).T
+            print(new_box_coords)
+            x = np.mod(x, new_box_coords[0])
+            y = np.mod(y, new_box_coords[1])
+            z = np.mod(z, new_box_coords[2])
+        else:
+            x = np.mod(x, self.lx)
+            y = np.mod(y, self.ly)
+            z = np.mod(z, self.lz)
 
         return x, y, z
 

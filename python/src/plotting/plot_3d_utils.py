@@ -23,6 +23,9 @@ from scipy.spatial.transform import Rotation as R
 from designs.fcc import CRYSTAL_INTS_CORNER
 
 from .build_grain_boundary_geo_nodes import geometry_nodes_node_group
+from .build_composition_nodes import build_composition_nodes
+
+from analysis.analyze_3d_size import get_aggregates
 
 DEFAULT_MATERIAL = (14, 0, 255, 1.0)
 
@@ -50,20 +53,23 @@ class BlenderPlot:
         self.lattice_geometry = lattice_geometry
         self.plot_grain_boundary_method = gen_face_outline_method
 
-        self.load_particle(default_particle_path)
+        # self.load_particle(default_particle_path)
 
 
         self.particle_paths = particle_paths
         if default_particle_path is None:
             self.default_particle_path = list(self.particle_paths.values())[0]
 
-        self.particle_coords_cart = np.zeros((0, 3))
-        self.particle_objs = []
+        self.particle_coords_cart = {}
+        self.particle_objs = {}
 
         self.orientations: NDArray[np.int_]
         self.full_sites: NDArray[np.int_]
 
         self.fig_file: str | Path
+
+        self.model_file : str | Path
+        self.n_aggregates: int
 
         return
 
@@ -100,7 +106,11 @@ class BlenderPlot:
         ly = model_params["ly"]
         lz = model_params["lz"]
 
-        return cls.from_lattice_name(lattice_name, lx, ly, lz)
+
+        this_instance =  cls.from_lattice_name(lattice_name, lx, ly, lz)
+        this_instance.model_file = model_file
+
+        return this_instance
 
     def load_particle(self, path_to_particle: Path | None = None):
         # Load the particle and its material
@@ -123,17 +133,18 @@ class BlenderPlot:
             site_coords_cartesian[1],
             site_coords_cartesian[2],
         )
-        lx_cart, ly_cart, lz_cart = (
-            self.lattice_geometry.lx * self.lattice_geometry.lattice_spacing,
-            self.lattice_geometry.ly * self.lattice_geometry.lattice_spacing,
-            self.lattice_geometry.lz * self.lattice_geometry.lattice_spacing
-        )
+        cube_lx = 2 ** (1 / 3) * self.lattice_geometry.lx
+        cube_ly = 2 ** (1 / 3) * self.lattice_geometry.ly
+        cube_lz = 2 ** (1 / 3) * self.lattice_geometry.lz
 
-        x = x % lx_cart
-        y = y % ly_cart
-        # z = z % lz_cart
+        if x >= cube_lx:
+            x -= cube_lx
+        if y >= cube_ly:
+            y -= cube_ly
+        if z >= cube_lz:
+            z -= cube_lz
 
-        return x, y, z
+        return np.array([x, y, z])
 
     def calc_barycenter_coords_cartesian(self, coords):
         lx_cart, ly_cart, lz_cart = (
@@ -175,7 +186,8 @@ class BlenderPlot:
         # Code generated using chatgpt. Use with caution.
 
         # Create a new curve data block
-        curve_data = bpy.data.curves.new(name="BlackLineCurve", type='CURVE')
+        curve_collection = get_or_create_collection("Box")
+        curve_data = bpy.data.curves.new(name="BoxEdge", type='CURVE')
         curve_data.dimensions = '3D'
 
         # Create a polyline spline
@@ -190,35 +202,63 @@ class BlenderPlot:
         curve_data.bevel_resolution = 4
 
         # Create associated object and associated material we want
-        curve_obj = bpy.data.objects.new("BlackLineObject", curve_data)
-        bpy.context.collection.objects.link(curve_obj)
+        curve_obj = bpy.data.objects.new("BoxLine", curve_data)
+
+        collection = get_or_create_collection("Box")
+        collection.objects.link(curve_obj)
+
         mat = create_line_material(color, strength)
         curve_obj.data.materials.append(mat)
 
         return curve_obj
 
     def draw_cube(
-        self, color: tuple[int, int, int, int] = (0, 0, 0, 1), strength=1, thickness=0.1
+        self,
+        cube_length: float | None = None,
+        color: tuple[int, int, int, int] | None = None,
+        strength=1,
+        thickness=0.1,
     ):
-        lx_cart, ly_cart, lz_cart = (
-            self.lattice_geometry.lx * self.lattice_geometry.lattice_spacing,
-            self.lattice_geometry.ly * self.lattice_geometry.lattice_spacing,
-            self.lattice_geometry.lz * self.lattice_geometry.lattice_spacing
-        )
-        cube_edges = [
-            ((0, 0, 0), (lx_cart, 0, 0)),
-            ((0, 0, 0), (0, ly_cart, 0)),
-            ((0, 0, 0), (0, 0, lz_cart)),
-            ((lx_cart, ly_cart, 0), (0, ly_cart, 0)),
-            ((lx_cart, ly_cart, 0), (lx_cart, 0, 0)),
-            ((lx_cart, ly_cart, 0), (lx_cart, ly_cart, lz_cart)),
-            ((lx_cart, 0, lz_cart), (lx_cart, ly_cart, lz_cart)),
-            ((lx_cart, 0, lz_cart), (0, 0, lz_cart)),
-            ((lx_cart, 0, lz_cart), (lx_cart, 0, 0)),
-            ((0, ly_cart, lz_cart), (lx_cart, ly_cart, lz_cart)),
-            ((0, ly_cart, lz_cart), (0, 0, lz_cart)),
-            ((0, ly_cart, lz_cart), (0, ly_cart, 0)),
-        ]
+        if color is None:
+            color = (0, 0, 0, 1)
+        if cube_length is None:
+            lx_cart, ly_cart, lz_cart = (
+                self.lattice_geometry.lx * self.lattice_geometry.lattice_spacing,
+                self.lattice_geometry.ly * self.lattice_geometry.lattice_spacing,
+                self.lattice_geometry.lz * self.lattice_geometry.lattice_spacing
+            )
+            cube_edges = [
+                ((0, 0, 0), (lx_cart, 0, 0)),
+                ((0, 0, 0), (0, ly_cart, 0)),
+                ((0, 0, 0), (0, 0, lz_cart)),
+                ((lx_cart, ly_cart, 0), (0, ly_cart, 0)),
+                ((lx_cart, ly_cart, 0), (lx_cart, 0, 0)),
+                ((lx_cart, ly_cart, 0), (lx_cart, ly_cart, lz_cart)),
+                ((lx_cart, 0, lz_cart), (lx_cart, ly_cart, lz_cart)),
+                ((lx_cart, 0, lz_cart), (0, 0, lz_cart)),
+                ((lx_cart, 0, lz_cart), (lx_cart, 0, 0)),
+                ((0, ly_cart, lz_cart), (lx_cart, ly_cart, lz_cart)),
+                ((0, ly_cart, lz_cart), (0, 0, lz_cart)),
+                ((0, ly_cart, lz_cart), (0, ly_cart, 0)),
+            ]
+
+        else:
+            clp1 = cube_length + 1
+            cube_edges = [
+                ((-1  , -1  , -1)  , (clp1, -1  , -1))  ,
+                ((-1  , -1  , -1)  , (-1  , clp1, -1))  ,
+                ((-1  , -1  , -1)  , (-1  , -1  , clp1)),
+                ((clp1, clp1, -1)  , (-1  , clp1, -1))  ,
+                ((clp1, clp1, -1)  , (clp1, -1  , -1))  ,
+                ((clp1, clp1, -1)  , (clp1, clp1, clp1)),
+                ((clp1, -1  , clp1), (clp1, clp1, clp1)),
+                ((clp1, -1  , clp1), (-1  , -1  , clp1)),
+                ((clp1, -1  , clp1), (clp1, -1  , -1))  ,
+                ((-1  , clp1, clp1), (clp1, clp1, clp1)),
+                ((-1  , clp1, clp1), (-1  , -1  , clp1)),
+                ((-1  , clp1, clp1), (-1  , clp1, -1))  ,
+            ]
+
         for edge_point_1, edge_point_2 in cube_edges:
             self.draw_line_between_two_points(
                 edge_point_1,
@@ -257,8 +297,8 @@ class BlenderPlot:
         site_index: int,
         orientation: int,
         barycenter: tuple[int, int, int] | None = None,
-        cubified: bool = False,
         offset_cartesian: list[int] | NDArray[np.int_] | None = None,
+        offset_lattice: list[float] | NDArray[np.float_] | None = None
     ):
         lattice_coords = self.lattice_geometry.lattice_site_to_lattice_coords(
             site_index
@@ -272,13 +312,15 @@ class BlenderPlot:
                 ]
             )
             lattice_coords = self.lattice_geometry.apply_pbc(*lattice_coords)
+
+        if offset_lattice is not None:
+            lattice_coords = np.array(lattice_coords) + offset_lattice
+
         site_coords_cartesian = self.lattice_geometry.lattice_to_cartesian(
             *lattice_coords
         )
-        if cubified:
-            site_coords_cartesian = np.array(self.cubify(site_coords_cartesian))
 
-        if offset_cartesian:
+        if offset_cartesian is not None:
             site_coords_cartesian += offset_cartesian
 
         rotation = self.particle_geometry.orientation_rotations[orientation]
@@ -292,16 +334,6 @@ class BlenderPlot:
 
 
     def calc_barycenter_coords(self, full_sites):
-        # barycenter_coords = np.array([0, 0, 0])
-        # for site in full_sites:
-        #     x_lattice, y_lattice, z_lattice = (
-        #         self.lattice_geometry.lattice_site_to_lattice_coords(site)
-        #     )
-        #     barycenter_coords += np.array([x_lattice, y_lattice, z_lattice])
-        # barycenter_coords //= len(full_sites)
-        # barycenter_coords = self.lattice_geometry.apply_pbc(*barycenter_coords)
-        #
-
         # Done using the circular mean, https://en.wikipedia.org/wiki/Circular_mean
 
         # Normalize the coordinates to [0, 2pi] and take their complex exponential
@@ -343,8 +375,10 @@ class BlenderPlot:
         return x_barycenter, y_barycenter, z_barycenter
 
     def draw_fcc_cell(
-        self, color: tuple[int, int, int, int] = (0, 0, 0, 1), strength=1, thickness=0.1
+        self, color: tuple[int, int, int, int] | None = None, strength=1, thickness=0.1
     ):
+        if color is None:
+            color = (0, 0, 0, 1)
         # For brevity
         lx, ly, lz = (
             self.lattice_geometry.lx,
@@ -352,18 +386,18 @@ class BlenderPlot:
             self.lattice_geometry.lz,
         )
         edges_lattice = [
-            ((0     , 0     , 0)     , (lx - 1, 0     , 0))     ,
-            ((0     , 0     , 0)     , (0     , ly - 1, 0))     ,
-            ((0     , 0     , 0)     , (0     , 0     , lz - 1)),
-            ((lx - 1, ly - 1, 0)     , (0     , ly - 1, 0))     ,
-            ((lx - 1, ly - 1, 0)     , (lx - 1, 0     , 0))     ,
-            ((lx - 1, ly - 1, 0)     , (lx - 1, ly - 1, lz - 1)),
-            ((lx - 1, 0     , lz - 1), (lx - 1, ly - 1, lz - 1)),
-            ((lx - 1, 0     , lz - 1), (0     , 0     , lz - 1)),
-            ((lx - 1, 0     , lz - 1), (lx - 1, 0     , 0))     ,
-            ((0     , ly - 1, lz - 1), (lx - 1, ly - 1, lz - 1)),
-            ((0     , ly - 1, lz - 1), (0     , 0     , lz - 1)),
-            ((0     , ly - 1, lz - 1), (0     , ly - 1, 0))     ,
+            ((0, 0, 0), (lx - 1, 0, 0)),
+            ((0, 0, 0), (0, ly - 1, 0)),
+            ((0, 0, 0), (0, 0, lz - 1)),
+            ((lx - 1, ly - 1, 0), (0, ly - 1, 0)),
+            ((lx - 1, ly - 1, 0), (lx - 1, 0, 0)),
+            ((lx - 1, ly - 1, 0), (lx - 1, ly - 1, lz - 1)),
+            ((lx - 1, 0, lz - 1), (lx - 1, ly - 1, lz - 1)),
+            ((lx - 1, 0, lz - 1), (0, 0, lz - 1)),
+            ((lx - 1, 0, lz - 1), (lx - 1, 0, 0)),
+            ((0, ly - 1, lz - 1), (lx - 1, ly - 1, lz - 1)),
+            ((0, ly - 1, lz - 1), (0, 0, lz - 1)),
+            ((0, ly - 1, lz - 1), (0, ly - 1, 0)),
         ]
 
         edge_cartesian = [
@@ -392,9 +426,11 @@ class BlenderPlot:
         struct_file: Path | str = "",
         fig_file: Path | str = "",
         centered: bool = False,
-        cubified: bool = False,
+        cube_length: float | None = None,
         draw_box: bool = False,
         offset_cartesian: list[float] | NDArray[np.float_] | None = None,
+        box_color: tuple[int, int, int, int] | None = None,
+        apply_depth_effect: bool = True
     ):
         results = cfg.load_structure(
             struct_index=struct_index,
@@ -406,36 +442,105 @@ class BlenderPlot:
 
         self.fig_file = fig_file
 
+        if offset_cartesian is None:
+            offset_cartesian = np.zeros(3)
+
+        center_offset = np.zeros(3)
         if centered:
             barycenter_coords = self.calc_barycenter_coords(self.full_sites)
-        else:
-            barycenter_coords = None
+            if cube_length is not None:
+                barycenter_after_centering_cart = np.array(
+                    self.lattice_geometry.lattice_to_cartesian(
+                        self.lattice_geometry.lx // 2,
+                        self.lattice_geometry.ly // 2,
+                        self.lattice_geometry.lz // 2,
+                    )
+                )
+                new_center_cart = np.array(
+                    [cube_length / 2, cube_length / 2, cube_length / 2]
+                )
+                center_offset = new_center_cart - barycenter_after_centering_cart
 
+        if cube_length is not None:
+            all_periodic_copies_vectors = np.vstack(
+                [
+                    [0.0, 0.0, 0.0],
+                    self.lattice_geometry.lattice_vectors_in_cartesian,
+                    -self.lattice_geometry.lattice_vectors_in_cartesian,
+                    self.lattice_geometry.lattice_vectors_in_cartesian[:, 0]
+                    - self.lattice_geometry.lattice_vectors_in_cartesian[:, 1],
+                    self.lattice_geometry.lattice_vectors_in_cartesian[:, 0]
+                    - self.lattice_geometry.lattice_vectors_in_cartesian[:, 2],
+                    self.lattice_geometry.lattice_vectors_in_cartesian[:, 1]
+                    - self.lattice_geometry.lattice_vectors_in_cartesian[:, 2],
+                    self.lattice_geometry.lattice_vectors_in_cartesian[:, 1]
+                    - self.lattice_geometry.lattice_vectors_in_cartesian[:, 0],
+                    self.lattice_geometry.lattice_vectors_in_cartesian[:, 2]
+                    - self.lattice_geometry.lattice_vectors_in_cartesian[:, 0],
+                    self.lattice_geometry.lattice_vectors_in_cartesian[:, 2]
+                    - self.lattice_geometry.lattice_vectors_in_cartesian[:, 1],
+                ]
+            )
+            all_periodic_copies_vectors *= np.array(
+                [
+                    self.lattice_geometry.lx,
+                    self.lattice_geometry.ly,
+                    self.lattice_geometry.lz,
+                ]
+            ).T
+        else:
+            all_periodic_copies_vectors = np.array([[0.0, 0.0, 0.0]])
+
+        barycenter_cartesian = np.zeros(3)
+        n_particles = 0
+        # Original cell
         for site in self.full_sites:
             orientation = self.orientations[site]
-            obj_copy, site_coords_cartesian = self.place_obj_copy_from_site_orientation(
-                site,
-                orientation,
-                barycenter=barycenter_coords,
-                cubified=cubified,
-                offset_cartesian=offset_cartesian
-            )
-            self.particle_coords_cart = np.vstack(
-                [self.particle_coords_cart, site_coords_cartesian]
-            )
-            self.particle_objs.append(obj_copy)
+            self.particle_coords_cart[site] = []
+            self.particle_objs[site] = []
+            for periodic_vec in all_periodic_copies_vectors:
+                obj_copy, site_coords_cartesian = (
+                    self.place_obj_copy_from_site_orientation(
+                        site,
+                        orientation,
+                        barycenter=barycenter_coords,
+                        offset_cartesian=periodic_vec
+                        + center_offset
+                        + offset_cartesian,
+                    )
+                )
+                if cube_length is not None and (
+                    (site_coords_cartesian < 0).any()
+                    or (site_coords_cartesian >= cube_length).any()
+                ):
+                    bpy.data.objects.remove(obj_copy, do_unlink=True)
+                else:
+                    n_particles += 1
+                    self.particle_coords_cart[site].append(site_coords_cartesian)
+                    self.particle_objs[site].append(obj_copy)
+                    barycenter_cartesian += site_coords_cartesian
+        barycenter_cartesian /= n_particles
+        print(barycenter_cartesian)
 
-        if cubified and centered:
-            # Center the particles in cartesian coordinates
-            self.center_cubic(self.particle_coords_cart, self.particle_objs)
-
-        # Copy the coordinates of each
+        # Center the cubified simulation result
+        if (cube_length is not None) and centered:
+            new_barycenter_cartesian = np.zeros(3) + cube_length / 2
+            offset_vector = new_barycenter_cartesian - barycenter_cartesian
+            for obj_list in self.particle_objs.values():
+                for obj in obj_list:
+                    for i in range(3):
+                        obj.location[i] += offset_vector[i]
+                        obj.location[i] -= cube_length * (
+                            obj.location[i] >= cube_length
+                        )
+                    # barycenter_cartesian += obj.location
+        # barycenter_cartesian /= n_particles
 
         if draw_box:
-            if cubified:
-                self.draw_cube()
+            if cube_length is not None:
+                self.draw_cube(cube_length, box_color)
             else:
-                self.draw_fcc_cell()
+                self.draw_fcc_cell(box_color)
 
         if fig_file:
             bpy.ops.wm.save_as_mainfile(filepath=self.fig_file)
@@ -449,20 +554,101 @@ class BlenderPlot:
         return
 
 
+    def plot_particles_from_simulation_results_w_periodic_copies(
+        self,
+        struct_index: int = -1,
+        struct_folder: Path | str = "",
+        struct_file: Path | str = "",
+        fig_file: Path | str = "",
+        centered: bool = False,
+        cube_length: float | None = None,
+        draw_box: bool = False,
+        offset_cartesian: list[float] | NDArray[np.float_] | None = None,
+        box_color: tuple[int, int, int, int] | None = None
+    ):
+        results = cfg.load_structure(
+            struct_index=struct_index,
+            struct_folder=struct_folder,
+            struct_file=struct_file,
+        )
+        self.orientations = results[1, :]
+        self.full_sites = cfg.get_full_sites(results)
+
+        self.fig_file = fig_file
+
+        center_offset = np.zeros(3)
+        if centered:
+            barycenter_coords = self.calc_barycenter_coords(self.full_sites)
+        all_periodic_copies_vectors = np.vstack(
+            [
+                [0.0, 0.0, 0.0],
+                self.lattice_geometry.lattice_vectors_in_cartesian,
+                -self.lattice_geometry.lattice_vectors_in_cartesian,
+                self.lattice_geometry.lattice_vectors_in_cartesian[:, 0]
+                + self.lattice_geometry.lattice_vectors_in_cartesian[:, 1],
+                self.lattice_geometry.lattice_vectors_in_cartesian[:, 1]
+                + self.lattice_geometry.lattice_vectors_in_cartesian[:, 2],
+                self.lattice_geometry.lattice_vectors_in_cartesian[:, 2]
+                + self.lattice_geometry.lattice_vectors_in_cartesian[:, 0],
+            ]
+        )
+        all_periodic_copies_vectors *= np.array(
+            [
+                self.lattice_geometry.lx,
+                self.lattice_geometry.ly,
+                self.lattice_geometry.lz,
+            ]
+        ).T
+
+        barycenter_cartesian = np.zeros(3)
+        n_particles = 0
+        # Original cell
+        for site in self.full_sites:
+            orientation = self.orientations[site]
+            self.particle_coords_cart[site] = []
+            self.particle_objs[site] = []
+            for periodic_vec in all_periodic_copies_vectors:
+                obj_copy, site_coords_cartesian = (
+                    self.place_obj_copy_from_site_orientation(
+                        site,
+                        orientation,
+                        offset_cartesian=periodic_vec + center_offset
+                    )
+                )
+                n_particles += 1
+                barycenter_cartesian += site_coords_cartesian
+                self.particle_coords_cart[site].append(site_coords_cartesian)
+                self.particle_objs[site].append(obj_copy)
+        barycenter_cartesian /= n_particles
+
+        if draw_box:
+            if cube_length is not None:
+                self.draw_cube(cube_length, box_color)
+                self.draw_fcc_cell(box_color)
+            else:
+                self.draw_fcc_cell(box_color)
+
+        if fig_file:
+            bpy.ops.wm.save_as_mainfile(filepath=self.fig_file)
+
+        # Delete original cube: we most likely won't do anything with it anymore
+        # bpy.data.objects.remove(self.obj, do_unlink=True)
+
+        self.obj.hide_viewport = True
+        self.obj.hide_render = True
+
+        return
+
     def gen_lozenge_boundary_mesh(
         self,
         site,
         bond_orientation,
         particle_center_cartesian_coords,
-        collection_name="Boundaries",
-        boundary_offset = 0.05,
+        boundary_offset=0.05,
     ):
         # Do nothing if the particles don't touch
         if bond_orientation == -1:
             return
-
-        collection = get_or_create_collection(collection_name)
-
 
         half_size = self.lattice_geometry.lattice_spacing / 2
         extra_offset = boundary_offset
@@ -486,34 +672,8 @@ class BlenderPlot:
 
         # Create a new mesh and object
         mesh = bpy.data.meshes.new(name="SquareMesh")
-        # obj = bpy.data.objects.new(name="Square", object_data=mesh)
-        # collection.objects.link(obj)
-        # bpy.context.collection.objects.link(obj)
-        # solidify = obj.modifiers.new(name="Solidify", type='SOLIDIFY')
-        # solidify.thickness = 0.2  # Adjust thickness
-        # solidify.offset = 0  # 0 = centered, 1 = extrude outward only
         mesh.from_pydata(vertices, edges, faces)
         mesh.update()
-
-
-        # # Create an edge-only object
-        # edge_mesh = bpy.data.meshes.new(name="EdgeMesh")
-        # edge_obj = bpy.data.objects.new(name="Edges", object_data=edge_mesh)
-        # bpy.context.collection.objects.link(edge_obj)
-        # # Create edges as a separate mesh
-        # edge_mesh.from_pydata(vertices, edges, [])
-        # edge_mesh.update()
-        #
-        #
-        # if material is None:
-        #     material = create_material()
-        # obj.data.materials.append(material)
-        # # Create edge material and assign it
-        # edge_color = (0.0, 0.0, 0.0, 1.0)
-        # edge_mat = create_material(name="EdgeMaterial", color=edge_color)
-        # edge_obj.data.materials.append(edge_mat)
-        # edge_obj.location = np.zeros(3)
-
 
         return mesh
 
@@ -531,10 +691,11 @@ class BlenderPlot:
 
         for i, site_1 in enumerate(self.full_sites):
             orientation_1 = self.orientations[site_1]
-            coords_cart_1 = self.particle_objs[i].location
-            neighbours_of_1 = self.lattice_geometry.get_neighbour_sites(site_1)
-            for neighbour in neighbours_of_1:
-                if neighbour in self.full_sites:
+            for obj in self.particle_objs[site_1]:
+                coords_cart_1 = obj.location
+                neighbours_of_1 = self.lattice_geometry.get_neighbour_sites(site_1)
+                full_neighbours_of_1 = set(neighbours_of_1) & set(self.full_sites)
+                for neighbour in full_neighbours_of_1:
                     site_2 = neighbour
                     orientation_2 = self.orientations[site_2]
                     face_1, face_2, bond = (
@@ -619,108 +780,7 @@ class BlenderPlot:
         mesh.from_pydata(vertices, edges, faces)
         mesh.update()
 
-
-        # # Create an edge-only object
-        # edge_mesh = bpy.data.meshes.new(name="EdgeMesh")
-        # edge_obj = bpy.data.objects.new(name="Edges", object_data=edge_mesh)
-        # bpy.context.collection.objects.link(edge_obj)
-        # # Create edges as a separate mesh
-        # edge_mesh.from_pydata(vertices, edges, [])
-        # edge_mesh.update()
-        #
-        #
-        # if material is None:
-        #     material = create_material()
-        # obj.data.materials.append(material)
-        # # Create edge material and assign it
-        # edge_color = (0.0, 0.0, 0.0, 1.0)
-        # edge_mat = create_material(name="EdgeMaterial", color=edge_color)
-        # edge_obj.data.materials.append(edge_mat)
-        # edge_obj.location = np.zeros(3)
-
-
         return mesh
-
-    def plot_all_boundaries_from_simulation_results(
-        self,
-        contacts_of_interest: list[tuple[int, int]],
-        fig_file: Path | str = "",
-        material = None,
-        thickness = 0.2,
-        boundary_offset = 0.1,
-        offset = 0.0,
-        use_rim_only = False
-    ):
-        all_meshes = []
-        # print(contacts_of_interest)
-
-        # for i, site_1 in enumerate(self.full_sites):
-        #     orientation_1 = self.orientations[site_1]
-        #     coords_cart_1 = self.particle_objs[i].location
-        #     for site_2 in self.full_sites:
-        #         print(site_2)
-        #         orientation_2 = self.orientations[site_2]
-        #         # print(site_1, orientation_1, site_2, orientation_2)
-        #         face_1, face_2, bond = (
-        #             self.lattice_geometry.get_faces_in_contact_and_bond(
-        #                 site_1, orientation_1, site_2, orientation_2
-        #             )
-        #         )
-        #         if bond == 1:
-        #             continue
-        #         for (
-        #             alt_face_1,
-        #             alt_face_2,
-        #         ) in self.particle_geometry.get_equivalent_face_pairs(face_1, face_2):
-        #             if (alt_face_1, alt_face_2) in contacts_of_interest:
-        #                 all_meshes.append(
-        #                     self.gen_lozenge_boundary_mesh(site_1, bond, coords_cart_1)
-        #                 )
-
-        for i, site_1 in enumerate(self.full_sites):
-            orientation_1 = self.orientations[site_1]
-            coords_cart_1 = self.particle_objs[i].location
-            neighbours_of_1 = self.lattice_geometry.get_neighbour_sites(site_1)
-            for neighbour in neighbours_of_1:
-                if neighbour in self.full_sites:
-                    site_2 = neighbour
-                    orientation_2 = self.orientations[site_2]
-                    face_1, face_2, bond = (
-                        self.lattice_geometry.get_faces_in_contact_and_bond(
-                            site_1, orientation_1, site_2, orientation_2
-                        )
-                    )
-                    for (
-                        alt_face_1,
-                        alt_face_2,
-                    ) in self.particle_geometry.get_equivalent_face_pairs(
-                        face_1, face_2
-                    ):
-                        if (alt_face_1, alt_face_2) in contacts_of_interest or (
-                            alt_face_2,
-                            alt_face_1,
-                        ) in contacts_of_interest:
-                            all_meshes.append(
-                                self.gen_lozenge_boundary_mesh(
-                                    site_1,
-                                    bond,
-                                    coords_cart_1,
-                                    boundary_offset=boundary_offset,
-                                )
-                            )
-
-        merge_boundaries_into_bmesh(
-            all_meshes,
-            thickness=thickness,
-            material=material,
-            use_rim_only=use_rim_only,
-            offset=offset,
-        )
-
-        if self.fig_file:
-            bpy.ops.wm.save_as_mainfile(filepath=self.fig_file)
-
-        return
 
     def clear(self):
         bpy.ops.object.select_all(action="SELECT")
@@ -739,7 +799,13 @@ class BlenderPlot:
         centered: bool = True,
         cubified: bool = False,
         draw_box: bool = True,
+        crystal_contacts: list[tuple[int, int]] | None = None,
         offset_cartesian: list[float] | NDArray[np.float_] | None = None,
+        cube_length: float | None = None,
+        box_color: tuple[int, int, int, int] | None = None,
+        apply_depth_effect: bool = True,
+        camera_location: tuple[float, float, float] | None = None,
+        camera_rotation_deg: tuple[float, float, float] | None = None,
     ):
         mc_params = cfg.load_mc_file(mc_file)
         structure_folder = Path(mc_params["final_structure_address"])
@@ -747,16 +813,18 @@ class BlenderPlot:
 
         if struct_file.is_file():
             print(f"\nPlotting {struct_file}")
+            if cubified and cube_length is None:
+                cube_length = 2 ** (1 / 3) * self.lattice_geometry.lx
+                print(self.lattice_geometry.lx)
+
             self.plot_particles_from_simulation_results(
                 struct_file=struct_file,
                 centered=centered,
-                cubified=cubified,
                 draw_box=draw_box,
                 offset_cartesian=offset_cartesian,
+                cube_length=cube_length,
+                box_color=box_color,
             )
-            # bp.plot_all_boundaries_from_simulation_results(
-            #     DEFECT_CORNER, boundary_offset=0.05, thickness=0.3, use_rim_only = True
-            # )
             self.plot_all_boundaries_from_simulation_results(
                 defect_contacts,
                 boundary_offset=0.005,
@@ -765,15 +833,91 @@ class BlenderPlot:
                 use_rim_only=True,
             )
             inner_mat = create_line_material((140/255, 175/255, 246/255, 1.0))
-            # bp.plot_all_boundaries_from_simulation_results(
-            #     DEFECT_CORNER, boundary_offset=-0.00, thickness=0.211, material=inner_mat
-            # )
             self.plot_all_boundaries_from_simulation_results(
                 defect_contacts,
                 boundary_offset=-0.05,
                 thickness=0.01,
                 material=inner_mat,
             )
+
+            if crystal_contacts is not None:
+                outer_mat_crystal = create_line_material(
+                    (0.262, 0.604, 0.402, 1.0)
+                )
+                self.plot_all_boundaries_from_simulation_results(
+                    crystal_contacts,
+                    boundary_offset=0.005,
+                    thickness=0.06,
+                    offset=0.56,
+                    use_rim_only=True,
+                    material = outer_mat_crystal
+                )
+                inner_mat_crystal = create_line_material(
+                    (199 / 255, 229 / 255, 215 / 255, 1.0)
+                )
+                self.plot_all_boundaries_from_simulation_results(
+                    crystal_contacts,
+                    boundary_offset=-0.05,
+                    thickness=0.01,
+                    material=inner_mat_crystal,
+                )
+
+        # Fluff: use our preferred settings for convenience
+        # Enable the cycles engine
+        bpy.context.scene.render.engine = "CYCLES"
+        bpy.context.preferences.addons[
+            "cycles"
+        ].preferences.compute_device_type = "METAL"
+        bpy.context.scene.cycles.device = "GPU"
+        # Make the film transparent
+        bpy.context.scene.render.film_transparent = True
+
+        # Make the world background white
+        bpy.context.scene.world.use_nodes = True
+        bg = bpy.context.scene.world.node_tree.nodes["Background"]
+        bg.inputs[0].default_value = (1, 1, 1, 1)  # RGBA white
+
+        # Set the render resolution to a square
+        bpy.context.scene.render.resolution_x = 1080
+
+        # Put the camera at our preferred location and angle
+        # Create or get camera
+        if camera_location is None:
+            camera_location = (16.19, 76.6, 11.3)
+        if not bpy.data.objects.get("Camera"):
+            bpy.ops.object.camera_add(
+                location=camera_location
+            )  # Create new if not present
+        camera = bpy.data.objects["Camera"]
+
+        # Set camera location and rotation
+        if camera_rotation_deg is None:
+            camera_rotation_deg = (88.1825, 0, 173.5)
+        deg_to_rad = 2 * np.pi / 360
+        camera_rotation_rad = tuple(
+            camera_rotation_deg_axis * deg_to_rad
+            for camera_rotation_deg_axis in camera_rotation_deg
+        )
+        print(camera_rotation_rad)
+        camera.rotation_euler = camera_rotation_rad
+        # Put it in orthographic mode
+        camera.data.type = "ORTHO"
+        camera.data.ortho_scale = 28.8
+
+        # Outline the clusters based on depth
+        if apply_depth_effect:
+           # Enable Z pass for rendering
+            # Change the view layers accordingly
+            bpy.context.view_layer.name = "WithBox"
+            # Create new layer without the box drawn in
+            new_layer = bpy.context.scene.view_layers.new(name="WithoutBox")
+            # We finally need to select the box collection, which is a bit of a pain
+            for coll in new_layer.layer_collection.children:
+                if coll.name == "Box":
+                    coll.exclude = True
+            # And build the right node setup
+            bpy.context.scene.view_layers["WithoutBox"].use_pass_z = True
+            build_composition_nodes()
 
         self.save(fig_save_file)
 
@@ -835,7 +979,6 @@ def duplicate_shift_rotate_obj(
     return obj_copy
 
 
-
 # Code created with the help of ChatGPT. Use with caution
 def get_or_create_collection(collection_name="Squares"):
     """Check if a collection exists, if not, create it."""
@@ -868,18 +1011,17 @@ def create_material(name="CustomMaterial", color=DEFAULT_MATERIAL):
 
     return mat
 
+
 def merge_boundaries_into_bmesh(
-    boundary_meshes,
-    material = None,
-    thickness = 0.2,
-    offset = 0.0,
-    use_rim_only = False
+    boundary_meshes, material=None, thickness=0.2, offset=0.0, use_rim_only=False
 ):
     # Generated using ChatGPT - beware!
 
     final_mesh = bpy.data.meshes.new("MergedMesh")
-    final_obj = bpy.data.objects.new("MergedObject", final_mesh)
-    bpy.context.collection.objects.link(final_obj)
+    final_obj = bpy.data.objects.new("Boundaries", final_mesh)
+
+    collection = get_or_create_collection("Boundaries")
+    collection.objects.link(final_obj)
 
     # Build one combined BMesh
     bm_main = bmesh.new()
@@ -892,7 +1034,7 @@ def merge_boundaries_into_bmesh(
     bm_main.free()
 
     if material is None:
-        material = create_line_material(color = (12/256, 5/256, 216/256, 1))
+        material = create_line_material(color=(12 / 256, 5 / 256, 216 / 256, 1))
     final_obj.data.materials.append(material)
 
     solidify = final_obj.modifiers.new(name="Solidify", type="SOLIDIFY")
@@ -924,13 +1066,14 @@ def create_line_material(
         nodes.remove(node)
 
     # Add emission shader (pure black)
-    emission = nodes.new(type='ShaderNodeEmission')
-    emission.inputs['Color'].default_value = color
-    emission.inputs['Strength'].default_value = strength
+    emission = nodes.new(type="ShaderNodeEmission")
+    emission.inputs["Color"].default_value = color
+    emission.inputs["Strength"].default_value = strength
 
     # Output node
-    output = nodes.new(type='ShaderNodeOutputMaterial')
-    links.new(emission.outputs['Emission'], output.inputs['Surface'])
+    output = nodes.new(type="ShaderNodeOutputMaterial")
+    links.new(emission.outputs["Emission"], output.inputs["Surface"])
 
     return mat
+
 

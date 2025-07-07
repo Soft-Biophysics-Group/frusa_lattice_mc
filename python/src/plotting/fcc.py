@@ -31,7 +31,7 @@ path_to_one_axis_diagonal_colored_rhombic = (
     src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_colored.obj"
 )
 path_to_one_axis_diagonal_colored_gray = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_colored.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_gray.obj"
 )
 paths = {
     "path_to_numbered_rhombic": path_to_numbered_rhombic,

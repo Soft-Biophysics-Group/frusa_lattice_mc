@@ -38,9 +38,10 @@ lx = 8
 ly = 12
 lz = 1
 blender_plot = BlenderPlot.from_lattice_name("cubic", lx, ly, lz)
+blender_plot.load_particle()
 
 for i, rotation in enumerate(cp.orientation_rotations):
-    print(rotation.as_euler("xyz", degrees = True))
+    # print(rotation.as_euler("xyz", degrees = True))
     blender_plot.place_obj_copy_from_site_orientation(i * 2, i)
 
 blender_plot.save("./test_cubic_orientation.blend")

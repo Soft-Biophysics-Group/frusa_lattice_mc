@@ -35,7 +35,8 @@ print(
 
 # Let's print all rotations to be safe, and plot them if we want to
 
-blender_plot = BlenderPlot.from_lattice_name("fcc", 8, 12, 1, path_to_numbered_rhombic)
+blender_plot = BlenderPlot.from_lattice_name("fcc", 8, 12, 1)
+blender_plot.load_particle(path_to_numbered_rhombic)
 
 for i, rotation in enumerate(p.orientation_rotations):
     print(rotation.as_euler("xyz", degrees = True))

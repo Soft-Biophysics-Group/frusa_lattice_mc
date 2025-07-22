@@ -30,6 +30,30 @@ from analysis.analyze_3d_size import get_aggregates
 DEFAULT_MATERIAL = (14, 0, 255, 1.0)
 
 class BlenderPlot:
+    """Class to generate .blend files from simulation results.
+
+    Handles loading the geometry associated with a particular lattice, loading the model of the
+    corresponding particle, plotting the simulation results from an `..._model_file.json` and a
+    `structure.dat` files.
+
+    For a given lattice, if you want to list the different particle models, create a class
+    instance using `bp = BlenderPlot.from_lattice_name(lattice_name)`, and then
+    `print(bp.particle_paths)`.
+
+    Don't forget to add new particle paths as you create new models!
+
+    Typical use:
+    ```python
+    bp = BlenderPlot.from_model_file(model_file)
+    bp.load_particle(path_to_particle)
+    ```
+
+    To make a simple plot from simulation results, use the
+    `plot_particles_from_simulation_results` method.
+
+    For a fancier, "camembert_style" plot where you plot grain boundaries for different
+    contacts, use the `plot_canonical_style` method
+    """
     _lattices: dict[str, type["BlenderPlot"]] = {}
 
     def __init__(
@@ -58,7 +82,8 @@ class BlenderPlot:
 
         self.particle_paths = particle_paths
         if default_particle_path is None:
-            self.default_particle_path = list(self.particle_paths.values())[0]
+            default_particle_path = list(self.particle_paths.values())[0]
+        self.default_particle_path = default_particle_path
 
         self.particle_coords_cart = {}
         self.particle_objs = {}
@@ -324,10 +349,14 @@ class BlenderPlot:
             site_coords_cartesian += offset_cartesian
 
         rotation = self.particle_geometry.orientation_rotations[orientation]
-        euler_angles = rotation.as_euler("xyz")
+        quaternion_coeffs = rotation.as_quat(canonical=False, scalar_first=True)
+        print("")
+        print(quaternion_coeffs)
+        euler_xyz_angles = rotation.as_euler("xyz", degrees = True)
+        print(euler_xyz_angles)
 
         obj_copy = duplicate_shift_rotate_obj(
-            self.obj, self.original_materials, site_coords_cartesian, euler_angles
+            self.obj, self.original_materials, site_coords_cartesian, quaternion_coeffs
         )
 
         return obj_copy, site_coords_cartesian
@@ -520,7 +549,6 @@ class BlenderPlot:
                     self.particle_objs[site].append(obj_copy)
                     barycenter_cartesian += site_coords_cartesian
         barycenter_cartesian /= n_particles
-        print(barycenter_cartesian)
 
         # Center the cubified simulation result
         if (cube_length is not None) and centered:
@@ -899,7 +927,6 @@ class BlenderPlot:
             camera_rotation_deg_axis * deg_to_rad
             for camera_rotation_deg_axis in camera_rotation_deg
         )
-        print(camera_rotation_rad)
         camera.rotation_euler = camera_rotation_rad
         # Put it in orthographic mode
         camera.data.type = "ORTHO"
@@ -951,7 +978,7 @@ def duplicate_shift_rotate_obj(
     obj,
     original_materials,
     coords=[0.0, 0.0, 0.0],
-    euler_angles_xyz=[0.0, 0.0, 0.0],
+    quats_coeffs_wxyz=[0.0, 0.0, 0.0, 0.0],
     collection_name="Particles",
 ):
     """Duplicates a loaded Blender object, placing it at location coords and rotating it using
@@ -964,8 +991,12 @@ def duplicate_shift_rotate_obj(
     obj_copy.data = obj.data
 
     obj_copy.location = coords
-    new_rotation_euler = mathutils.Euler(euler_angles_xyz)
-    obj_copy.rotation_euler.rotate(new_rotation_euler)
+    obj_copy.rotation_mode = "QUATERNION"
+    rotation_quat = mathutils.Quaternion(quats_coeffs_wxyz)
+    obj_copy.rotation_quaternion.rotate(rotation_quat)
+    # Go back to xyz mode because it is easier to interpret
+    obj_copy.rotation_mode = "XYZ"
+
 
     obj_copy.data.materials.clear()
     for mat in original_materials:

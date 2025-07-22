@@ -143,14 +143,16 @@ class ParticleGeometry:
         return cls.from_lattice_name(lattice_name)
 
     # ----- UTILITIES -----
-    def identify_orientation(self, rotation):
+    def identify_orientation(self, rotation, atol:float = 1e-4):
         """Identifies which orientation the rotation `rotation` puts the particle in, defined as
         the face which takes the place of face 0.
         Returns -1 if the supplied rotation does not put the particle in one of its 24 possible
         orientations.
+
+        Parameter atol is the absolute tolerance for rotation identification, given in radians.
         """
         for i, rot in enumerate(self.orientation_rotations):
-            if rot.approx_equal(rotation):
+            if rot.approx_equal(rotation, atol=atol):
                 return i
         return -1
 

@@ -217,7 +217,7 @@ class BlenderPlot:
         cube_length: float | None = None,
         color: tuple[int, int, int, int] | None = None,
         strength=1,
-        thickness=0.1,
+        thickness=0.2,
     ):
         if color is None:
             color = (0, 0, 0, 1)
@@ -806,6 +806,7 @@ class BlenderPlot:
         apply_depth_effect: bool = True,
         camera_location: tuple[float, float, float] | None = None,
         camera_rotation_deg: tuple[float, float, float] | None = None,
+        domain_line_boundary_offset: float = 0.005
     ):
         mc_params = cfg.load_mc_file(mc_file)
         structure_folder = Path(mc_params["final_structure_address"])
@@ -827,12 +828,12 @@ class BlenderPlot:
             )
             self.plot_all_boundaries_from_simulation_results(
                 defect_contacts,
-                boundary_offset=0.005,
+                boundary_offset=domain_line_boundary_offset,
                 thickness=0.06,
                 offset=0.56,
                 use_rim_only=True,
             )
-            inner_mat = create_line_material((140/255, 175/255, 246/255, 1.0))
+            inner_mat = create_line_material((140 / 255, 175 / 255, 246 / 255, 1.0))
             self.plot_all_boundaries_from_simulation_results(
                 defect_contacts,
                 boundary_offset=-0.05,
@@ -846,7 +847,7 @@ class BlenderPlot:
                 )
                 self.plot_all_boundaries_from_simulation_results(
                     crystal_contacts,
-                    boundary_offset=0.005,
+                    boundary_offset=domain_line_boundary_offset,
                     thickness=0.06,
                     offset=0.56,
                     use_rim_only=True,

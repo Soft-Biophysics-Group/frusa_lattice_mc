@@ -61,8 +61,11 @@ class LatticeGeometry:
             lattice_spacing: optional float. Cartesian distance between 2 lattice nearest
                 neighbours. Defaults to 1.0
         """
-        self.lattice_vectors_in_cartesian: NDArray[np.float64] = np.array(
+        self.lattice_vectors_in_cartesian: NDArray[np.float_] = np.array(
             basis_vectors, dtype=np.float64
+        )
+        self.cartesian_to_lattice_basis: NDArray[np.float_] = np.linalg.inv(
+            self.lattice_vectors_in_cartesian
         )
         self.lattice_spacing: float = lattice_spacing
         self.bonds: list[Bond]
@@ -93,9 +96,9 @@ class LatticeGeometry:
     def from_lattice_name(
         cls,
         lattice_name: str,
-        lx: int,
-        ly: int,
-        lz: int = 1,
+        lx: int | float,
+        ly: int | float,
+        lz: int | float = 1,
         lattice_spacing: float = 1.0,
     ):
         if lattice_name in cls._lattices.keys():
@@ -143,6 +146,15 @@ class LatticeGeometry:
                 + z_lattice * self.lattice_vectors_in_cartesian[:, 2]
             )
 
+    def cartesian_to_lattice(self, x_cart: float, y_cart: float, z_cart: float):
+        naive_coords = (
+            x_cart * self.cartesian_to_lattice_basis[:, 0]
+            + y_cart * self.cartesian_to_lattice_basis[:, 1]
+            + z_cart * self.cartesian_to_lattice_basis[:, 2]
+        )
+        # return naive_coords
+        return self.apply_pbc(*naive_coords)
+
     def get_bond(self, bond: ArrayLike) -> int:
         """If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,
         this returns an unique index indicating the direction of this "bond"
@@ -166,10 +178,8 @@ class LatticeGeometry:
         site_1_lattice_coords = self.lattice_site_to_lattice_coords(site_1)
         site_2_lattice_coords = self.lattice_site_to_lattice_coords(site_2)
         bond_coords = site_2_lattice_coords - site_1_lattice_coords
-        print(bond_coords)
 
         # bond_coords = np.array(self.apply_pbc(*bond_coords))
-        print(bond_coords)
         bond = self.get_bond(bond_coords)
 
         return bond
@@ -181,7 +191,7 @@ class LatticeGeometry:
         return np.array([x_lattice, y_lattice, z_lattice])
 
     def lattice_coords_to_lattice_site(
-        self, x_lattice: int, y_lattice: int, z_lattice: int = 1
+        self, x_lattice: int, y_lattice: int, z_lattice: int = 0
     ) -> int:
         return x_lattice + y_lattice * self.lx + z_lattice * self.lx * self.ly
 
@@ -220,7 +230,6 @@ class LatticeGeometry:
     ) -> tuple[int, int, int]:
         if linear_transform is not None:
             new_box_coords = linear_transform @ np.array([self.lx, self.ly, self.lz]).T
-            print(new_box_coords)
             x = np.mod(x, new_box_coords[0])
             y = np.mod(y, new_box_coords[1])
             z = np.mod(z, new_box_coords[2])

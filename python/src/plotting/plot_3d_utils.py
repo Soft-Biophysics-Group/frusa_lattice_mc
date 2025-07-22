@@ -350,10 +350,7 @@ class BlenderPlot:
 
         rotation = self.particle_geometry.orientation_rotations[orientation]
         quaternion_coeffs = rotation.as_quat(canonical=False, scalar_first=True)
-        print("")
-        print(quaternion_coeffs)
         euler_xyz_angles = rotation.as_euler("xyz", degrees = True)
-        print(euler_xyz_angles)
 
         obj_copy = duplicate_shift_rotate_obj(
             self.obj, self.original_materials, site_coords_cartesian, quaternion_coeffs

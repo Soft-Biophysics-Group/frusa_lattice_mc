@@ -142,9 +142,25 @@ class BlenderPlot:
         if path_to_particle is None:
             path_to_particle = self.default_particle_path
 
-        bpy.ops.file.pack_all()
-        bpy.ops.wm.obj_import(filepath=str(path_to_particle))
-        self.obj = bpy.context.selected_objects[0]
+        ## Previous version: based on .obj, was causing issues
+        # bpy.ops.file.pack_all()
+        # bpy.ops.wm.obj_import(filepath=str(path_to_particle))
+        # self.obj = bpy.context.selected_objects[0]
+
+        # New version: simply import from .blend file!
+        with bpy.data.libraries.load(str(path_to_particle), link=False) as (
+            data_from,
+            data_to,
+        ):
+            if "particle" in data_from.objects:
+                data_to.objects = ["particle"]
+            else:
+                raise ValueError(f"Object particle not found in file.")
+
+        # Link appended object to current scene collection
+        self.obj = data_to.objects[0]
+        bpy.context.collection.objects.link(self.obj)
+
         # Hide the original object from view and selection
         self.obj.hide_viewport = True
         self.obj.hide_select = True

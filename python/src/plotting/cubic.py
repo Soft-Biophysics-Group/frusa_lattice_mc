@@ -27,13 +27,13 @@ ALL_CONTACTS = [(i, j) for i in range(24) for j in range(24)]
 
 # Make sure we get the path to the cube
 path_to_numbered_cube = (
-    Path(__file__).parent / "assets/oneCube/one_cube_numbered.obj"
+    Path(__file__).parent / "assets/oneCube/one_cube_numbered.blend"
 ).resolve()
-path_to_pm_cube = Path(__file__).parent / "assets/oneCube/one_cube.obj"
+path_to_pm_cube = Path(__file__).parent / "assets/oneCube/one_cube.blend"
 path_to_transparent_cube = (
-    Path(__file__).parent / "assets/oneCube/one_cube_transparent.obj"
+    Path(__file__).parent / "assets/oneCube/one_cube_transparent.blend"
 )
-path_to_one_axis_cube = Path(__file__).parent / "assets/oneCube/one_cube_one_axis.obj"
+path_to_one_axis_cube = Path(__file__).parent / "assets/oneCube/one_cube_one_axis.blend"
 
 paths = {
     "path_to_numbered_cube": path_to_numbered_cube,

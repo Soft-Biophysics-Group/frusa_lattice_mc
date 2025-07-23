@@ -15,23 +15,23 @@ DEFAULT_MATERIAL = (14, 0, 255, 1.0)
 src_plotting_dir = Path(__file__).parent
 
 path_to_numbered_rhombic = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_numbered.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_numbered.blend"
 )
 path_to_one_axis_rhombic = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_one_axis.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_one_axis.blend"
 )
 path_to_one_axis_colored_rhombic = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_one_axis_colored.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_one_axis_colored.blend"
 )
 path_to_one_axis_diagonal_rhombic = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal.blend"
 )
 
 path_to_one_axis_diagonal_colored_rhombic = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_colored.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_colored.blend"
 )
 path_to_one_axis_diagonal_colored_gray = (
-    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_gray.obj"
+    src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_gray.blend"
 )
 paths = {
     "path_to_numbered_rhombic": path_to_numbered_rhombic,

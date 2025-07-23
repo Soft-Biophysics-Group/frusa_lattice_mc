@@ -35,6 +35,19 @@ def get_objs_in_collection_locs_rots(
         x_rot, y_rot, z_rot = obj.rotation_euler
         all_rotations_xyz_rad[i, :] = obj.rotation_euler
 
+    # Remove the collection to avoid any issue down the line
+    # If you don't do this, then you can't create a new "Particles" collection afterward, so you
+    # can't directly re-plot the obtained results.
+
+    # Option 1: Rename it to avoid collision
+    if coll:
+        coll.name = "Particles_IMPORTED"
+
+    # Optional: also unlink from scene if accidentally linked
+    scene_coll = bpy.context.scene.collection
+    if coll.name in [c.name for c in scene_coll.children]:
+        scene_coll.children.unlink(coll)
+
     return all_locations, all_rotations_xyz_rad
 
 def auto_fit_lattice(
@@ -71,7 +84,8 @@ def auto_fit_lattice(
     # Add 1 to avoid any PBC shenanigans
     lx, ly, lz = np.max(lattice_locations, 0).astype(int) + 1
     if make_dims_equal:
-        max_dim = np.max([lx, ly, lz])
+        # This other +1 is necessary, although I don't get why...
+        max_dim = np.max([lx, ly, lz]) + 1
         lx, ly, lz = max_dim, max_dim, max_dim
 
     return lattice_locations, lx, ly, lz

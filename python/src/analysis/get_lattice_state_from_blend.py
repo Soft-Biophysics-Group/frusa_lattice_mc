@@ -10,14 +10,13 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation as R
 
-file_path = "../../../../3dFigures/04_longerer_run_0.blend"
 
 def get_objs_in_collection_locs_rots(
     filepath: Path | str, collection_name: str = "Particles"
 ):
 
     # Load .blend file
-    with bpy.data.libraries.load(file_path, link = False) as (data_from, data_to):
+    with bpy.data.libraries.load(str(filepath), link = False) as (data_from, data_to):
 
         if collection_name not in data_from.collections:
             raise ValueError("Provided collection name not present in file")
@@ -164,9 +163,9 @@ def write_sites_orientations_from_blend(
     for (site, orientation) in zip(full_sites, orientations):
         sites_orientations[1, site] = orientation
 
-    np.savetxt(output_file, sites_orientations)
+    np.savetxt(output_file, sites_orientations, fmt = "%g")
 
-    return sites_orientations
+    return lx, ly, lz
 
 # Below: test operations
 

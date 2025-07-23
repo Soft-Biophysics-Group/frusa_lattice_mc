@@ -5,7 +5,11 @@ src/contact_utils.py
 src/json_dump.py
 src/lattice_utils.py
 src/analysis/analyze_3d_size.py
+src/analysis/analyze_cluster_contacts.py
 src/analysis/analyze_records.py
+src/analysis/find_prettiest_config.py
+src/analysis/get_face_contacts.py
+src/analysis/get_lattice_state_from_blend.py
 src/designs/cubic.py
 src/designs/fcc.py
 src/designs/triangular.py
@@ -21,6 +25,8 @@ src/geometry/particle_geometry.py
 src/geometry/triangular.py
 src/interactions/cubic_interactions.py
 src/plotting/__init__.py
+src/plotting/build_composition_nodes.py
+src/plotting/build_grain_boundary_geo_nodes.py
 src/plotting/chain.py
 src/plotting/cubic.py
 src/plotting/fcc.py

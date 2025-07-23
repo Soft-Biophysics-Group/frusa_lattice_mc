@@ -21,4 +21,5 @@ venv/
 *Launch*
 typings/
 
-!python/src/plotting/assets/*.blend
+!./python/src/plotting/assets/oneCube/*.blend
+!./python/src/plotting/assets/oneRhombicDodecahedron/*.blend

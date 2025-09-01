@@ -964,9 +964,6 @@ class BlenderPlot:
 
         return
 
-    def plot_canonical_style_from_mc_file(self):
-        return
-
 def import_particle_paths(lattice_name: str):
     if lattice_name == "cubic":
         return cubic.paths, cubic.paths["path_to_numbered_cube"]

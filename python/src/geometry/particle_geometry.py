@@ -143,7 +143,7 @@ class ParticleGeometry:
         return cls.from_lattice_name(lattice_name)
 
     # ----- UTILITIES -----
-    def identify_orientation(self, rotation, atol:float = 1e-4):
+    def identify_orientation(self, rotation, atol:float = 1e-2):
         """Identifies which orientation the rotation `rotation` puts the particle in, defined as
         the face which takes the place of face 0.
         Returns -1 if the supplied rotation does not put the particle in one of its 24 possible

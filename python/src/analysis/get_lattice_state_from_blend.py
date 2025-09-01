@@ -120,9 +120,11 @@ def get_sites_and_orientations(
             dtype=int,
         )
 
+    rounded_lattice_coords = np.round(particle_locations_lattice).astype(int)
+
     # Identify the lattice sites
     all_sites = []
-    for loc_latt in particle_locations_lattice:
+    for loc_latt in rounded_lattice_coords:
         all_sites.append(lattice.lattice_coords_to_lattice_site(*loc_latt))
     all_sites = np.array(all_sites, dtype=int)
 

@@ -11,8 +11,8 @@ from geometry import LatticeGeometry
 
 def get_aggregates(
     struct_index: int = -1,
-    struct_folder: str | Path = "",
-    struct_file: str | Path = "",
+    struct_folder: str | Path | None = None,
+    struct_file: str | Path | None = None,
     model_file: str | Path = cfg.default_mc_params_file,
 ) -> list[set[int]]:
     """

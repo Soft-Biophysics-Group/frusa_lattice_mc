@@ -113,6 +113,7 @@ def load_structure(
             file_path = struct_folder / f"structure_{struct_index}.dat"
         else:
             file_path = struct_folder / "final_structure.dat"
+
     return np.loadtxt(file_path, dtype=int)
 
 

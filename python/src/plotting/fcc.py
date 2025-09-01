@@ -33,12 +33,17 @@ path_to_one_axis_diagonal_colored_rhombic = (
 path_to_one_axis_diagonal_colored_gray = (
     src_plotting_dir / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_gray.blend"
 )
+path_to_one_axis_diagonal_arrow = (
+    src_plotting_dir
+    / "assets/oneRhombicDodecahedron/one_rhombic_diagonal_gray_arrow.blend"
+)
 paths = {
     "path_to_numbered_rhombic": path_to_numbered_rhombic,
     "path_to_one_axis_rhombic": path_to_one_axis_rhombic,
     "path_to_one_axis_diagonal_rhombic": path_to_one_axis_diagonal_rhombic,
     "path_to_one_axis_diagonal_colored_rhombic": path_to_one_axis_diagonal_colored_rhombic,
     "path_to_one_axis_diagonal_colored_gray": path_to_one_axis_diagonal_colored_gray,
+    "path_to_one_axis_diagonal_arrow" : path_to_one_axis_diagonal_arrow
 }
 
 

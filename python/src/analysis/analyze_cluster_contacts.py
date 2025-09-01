@@ -34,10 +34,10 @@ def get_one_aggregate_contacts(
     return n_contacts
 
 def get_all_aggregate_contacts(
-    all_contact_types_to_check: list[list[tuple[int]]] | list[list[frozenset[int]]],
-    struct_index: int = -1,
-    struct_folder: str | Path = "",
-    struct_file: str | Path = "",
+    all_contact_types_to_check: list[list[tuple[int, int]]] | list[list[frozenset[int]]],
+    struct_index: int | None = None,
+    struct_folder: str | Path | None = None,
+    struct_file: str | Path | None = None,
     model_file: str | Path = cfg.default_mc_params_file,
 ):
     """Generates aggregates from simulation results and counts the number of certain specific

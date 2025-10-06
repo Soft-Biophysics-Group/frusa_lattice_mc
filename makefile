@@ -1,4 +1,4 @@
-all: build .venv compile_command.json data/ 3dFigures/
+all: build python/.venv compile_command.json data/ 3dFigures/
 
 build: src/* include/*
 	mkdir -p build

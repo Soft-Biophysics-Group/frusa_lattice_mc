@@ -25,4 +25,4 @@ data/
 !./python/src/plotting/assets/oneCube/*.blend
 !./python/src/plotting/assets/oneRhombicDodecahedron/*.blend
 
-./frusa_mc
+frusa_mc

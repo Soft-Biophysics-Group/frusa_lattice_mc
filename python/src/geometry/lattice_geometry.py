@@ -80,6 +80,8 @@ class LatticeGeometry:
         self.ly: int = ly
         self.lz: int = lz
 
+        self.n_sites: int = lx * ly * lz
+
         self.particle_geometry: ParticleGeometry
     # ----- SUBCLASSES -----
     # Magic code to register lattices upon creation:
@@ -154,6 +156,13 @@ class LatticeGeometry:
         )
         # return naive_coords
         return self.apply_pbc(*naive_coords)
+
+    def cartesian_to_lattice_avoid_pbc(self, coords: NDArray[np.float_]):
+        lattice_loc = self.cartesian_to_lattice_basis @ np.reshape(coords, (3))
+        min_coords_lattice = np.min(lattice_loc, axis=0)
+        lattice_loc -= min_coords_lattice
+
+        return lattice_loc
 
     def get_bond(self, bond: ArrayLike) -> int:
         """If the `bond_vector`, a vector in lattice coordinates, links two neighbouring sites,

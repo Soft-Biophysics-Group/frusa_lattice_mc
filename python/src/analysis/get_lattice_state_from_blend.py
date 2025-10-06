@@ -165,7 +165,7 @@ def write_sites_orientations_from_blend(
         particle_rotations_xyz_rad,
         lattice_name,
         auto_fit_lattice_flag=auto_fit_lattice_flag,
-        make_dims_equal = make_dims_equal,
+        make_dims_equal=make_dims_equal,
         lx=lx,
         ly=ly,
         lz=lz,

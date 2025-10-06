@@ -63,14 +63,15 @@ class BlenderPlot:
         gen_face_outline_method,
         particle_paths: dict[str, Path],
         default_particle_path: Path | None = None,
+        blender_bin: Path | str | None = None
     ) -> None:
-        # Look for a Blender executable
-        blender_bin = shutil.which("Blender")
-        if blender_bin:
-            print("Found:", blender_bin)
-            bpy.app.binary_path = blender_bin
-        else:
-            print("Unable to find blender!")
+        if blender_bin is None:
+            blender_bin = shutil.which("Blender")
+            if blender_bin:
+                print("Found:", blender_bin)
+                bpy.app.binary_path = blender_bin
+            else:
+                print("Unable to find blender!")
         self.clear()
 
         self.particle_geometry = particle_geometry
@@ -105,6 +106,7 @@ class BlenderPlot:
         lx: int,
         ly: int,
         lz: int,
+        blender_bin: Path | str | None = None
     ):
         particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
         lattice_geometry = LatticeGeometry.from_lattice_name(lattice_name, lx, ly, lz)
@@ -118,12 +120,14 @@ class BlenderPlot:
             boundary_plot_method,
             particle_paths,
             default_particle_path,
+            blender_bin=blender_bin,
         )
 
     @classmethod
     def from_model_file(
         cls,
         model_file: str | Path = cfg.default_model_params_file,
+        blender_bin: str | Path | None = None
     ):
         model_params = cfg.load_model_file(Path(model_file))
         lattice_name = model_params["lattice_name"]
@@ -131,8 +135,9 @@ class BlenderPlot:
         ly = model_params["ly"]
         lz = model_params["lz"]
 
-
-        this_instance =  cls.from_lattice_name(lattice_name, lx, ly, lz)
+        this_instance = cls.from_lattice_name(
+            lattice_name, lx, ly, lz, blender_bin=blender_bin
+        )
         this_instance.model_file = model_file
 
         return this_instance

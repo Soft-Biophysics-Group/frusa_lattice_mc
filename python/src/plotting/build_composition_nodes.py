@@ -1,6 +1,11 @@
 import bpy, mathutils
 
-def build_composition_nodes():
+def build_composition_nodes(
+    min_map_range_distance: float = 60.0,
+    max_map_range_distance: float = 75.0,
+    color_ramp_max_value: float = 65.0,
+    erode_filter_distance:int = 2
+):
 # Generate unique scene name
     base_name = "Scene"
     end_name = base_name
@@ -55,9 +60,9 @@ def build_composition_nodes():
     map_range.name = "Map Range"
     map_range.use_clamp = False
     #From Min
-    map_range.inputs[1].default_value = 60.0
+    map_range.inputs[1].default_value = min_map_range_distance
     #From Max
-    map_range.inputs[2].default_value = 75.0
+    map_range.inputs[2].default_value = max_map_range_distance
     #To Min
     map_range.inputs[3].default_value = 0.0
     #To Max
@@ -84,7 +89,7 @@ def build_composition_nodes():
     color_ramp_cre_0.alpha = 0.0
     color_ramp_cre_0.color = (0.0, 0.0, 0.0, 0.0)
 
-    color_ramp_cre_1 = color_ramp.color_ramp.elements.new(0.6500002145767212)
+    color_ramp_cre_1 = color_ramp.color_ramp.elements.new(color_ramp_max_value)
     color_ramp_cre_1.alpha = 1.0
     color_ramp_cre_1.color = (1.0, 1.0, 1.0, 1.0)
 
@@ -92,7 +97,7 @@ def build_composition_nodes():
     #node Dilate/Erode
     dilate_erode = scene_1.nodes.new("CompositorNodeDilateErode")
     dilate_erode.name = "Dilate/Erode"
-    dilate_erode.distance = 2
+    dilate_erode.distance = erode_filter_distance
     dilate_erode.edge = 0.0
     dilate_erode.falloff = 'SMOOTH'
     dilate_erode.mode = 'DISTANCE'

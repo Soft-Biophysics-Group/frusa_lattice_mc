@@ -63,14 +63,15 @@ class BlenderPlot:
         gen_face_outline_method,
         particle_paths: dict[str, Path],
         default_particle_path: Path | None = None,
+        blender_bin: Path | str | None = None
     ) -> None:
-        # Look for a Blender executable
-        blender_bin = shutil.which("Blender")
-        if blender_bin:
-            print("Found:", blender_bin)
-            bpy.app.binary_path = blender_bin
-        else:
-            print("Unable to find blender!")
+        if blender_bin is None:
+            blender_bin = shutil.which("Blender")
+            if blender_bin:
+                print("Found:", blender_bin)
+                bpy.app.binary_path = blender_bin
+            else:
+                print("Unable to find blender!")
         self.clear()
 
         self.particle_geometry = particle_geometry
@@ -105,6 +106,7 @@ class BlenderPlot:
         lx: int,
         ly: int,
         lz: int,
+        blender_bin: Path | str | None = None
     ):
         particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
         lattice_geometry = LatticeGeometry.from_lattice_name(lattice_name, lx, ly, lz)
@@ -118,12 +120,14 @@ class BlenderPlot:
             boundary_plot_method,
             particle_paths,
             default_particle_path,
+            blender_bin=blender_bin,
         )
 
     @classmethod
     def from_model_file(
         cls,
         model_file: str | Path = cfg.default_model_params_file,
+        blender_bin: str | Path | None = None
     ):
         model_params = cfg.load_model_file(Path(model_file))
         lattice_name = model_params["lattice_name"]
@@ -131,8 +135,9 @@ class BlenderPlot:
         ly = model_params["ly"]
         lz = model_params["lz"]
 
-
-        this_instance =  cls.from_lattice_name(lattice_name, lx, ly, lz)
+        this_instance = cls.from_lattice_name(
+            lattice_name, lx, ly, lz, blender_bin=blender_bin
+        )
         this_instance.model_file = model_file
 
         return this_instance
@@ -502,6 +507,8 @@ class BlenderPlot:
                     [cube_length / 2, cube_length / 2, cube_length / 2]
                 )
                 center_offset = new_center_cart - barycenter_after_centering_cart
+        else:
+            barycenter_coords = None
 
         if cube_length is not None:
             all_periodic_copies_vectors = np.vstack(
@@ -847,7 +854,13 @@ class BlenderPlot:
         apply_depth_effect: bool = True,
         camera_location: tuple[float, float, float] | None = None,
         camera_rotation_deg: tuple[float, float, float] | None = None,
-        domain_line_boundary_offset: float = 0.005
+        domain_line_boundary_offset: float = 0.005,
+        min_map_range_distance: float = 60.0,
+        max_map_range_distance: float = 75.0,
+        color_ramp_max_value: float = 65.0,
+        ortho_scale: float= 28.8,
+        erode_filter_distance:int = 2,
+        bitmap_save_file: str | Path | None = None
     ):
         mc_params = cfg.load_mc_file(mc_file)
         structure_folder = Path(mc_params["final_structure_address"])
@@ -857,7 +870,7 @@ class BlenderPlot:
             print(f"\nPlotting {struct_file}")
             if cubified and cube_length is None:
                 cube_length = 2 ** (1 / 3) * self.lattice_geometry.lx
-                print(self.lattice_geometry.lx)
+                print(cube_length)
 
             self.plot_particles_from_simulation_results(
                 struct_file=struct_file,
@@ -943,7 +956,8 @@ class BlenderPlot:
         camera.rotation_euler = camera_rotation_rad
         # Put it in orthographic mode
         camera.data.type = "ORTHO"
-        camera.data.ortho_scale = 28.8
+        camera.data.ortho_scale = ortho_scale
+        bpy.context.scene.camera = camera
 
         # Outline the clusters based on depth
         if apply_depth_effect:
@@ -958,9 +972,23 @@ class BlenderPlot:
                     coll.exclude = True
             # And build the right node setup
             bpy.context.scene.view_layers["WithoutBox"].use_pass_z = True
-            build_composition_nodes()
+            build_composition_nodes(
+                min_map_range_distance=min_map_range_distance,
+                max_map_range_distance=max_map_range_distance,
+                color_ramp_max_value=color_ramp_max_value,
+                erode_filter_distance=erode_filter_distance,
+            )
 
         self.save(fig_save_file)
+
+        if bitmap_save_file is not None:
+            self.render_and_save_to_bitmap(bitmap_save_file)
+
+        return
+
+    def render_and_save_to_bitmap(self, render_loc: str | Path):
+        bpy.context.scene.render.filepath = str(render_loc)
+        bpy.ops.render.render(write_still=True)
 
         return
 
@@ -1117,5 +1145,3 @@ def create_line_material(
     links.new(emission.outputs["Emission"], output.inputs["Surface"])
 
     return mat
-
-

@@ -1,5 +1,13 @@
 # `frusa_mc` - Generic Monte Carlo module for mean-field and particle models of frustrated self-assembly
 
+## Publications using this code
+
+- Lara Koehler, Markus Eder, Vincent Ouazan-Reboul, Christoph Karfusehr, Andrey Zelenskiy,
+Pierre Ronceray, Friedrich C. Simmel, Martin Lenz: **Topological defect engineering enables
+size and shape control in self-assembly**,
+[arXiv:2504.13073](https://arxiv.org/abs/2504.13073).
+  - [Link to the branch used for the publication](https://github.com/Soft-Biophysics-Group/frusa_lattice_mc/tree/VortexAssembly3D)
+
 ## Scope of this code
 
 Simulated-annealing Metropolis Monte Carlo on Bravais lattices.

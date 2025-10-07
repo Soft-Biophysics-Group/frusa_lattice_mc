@@ -28,16 +28,16 @@ namespace default_space{
   // rng               - random number generator
   // initialize_option - option string for choosing initialization function
   //                     current options are "from_file", "random", "uniform"
-  // state_input       - if initialize_option is set to "from_file", this 
+  // state_input       - if initialize_option is set to "from_file", this
   //                     string contains the location of the input structure
-  // state_av_option   - boolean to determine if the simulation will store 
+  // state_av_option   - boolean to determine if the simulation will store
   //                     MC averages of the occupation numbers
-  // e_av_option       - boolean to determine if the simulation will store 
+  // e_av_option       - boolean to determine if the simulation will store
   //                     MC averages of the first and second energy moments
   // state_av_output   - if state_av_option is true, gives the location for the
   //                     output file for MC averages of the occupation numbers
-  // e_av_output       - if e_av_option is true, gives the location for the  
-  //                     output file for MC averages of the first and second 
+  // e_av_output       - if e_av_option is true, gives the location for the
+  //                     output file for MC averages of the first and second
   //                     energy moments
   struct model_parameters_struct{
     model_parameters_struct();
@@ -51,5 +51,5 @@ namespace default_space{
     std::string state_av_output;
     std::string e_av_output;
   };
-}  
+}
 #endif

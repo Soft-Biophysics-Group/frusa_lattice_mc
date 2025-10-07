@@ -1,4 +1,4 @@
-# Default model library -- two state system 
+# Default model library -- two state system
 
 This library is used as a default option in case no `<MODEL_TYPE>` flag is 
 provided.
@@ -26,7 +26,8 @@ $$\frac{U}{N} = -\frac{\Delta}{2}\tanh\left(\frac{\beta\Delta}{2}\right),$$
 
 and heat capacity
 
-$$\frac{C_v}{N} = \frac{\beta^2\Delta^2}{4}\mathrm{sech}^2\left(\frac{\beta\Delta}{2}\right).$$
+$$\frac{C_v}{N} =
+\frac{\beta^2\Delta^2}{4}\mathrm{sech}^2\left(\frac{\beta\Delta}{2}\right).$$
 
 If the two states are defined in terms of occupation numbers $n=0,1$, the 
 average state has the form 

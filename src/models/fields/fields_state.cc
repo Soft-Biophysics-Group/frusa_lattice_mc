@@ -3,25 +3,23 @@
 
 #include "fields_state.h" 
 
-namespace fields_space{
-  
   /*
    * Definitions required for the public routines of the model class
    */
   void initialize_state(state_struct &state,
                         model_parameters_struct &parameters){
-    
-    state.ns = parameters.ns;
-    state.Lx = parameters.Lx;
-    state.Ly = parameters.Ly;
-    state.Lz = parameters.Lz;
-    state.Np = parameters.Np;
-    
-    // Set the total number of lattice sites and particle density
-    state.N = state.Lx*state.Ly*state.Lz;
-    state.rho_bar = (1.0*parameters.Np)/state.N;
 
-    std::string option = parameters.initialize_option;
+    state.n_types = parameters.n_types;
+    state.n_orientations = parameters.n_orientations;
+    state.lx = parameters.lx;
+    state.ly = parameters.ly;
+    state.lz = parameters.lz;
+    state.n_particles = parameters.n_particles;
+
+    // Set the total number of lattice sites and particle density
+    state.n_sites = state.lx*state.ly*state.lz;
+
+    std::string_view option = parameters.initialize_option;
 
     try{
       if(option=="from_file"){
@@ -56,7 +54,7 @@ namespace fields_space{
     std::cout << "\n---------------------------------------------\n";
     std::cout << "Current structural properties of the system\n";
     std::cout << "---------------------------------------------\n\n";
-   
+
     std::cout << "Lattice dimensions:\n\n";
     std::cout << "Lx = " << state.Lx << "\n";
     std::cout << "Ly = " << state.Ly << "\n";
@@ -77,7 +75,7 @@ namespace fields_space{
       std::cout << "i = " << i << " ";
       std::cout << "j = " << j << " ";
       std::cout << "k = " << k << " ";
-      
+
       std::cout << "c(r) = " << " ";
 
       for(int s=0;s<state.ns;s++){
@@ -91,14 +89,14 @@ namespace fields_space{
   }
 
   void save_state(state_struct &state, std::string state_output){
-    
+
     std::ofstream state_f;
     state_f.open(state_output);
     if(!state_f){
       std::cerr << "Could not open "+state_output << std::endl;
       exit(1);
     }
-    
+
     for(int r=0;r<state.N;r++){
       for(int s=0;s<state.ns;s++){
         state_f << std::setprecision(8) << state.concentration[r][s] << " ";
@@ -107,14 +105,14 @@ namespace fields_space{
     }
     state_f.close();
   }
-  /* 
+  /*
    * End of the required definitions for the model class
    */
 
   /*
    * Library-specific definitions
    */
-  void initialize_state_from_file(state_struct &state, 
+  void initialize_state_from_file(state_struct &state,
                                   model_parameters_struct &parameters){
     std::ifstream input_file;
     input_file.open(parameters.state_input);
@@ -124,40 +122,42 @@ namespace fields_space{
       exit(1);
     }
 
-    for(int r=0;r<state.N;r++){
-      vec1d c_r;
-      double rho_r = 0;
-      for(int s=0;s<state.ns;s++){
-        double c_r_s;
-        input_file  >> c_r_s;
-        c_r.push_back(c_r_s);
-        rho_r+= c_r_s;
-      }
-      state.concentration.push_back(c_r);
-      state.local_density.push_back(rho_r);
+    SiteVector lattice_sites {};
+    // Fetching the orientations one by one
+    std::string orientations_line {std::getline(input_file)};
+    std::string_view orientation {};
+    while (orientations_line >> orientation) {
+        lattice_sites.append_back(site_state(0, orientation));
+    }
+    // Same for the particle types
+    std::string type_line {std::getline(input_file)};
+    std::string_view type {};
+    for (int n; n < state.n_sites; n++) {
+        type_line >> type;
+        lattice_sites[n].particle_type = std::stoi(type);
     }
   }
 
-  void initialize_state_random(state_struct &state, 
+  void initialize_state_random(state_struct &state,
                                model_parameters_struct &parameters){
-    
+
     real_dist uniform_dist(0,1);
 
     for(int r=0;r<state.N;r++){
-      
+
       vec1d c_r;
       double rho_r=0;
-      
+
       for(int s=0;s<state.ns-1;s++){
-        
+
         double c_r_s = uniform_dist(parameters.rng)*(state.rho_bar-rho_r);
-        
+
         c_r.push_back(c_r_s);
         rho_r+= c_r_s;
       }
 
       c_r.push_back(state.rho_bar-rho_r);
-      
+
       std::shuffle(std::begin(c_r), std::end(c_r), parameters.rng);
 
       state.concentration.push_back(c_r);
@@ -166,11 +166,11 @@ namespace fields_space{
   }
 
   void initialize_state_uniform(state_struct &state){
-    
+
     for(int r=0;r<state.N;r++){
-      
+
       vec1d c_r;
-      
+
       for(int s=0;s<state.ns;s++){
         c_r.push_back(state.rho_bar/state.ns);
       }
@@ -195,7 +195,7 @@ namespace fields_space{
     }
     else{
       if(state.local_density[r]>eps){
-        state.donor_list.push_back(r); 
+        state.donor_list.push_back(r);
       }
     }
 
@@ -209,7 +209,7 @@ namespace fields_space{
     }
     else{
       if(state.local_density[r]<1-eps){
-        state.acceptor_list.push_back(r); 
+        state.acceptor_list.push_back(r);
       }
     }
   }

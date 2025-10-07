@@ -5,39 +5,40 @@
 
 namespace simulation_space{
 
-  mc_parameters_struct::mc_parameters_struct(){
+  mc_parameters_struct::mc_parameters_struct(std::string& mc_input){
     /*
      * Populate the struct using the input JSON file
      */
-    
+
     std::ifstream mc_f;
-    mc_f.open("./input/mc_params.json");
+    mc_f.open(mc_input);
     if(!mc_f){
       std::cerr << "Could not open JSON MC parameters file" << std::endl;
       exit(1);
     }
 
     json json_mc_params = json::parse(mc_f);
-  
+
     mcs_eq            = json_mc_params["mcs_eq"].template get<int>();
     mcs_av            = json_mc_params["mcs_av"].template get<int>();
-    cooling_schedule  =\
-      json_mc_params["cooling_schedule"].template get<std::string>();
+    cooling_schedule =
+        json_mc_params["cooling_schedule"].template get<std::string>();
     Ti                = json_mc_params["Ti"].template get<double>();
     Tf                = json_mc_params["Tf"].template get<double>();
     Nt                = json_mc_params["Nt"].template get<int>();
-    checkpoint_option =\
-      json_mc_params["checkpoint_option"].template get<bool>();
-    
-    if(checkpoint_option){
-      checkpoint_address =\
-        json_mc_params["checkpoint_address"].template get<std::string>();
+    checkpoint_option =
+        json_mc_params["checkpoint_option"].template get<bool>();
+  std::cout << "All mc parameters loaded successfully" ;
+
+    if (checkpoint_option) {
+      checkpoint_address =
+          json_mc_params["checkpoint_address"].template get<std::string>();
     }
-    final_structure_address =\
-      json_mc_params["final_structure_address"].template get<std::string>();
+    final_structure_address =
+        json_mc_params["final_structure_address"].template get<std::string>();
   }
 
-  mc::mc(){
+  mc::mc(std::string& mc_input): parameters {mc_parameters_struct(mc_input)}{
 
     // Map the cooling option on the integer variable
     try{
@@ -46,6 +47,9 @@ namespace simulation_space{
       }
       else if(parameters.cooling_schedule=="linear"){
         cooling_option = 1;
+      }
+      else if(parameters.cooling_schedule=="inverse"){
+        cooling_option = 2;
       }
       else{
         throw parameters.cooling_schedule;
@@ -58,10 +62,10 @@ namespace simulation_space{
     }
 
     // Define the array of temperatures for the annealing
-    double dT = (parameters.Tf-parameters.Ti)/parameters.Nt;
-        
-    for(int i=0;i<parameters.Nt;i++){
-      T_array.push_back(parameters.Ti+i*dT);
+    double dT = (parameters.Tf - parameters.Ti) / (parameters.Nt - 1);
+
+    for (int i = 0; i < parameters.Nt; i++) {
+      T_array.push_back(parameters.Ti + i * dT);
     }
   }
 
@@ -69,7 +73,7 @@ namespace simulation_space{
     std::cout << "\n---------------------------------------------\n";
     std::cout << "      Monte-Carlo simulation parameters\n";
     std::cout << "---------------------------------------------\n\n";
-   
+
     std::cout << "Number of equilibration steps mcs_eq = ";
     std::cout << parameters.mcs_eq << "\n";
     std::cout << "Number of averaging steps mcs_av = ";
@@ -89,15 +93,15 @@ namespace simulation_space{
       std::cout << "Output location for checkpoints: ";
       std::cout << parameters.checkpoint_address << "\n\n";
     }
-      
+
     std::cout << "Output location for the final structure: ";
     std::cout << parameters.final_structure_address << "\n\n";
   }
 
   void mc::t_scan(model_space::model &simulation_model){
-   
-    for(int i=0;i<parameters.Nt;i++){
-      
+
+    for (std::size_t i = 0; i < static_cast<std::size_t>(parameters.Nt); i++) {
+
       double T;
 
       switch(cooling_option){
@@ -107,30 +111,37 @@ namespace simulation_space{
         case 1:
           T = T_array[i];
           break;
+        case 2:
+          T = 1.0 / T_array[i];
+          break;
       }
 
       mc_simulate(simulation_model,T);
-      
+
       if(parameters.checkpoint_option){
-        simulation_model.save_model_state(parameters.checkpoint_address+\
-                                          "structure_"+\
-                                          std::to_string(i)+".dat");
+        std::string save_loc {parameters.checkpoint_address + "structure_"
+                              + std::to_string(i) + ".dat"};
+        simulation_model.save_model_state(save_loc);
       }
-      std::cout << "Energy at T = " << T << ":\n";
+      std::cout << "Energy at T = " << T << ": ";
       simulation_model.print_model_energy();
+      std::cout << '\n' ;
     }
-    simulation_model.save_model_state(parameters.final_structure_address+\
-                                "final_structure.dat");
+    std::string final_state_save_loc{parameters.final_structure_address +
+                                     "final_structure.dat"};
+    simulation_model.save_model_state(final_state_save_loc);
   }
 
   void mc::mc_simulate(model_space::model &simulation_model, double T){
 
     // Equilibrate the system for mcs_eq steps
-    for(int step=0;step<parameters.mcs_eq;step++){  
+    for (int step = 0; step < parameters.mcs_eq; step++) {
       simulation_model.update_model_system(T);
+      simulation_model.update_model_records();
     }
+    simulation_model.save_model_records(T);
 
-    // Depending on the options in the mc_params structure, initialize the 
+    // Depending on the options in the mc_params structure, initialize the
     // containers that will store the MC averages
     simulation_model.initialize_model_averages();
 

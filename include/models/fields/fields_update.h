@@ -20,7 +20,7 @@ namespace fields_space{
   // interactions - energetics of the system before the update
   // parameters   - used to access random number generator (parameters.rng)
   // T            - annealing temperature (not the same as T_model!)
-  void update_system(state_struct &state, 
+  void update_system(state_struct &state,
                      interactions_struct &interactions,
                      model_parameters_struct &parameters,
                      double T);
@@ -32,7 +32,7 @@ namespace fields_space{
   /*
    * Library-specific definitions
    */
- 
+
   // Function to shift density from one lattice site to another
   // See arguments of update_state
   // eps - threshold for density transfer (transfer everything below eps)
@@ -46,16 +46,16 @@ namespace fields_space{
   void convert_concentrations(state_struct &state,
                               interactions_struct &interactions,
                               model_parameters_struct &parameters,
-                              double T, double eps=1e-8);  
+                              double T, double eps=1e-8);
 
   // Function to randomly select a field component at a given lattice site
   // r          - lattice position of the field
-  // bound      - field component must be !=bound in order to be 
+  // bound      - field component must be !=bound in order to be
   //              a selection candidate
   // state      - current state of the system
-  // parameters - used to extract random number generator (parameters.rng) 
-  int select_element(int r, double bound, 
-                     state_struct &state, 
+  // parameters - used to extract random number generator (parameters.rng)
+  int select_element(int r, double bound,
+                     state_struct &state,
                      model_parameters_struct &parameters);
 }
 

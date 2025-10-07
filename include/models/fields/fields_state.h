@@ -24,7 +24,7 @@ namespace fields_space{
 
   // Structure containing the characteristics of the state of the system:
   // ns            - number of orientation species
-  // Lx, Ly, Lz    - dimensions of the lattice 
+  // Lx, Ly, Lz    - dimensions of the lattice
   // N             - number of lattice sites
   // Np            - number of particles
   // rho_bar       - total particle density
@@ -44,9 +44,9 @@ namespace fields_space{
     vec1i acceptor_list;
   };
 
-  // Initialize the structural properties of the system, depending on the type 
+  // Initialize the structural properties of the system, depending on the type
   // of parameters.initialize_option
-  void initialize_state(state_struct &state, 
+  void initialize_state(state_struct &state,
                         model_parameters_struct &parameters);
 
   // Print the current values of the structural properties of the system
@@ -54,7 +54,7 @@ namespace fields_space{
 
   // Save the fractional concentrations to a file "state_output"
   void save_state(state_struct &state, std::string state_output);
-  
+
   /*
    * End of the required definitions for the model class
    */
@@ -64,10 +64,10 @@ namespace fields_space{
    */
 
   // Various methods for state initialization
-  void initialize_state_from_file(state_struct &state, 
+  void initialize_state_from_file(state_struct &state,
                                   model_parameters_struct &parameters);
 
-  void initialize_state_random(state_struct &state, 
+  void initialize_state_random(state_struct &state,
                                model_parameters_struct &parameters);
 
   void initialize_state_uniform(state_struct &state);

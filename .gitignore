@@ -1,9 +1,25 @@
+*.dat
 *.sh
 *.o
 *.swp
 *.json
+*.envrc
+*.blend
+*.blend1
 
 /build*/
-/test*/
+/test/build*/
 /input*/
+.cache/
+__pycache__/
+.venv*/
+venv*/
+venv/
+.DS_Store
+.ipynb_checkpoints/
+*.egg-info/
+*Launch*
+typings/
 
+!./python/src/plotting/assets/oneCube/*.blend
+!./python/src/plotting/assets/oneRhombicDodecahedron/*.blend

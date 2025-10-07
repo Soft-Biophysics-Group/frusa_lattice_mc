@@ -16,7 +16,7 @@ set(SOURCE_DEFAULT
     )
 
 ### Create the default library and include the header directories
-add_library(default_library 
+add_library(default_library
             ${SOURCE_DEFAULT}
             ${HEADER_DEFAULT})
 
@@ -25,10 +25,10 @@ target_include_directories(default_library PUBLIC
                            ${INCLUDE_FRUSA_UTILITY}
                            ${INCLUDE_FRUSA_THIRDPARTY})
 
-### Link the default library to utils to make sure we have access to all of the 
+### Link the default library to utils to make sure we have access to all of the
 ### helper functions
 target_link_libraries(default_library PRIVATE utils_library)
 
-### Make sure that the compiler flags are the same for all libraries by 
-### linking them to compiler_flags 
+### Make sure that the compiler flags are the same for all libraries by
+### linking them to compiler_flags
 target_link_libraries(default_library PRIVATE compiler_flags)

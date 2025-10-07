@@ -10,8 +10,6 @@ target_link_libraries(${META_PROJECT_NAME} PUBLIC mc_library)
 
 ### Setup directories
 # Copy python directory
-file(COPY ${PROJECT_SOURCE_DIR}/python/
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python)
 
 # Set directory for the input files
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/input)

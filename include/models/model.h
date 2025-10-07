@@ -4,76 +4,106 @@
 #ifndef MODEL_HEADER_H
 #define MODEL_HEADER_H
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <string>
 
 /*Select the model library*/
-#if defined DEFAULT
-#include "default_include.h"
-#elif defined FIELDS
-#include "fields_parameters.h"
-#include "fields_state.h"
-#include "fields_geometry.h"
-#include "fields_interactions.h"
-#include "fields_update.h"
-using namespace fields_space;
-#endif
+// #include "default_include.h"
 
-namespace model_space{
-  /*Definition of model class*/
-  class model {
-    private:
-      /*
-       * Private variables
-       */
+// #include "fields_parameters.h"
+// #include "fields_state.h"
+// #include "fields_geometry.h"
+// #include "fields_interactions.h"
+// #include "fields_update.h"
 
-      // Parameters from the input file
-      model_parameters_struct parameters;
+#include "geometry.h"
+#include "particles_averages.h"
+#include "particles_interactions.h"
+#include "particles_parameters.h"
+#include "particles_state.h"
+#include "particles_update.h"
+#include "particles_records.h"
 
-      // Structure containing the information about the current state
-      // of the system
-      state_struct state;
+namespace model_space {
 
-      // Structure containing the information about the interactions in the 
-      // current state of the system
-      interactions_struct interactions;
+enum model_options {
+  fields,
+  particles,
+  n_models
+};
 
-      // Structure containing information about MC averages
-      averages_struct averages;
+static const inline std::array<std::string, model_options::n_models>
+    lattice_str_arr{"fields", "particles"};
 
-    public:
+struct model_parameters_struct{
+  model_parameters_struct(model_options model);
+};
 
-      /*Class constructor*/
-      model();
- 
-      /*
-       * Required public routines of the class
-       */
+/*Definition of model class*/
+class model {
+private:
+  /*
+   * Private variables
+   */
 
-      // Print the information about the current state of the system
-      void print_model_state();
+  // Geometry of the lattice
+  geometry_space::Geometry geometry;
 
-      // Save the current state of the system to a file "state_output"
-      void save_model_state(std::string state_output);
+  // Parameters from the input file
+  particles_space::model_parameters_struct parameters;
 
-      // Print the information about interactions in the current state of the 
-      // system
-      void print_model_interactions();
+  // Structure containing the information about the current state
+  // of the system
+  particles_space::state_struct state;
 
-      void print_model_energy();
+  // Structure containing the information about the interactions in the
+  // current state of the system
+  particles_space::interactions_struct interactions;
 
-      // Update the state of the system at annealing temperature T
-      void update_model_system(double T);
+  // Structure containing information about MC averages
+  particles_space::averages_struct averages;
 
-      // Initialize the containers to store the selected averages
-      void initialize_model_averages();
+  // Structure containing records of energy after each lattice update
+  particles_space::records_struct records;
 
-      // Update the selected simulation averages
-      void update_model_averages(double T);
+public:
+  /*Class constructor*/
+  model(std::string& model_params_file);
 
-      // Save the selected simulation averages to the corresponding files
-      void save_model_averages(double T, int mcs_av);
-       
-  };
-}
+  /*
+   * Required public routines of the class
+   */
+
+  // Print the information about the current state of the system
+  void print_model_state();
+
+  // Save the current state of the system to a file "state_output"
+  void save_model_state(std::string& state_output);
+
+  // Print the information about interactions in the current state of the
+  // system
+  void print_model_interactions();
+
+  void print_model_energy();
+
+  // Update the state of the system at annealing temperature T
+  void update_model_system(double T);
+
+  // Initialize the containers to store the selected averages
+  void initialize_model_averages();
+
+  // Update the selected simulation averages
+  void update_model_averages(double T);
+
+  // Save the selected simulation averages to the corresponding files
+  void save_model_averages(double T, int mcs_av);
+
+  // Save a set of recorded energies after a lattice update
+  void update_model_records();
+
+  // Save a set of recorded energies after a lattice update
+  void save_model_records(double T);
+};
+} // namespace model_space
 #endif

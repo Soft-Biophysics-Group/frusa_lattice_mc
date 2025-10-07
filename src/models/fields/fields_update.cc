@@ -4,15 +4,15 @@
 #include "fields_update.h"
 
 namespace fields_space{
-  
+
   /*
    * Definitions required for the public routines of the model class
    */
-  void update_system(state_struct &state, 
+  void update_system(state_struct &state,
                      interactions_struct &interactions,
                      model_parameters_struct &parameters,
                      double T){
-    
+
     int_dist binary_dist(0,1);
 
     for(int r=0;r<state.N;r++){
@@ -24,20 +24,20 @@ namespace fields_space{
       else{
         convert_concentrations(state,interactions,parameters,T);
       }
-    } 
+    }
   }
-  /* 
+  /*
    * End of the required definitions for the model class
    */
 
   /*
    * Library-specific definitions
    */
-  void shift_local_density(state_struct &state, 
+  void shift_local_density(state_struct &state,
                            interactions_struct &interactions,
                            model_parameters_struct &parameters,
                            double T, double eps){
-    
+
     real_dist uniform_dist(0,1);
 
     //std::cout << "donor_array size = " << state.donor_list.size() << "\n";
@@ -57,21 +57,21 @@ namespace fields_space{
 
     int r_d = state.donor_list[d_list_ind];
     int r_a = state.acceptor_list[a_list_ind];
-   
+
     while(r_d==r_a){
       a_list_ind = acceptor_dist(parameters.rng);
       r_a = state.acceptor_list[a_list_ind];
     }
-    //std::cout << "rd = " << r_d << " r_a = " << r_a << "\n"; 
-    
+    //std::cout << "rd = " << r_d << " r_a = " << r_a << "\n";
+
     int index_d = select_element(r_d,0,state,parameters);
     int index_a = select_element(r_a,1,state,parameters);
-    
-    //std::cout << "id = " << index_d << " ia = " << index_a << "\n"; 
+
+    //std::cout << "id = " << index_d << " ia = " << index_a << "\n";
 
     double c_d = state.concentration[r_d][index_d];
     double c_a = state.concentration[r_a][index_a];
-    
+
     double bound_d = c_d;
     double bound_a = std::min(1-c_a,1-state.local_density[r_a]);
 
@@ -83,7 +83,7 @@ namespace fields_space{
     double dc;
 
     if(bound_total<eps){
-      // No need to shift tiny amounts of density (below threshold eps), 
+      // No need to shift tiny amounts of density (below threshold eps),
       // simply transfer all density from the site
       dc = bound_total;
     }
@@ -128,8 +128,8 @@ namespace fields_space{
       //std::cout << "Recorded interactions data\n";
     }
   }
-  
-  void convert_concentrations(state_struct &state, 
+
+  void convert_concentrations(state_struct &state,
                               interactions_struct &interactions,
                               model_parameters_struct &parameters,
                               double T, double eps){
@@ -141,7 +141,7 @@ namespace fields_space{
     int list_ind = donor_dist(parameters.rng);
 
     int r = state.donor_list[list_ind];
-   
+
     int index_d = select_element(r,0,state,parameters);
     int index_a = select_element(r,1,state,parameters);
 
@@ -151,20 +151,20 @@ namespace fields_space{
 
     double c_d = state.concentration[r][index_d];
     double c_a = state.concentration[r][index_a];
-    
+
     double bound_d = c_d;
-    
+
     double dc;
 
     if(bound_d<eps){
-      // No need to shift tiny amounts of density (below threshold eps), 
+      // No need to shift tiny amounts of density (below threshold eps),
       // simply convert all concentration to the other type
       dc = bound_d;
     }
     else{
       dc = uniform_dist(parameters.rng)*bound_d;
     }
-    
+
     double dE = get_energy_change(r,r,index_d,index_a,dc,
                                   state,interactions);
 
@@ -191,9 +191,9 @@ namespace fields_space{
   }
 
   int select_element(int r, double bound,
-                     state_struct &state, 
+                     state_struct &state,
                      model_parameters_struct &parameters){
-    
+
     vec1d c = state.concentration[r];
     //std::cout << "bound = " << bound << "\n";
     //std::cout << "rho_r = " << state.local_density[r] << "\n";
@@ -207,9 +207,9 @@ namespace fields_space{
     }
 
     //std::cout << "size of c_ind = " << c_ind.size() << "\n";
-   
+
     int_dist c_dist(0,c_ind.size()-1);
-    
+
     return c_ind[c_dist(parameters.rng)];
   }
 }

@@ -7,7 +7,7 @@
 #include "vector_utils.h"
 
 namespace fields_space{
-  // Initializes the couplings for a system of fields on a given lattice 
+  // Initializes the couplings for a system of fields on a given lattice
   vec3d get_coupling_matrix(vec1d couplings);
 
   // Calculates the positions of the nearest neighbours of site r

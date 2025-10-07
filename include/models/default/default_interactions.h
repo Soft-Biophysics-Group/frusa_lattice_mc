@@ -25,8 +25,8 @@ namespace default_space{
     double energy;
   };
 
-  // Calculate interaction characteristics of the current state of the system 
-  void initialize_interactions(state_struct &state, 
+  // Calculate interaction characteristics of the current state of the system
+  void initialize_interactions(state_struct &state,
                                interactions_struct &interactions,
                                model_parameters_struct &parameters);
 
@@ -43,7 +43,7 @@ namespace default_space{
   /*
    * Library-specific definitions
    */
-  
+
   // Functions to calculate the energy of the system
   double get_energy(state_struct &state, double delta);
 }

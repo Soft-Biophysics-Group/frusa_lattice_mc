@@ -59,7 +59,6 @@ dependencies = [
     { name = "jupyterlab" },
     { name = "jupyterlab-pygments" },
     { name = "jupyterlab-server" },
-    { name = "jupyterlab-vim" },
     { name = "jupyterlab-widgets" },
     { name = "kiwisolver" },
     { name = "markupsafe" },

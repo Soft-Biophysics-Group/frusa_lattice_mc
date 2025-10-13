@@ -47,10 +47,54 @@ Used by Vincent for:
 The python part of the code is developed as a package.
 To use it for the first time, go through the following steps in the `python` folder:
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+## Installation
+
+Either download this code as a .zip, or clone it using:
+
+`git clone https://github.com/Soft-Biophysics-Group/frusa_lattice_mc.git -b VortexAssembly3D`
+
+With all the dependencies installed, run: `make all`.
+If you use uv, then run: `uv sync`
+
+## A note on virtual environments
+
+As some of the Python packages used in this code are heavy to install and may be subject to
+change with new version of Python / Blender, we heavily recommend using a Python virtual
+environment to maximize code reproducibility.
+
+If you use the uv package manager, you can easily run the code in its virtual environment
+with the command `uv run file.py` for running Python scripts, and `uv run jupyter
+notebook` or `uv run jupyter lab` for running Jupyter notebooks.
+
+Otherwise, you can activate the virtual environment from this folder with the Unix command
+`source .venv/bin/activate`, after which you can run `python` and `jupyter` commands as
+usual.
+
+## Usage
+A jupyter notebook, `example_simulation.ipynb`, is supplied as a minimal working example of
+the code.
+To run it, if you use uv, run `uv run jupyter lab` and select the notebook from the Jupyter
+interface.
+If you don't, after activating the virtual environment as outlined above, run `python -m
+jupyter lab` and select the notebook from the jupyter interface.
+
+The code can also be run from its executable `frusa_mc`. It takes two json input files, whose
+generation is outlined in `example_simulation.ipynb`. The syntax for running it is
+`./frusa_mc -m {path_to_model_file.json} -M {path_to_MC_file.json}`. The code can also be ran
+with the thin wrapper `run_simu` contained in the `python/src/config.py` file, which could
+help with compatibility if you are using a Windows system.
+The output of the program is typically contained in the `data/` folder, and specified in the
+`model_file.json` and `mc_file.json`.
+
+### Input
+The program takes two json files as an input, one containing the parameters related to the
+model (lattice properties, interaction map between particles...) and the other to the Monte
+Carlo parameters (temperature profile, number of steps...).
+See the example notebook for the contents and generation of these files.
+
+### Output
+The results include, depending on what you want to include:
+- an `average_e/` folder, containing one file per temperature step, whose contents consist of:
 ```
 
 Every time you want to use the Python code, activate the virtual environment first with

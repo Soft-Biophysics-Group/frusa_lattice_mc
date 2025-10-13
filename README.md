@@ -37,7 +37,7 @@ Either download this code as a .zip, or clone it using:
 `git clone https://github.com/Soft-Biophysics-Group/frusa_lattice_mc.git -b VortexAssembly3D`
 
 With all the dependencies installed, run: `make all`.
-If you use uv, then run: `uv sync`
+If you use uv, after running `make all`, use the command `uv sync`.
 
 ## A note on virtual environments
 

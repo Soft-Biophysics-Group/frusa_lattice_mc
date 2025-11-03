@@ -1,3 +1,6 @@
 [project]
 name = "frusa_lattice_mc_helpers"
 version = "1.0.0"
+dependencies = [
+    "numpy==1.26.4",
+]

@@ -1,4 +1,5 @@
 #include "geometry.h"
+#include "square.h"
 #include "triangular.h"
 #include "cubic.h"
 #include "chain.h"
@@ -19,6 +20,12 @@ bond_struct::bond_struct(lattice_options lattice)
       bond_permutation = chain_space::bond_struct::bond_permutation;
       bond_array = chain_space::bond_struct::bond_array;
       bond_index = chain_space::bond_struct::bond_index;
+      break;
+    case square:
+      bond_permutation = square_space::bond_struct::bond_permutation;
+      bond_array = square_space::bond_struct::bond_array;
+      bond_index = square_space::bond_struct::bond_index;
+      opposite_bonds = square_space::bond_struct::opposite_bonds;
       break;
     case triangular:
       bond_permutation = triangular_space::bond_struct::bond_permutation;
@@ -251,6 +258,10 @@ void Geometry::set_lattice_properties()
     case lattice_options::chain:
       n_neighbours_m = chain_space::n_neighbours;
       n_orientations_m = chain_space::n_orientations;
+      break;
+    case lattice_options::square:
+      n_neighbours_m = square_space::n_neighbours;
+      n_orientations_m = square_space::n_orientations;
       break;
     case lattice_options::triangular:
       n_neighbours_m = triangular_space::n_neighbours;

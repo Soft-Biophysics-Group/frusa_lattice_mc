@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from numpy.typing import NDArray
 from collections.abc import MutableMapping
-from .. import config as cfg
+import config as cfg
 from pathlib import Path
 from . import cubic, triangular, fcc, square
 

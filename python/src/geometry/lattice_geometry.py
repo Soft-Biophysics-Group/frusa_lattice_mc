@@ -8,7 +8,7 @@ import config as cfg
 from collections.abc import Mapping, MutableMapping
 from scipy.spatial.transform import Rotation as R
 from pathlib import Path
-from . import cubic, triangular, fcc
+from . import cubic, triangular, fcc, square
 from .particle_geometry import ParticleGeometry
 
 from typing import TypeAlias
@@ -324,7 +324,7 @@ class LatticeGeometry:
 # ----- LATTICE SPECIALIZATIONS -----
 
 
-# The lz = 1.0 is here for conssistency. I put it last so that it doesn't get in the way.
+# The lz = 1.0 is here for consistency. I put it last so that it doesn't get in the way.
 class TriangularLattice(LatticeGeometry, lattice="triangular"):
     def __init__(
         self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0, lz: int = 1
@@ -332,6 +332,12 @@ class TriangularLattice(LatticeGeometry, lattice="triangular"):
         super().__init__(
             triangular.BASIS_VECTORS, triangular.BONDS, lx, ly, 1, lattice_spacing
         )
+
+
+# The lz = 1.0 is here for consistency. I put it last so that it doesn't get in the way.
+class SquareLattice(LatticeGeometry, lattice="square"):
+    def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0):
+        super().__init__(square.BASIS_VECTORS, square.BONDS, lx, ly, 1, lattice_spacing)
 
 
 class CubicLattice(LatticeGeometry, lattice="cubic"):

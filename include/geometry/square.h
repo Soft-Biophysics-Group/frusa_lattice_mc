@@ -1,8 +1,8 @@
 // Copyright (c) 2024 Soft Biophysics Group LPTMS
 // Part of frusa_mc, released under BSD 3-Clause License.
 
-#ifndef SQUARE_GEOMETRY_HEADER_H
-#define SQUARE_GEOMETRY_HEADER_H
+#ifndef GEOMETRY_SQUARE_H
+#define GEOMETRY_SQUARE_H
 
 #include "vector_utils.h"
 #include <map>
@@ -42,6 +42,10 @@ namespace geometry_space {
 static constexpr int n_neighbours {4};
 static constexpr int n_orientations {4};
 
+  static inline const vec1i opposite_bonds {2, 3, 0, 1};
+}; // bond_struct
+static constexpr int n_neighbours {4};
+static constexpr int n_orientations {4};
   } // square_space
 } // geometry_space
 

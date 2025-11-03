@@ -9,7 +9,7 @@ from pathlib import Path
 
 from typing import Any
 
-LATTICE_NAMES = ["chain", "triangular", "cubic"]
+LATTICE_NAMES = ["chain", "triangular", "cubic", "square"]
 
 
 class ContactMapWrapper:

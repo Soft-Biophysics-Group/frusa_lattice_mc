@@ -8,9 +8,9 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from numpy.typing import NDArray
 from collections.abc import MutableMapping
-import config as cfg
+from .. import config as cfg
 from pathlib import Path
-from . import cubic, triangular, fcc
+from . import cubic, triangular, fcc, square
 
 
 class ParticleGeometry:
@@ -287,4 +287,14 @@ class TriangularParticle(ParticleGeometry, lattice="triangular"):
             rotations_around_face_0=[triangular.ID_ROT],
             opposite_face_rotation=triangular.C2Z,
             bond_rotations=triangular.BOND_ROTATIONS,
+        )
+
+class SquareParticle(ParticleGeometry, lattice="square"):
+    def __init__(self):
+        super().__init__(
+            square.ORIENTATION_0_VEC,
+            square.BOND_ORIENTATIONS_POSITIVE,
+            rotations_around_face_0=[square.ID_ROT],
+            opposite_face_rotation=square.C2Z,
+            bond_rotations=square.BOND_ROTATIONS,
         )

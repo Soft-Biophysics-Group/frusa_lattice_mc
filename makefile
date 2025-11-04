@@ -1,4 +1,4 @@
-all: build python/.venv compile_command.json data/ 3dFigures/
+all: build .venv compile_command.json data/ 3dFigures/
 
 build: src/* include/*
 	mkdir -p build
@@ -12,9 +12,8 @@ compile_command.json: build
 .venv: python/requirements.txt
 	(\
 	python -m venv ".venv";\
-	source .venv/bin/activate;\
-	python -m pip install -r python/requirements.txt;\
-	python -m pip install -e python;\
+	.venv/bin/python -m pip install -r python/requirements.txt;\
+	.venv/bin/python -m pip install -e python;\
 	)
 
 data/:

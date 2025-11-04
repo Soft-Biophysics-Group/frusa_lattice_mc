@@ -160,7 +160,7 @@ class ContactMapWrapper:
         #     self.contact_map[int_coeff] = value
 
     def set_contacts(
-        self, contacts: list[tuple[int, int] | tuple[int, int, int, int]], value: float
+        self, contacts: list[tuple[int, int]] | list[tuple[int, int, int, int]], value: float
     ):
         for contact in contacts:
             self[contact] = value

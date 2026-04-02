@@ -3,6 +3,7 @@ Vincent Ouazan-Reboul, 2025
 Few functions to get the size of aggregates on any implemented lattice.
 """
 
+from geometry import load_geometry
 import numpy as np
 from pathlib import Path
 import config as cfg
@@ -68,3 +69,27 @@ def get_aggregate_sizes(aggregates: Aggregates) -> list[int]:
     Returns the sizes of all aggregates contained in Aggregates
     """
     return [len(agg) for agg in aggregates]
+
+
+def get_n_interfaces_w_ext(
+    aggregates: Aggregates,
+    model_file: str | Path = cfg.default_mc_params_file,
+) -> list[int]:
+    """Returns the number of interfaces between each aggregate and the outside."""
+    n_interfaces = []
+    lattice, _ = geometry_from_model_file(model_file)
+    all_full_sites = set()
+
+    for agg in aggregates:
+        all_full_sites |= agg
+
+    for agg in aggregates:
+        this_n_interfaces = 0
+        for site in agg:
+            neighbours = lattice.get_neighbour_sites(site)
+            for neighbour in neighbours:
+                if neighbour not in all_full_sites:
+                    this_n_interfaces += 1
+        n_interfaces.append(this_n_interfaces)
+
+    return n_interfaces

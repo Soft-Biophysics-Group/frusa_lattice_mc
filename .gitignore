@@ -24,3 +24,4 @@ venv/
 *.egg-info/
 *Launch*
 typings/
+python/src/frusa_lattice_mc.egg-info

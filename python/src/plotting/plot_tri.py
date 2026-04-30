@@ -1,15 +1,13 @@
-# pyright: basic
-from typing import Iterator, List
+from pathlib import Path
+
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-import matplotlib.patches as mpatches
-import numpy as np
-from geometry.triangular import TriangularLattice, TriangularParticle
-from pathlib import Path
+
 import config as cfg
-from matplotlib.axes import Axes
-from contact_utils import ContactMapWrapper
+from geometry.triangular import TriangularLattice, TriangularParticle
 
 # Global color sets
 ARROW_COLORS = ["black", "blue", "red", "green"]
@@ -49,6 +47,17 @@ TODOS:
 # To speed up calculations
 sr32 = np.sqrt(3) / 2
 
+def load_structure_from_args(
+    results_index: int = -1,
+    results_folder: str | Path = "",
+    results_file: str | Path = "",
+) -> np.ndarray:
+    """
+    Resolves structure location from the various argument combinations
+    and returns the loaded structure array.
+    """
+    return cfg.load_structure(results_index, results_folder, results_file)
+
 
 # Strongly inspired by Lara's code
 class ParticleRepresentation:
@@ -57,6 +66,8 @@ class ParticleRepresentation:
     """
     # 2 vertices, one in front and one in back
     # Here particle length is normalized to 1
+    _particle = TriangularParticle()
+
     def __init__(self, lx:int = 1, ly:int = 1, lattice_spacing=1.0):
         """
         How the faces permute when we change the particle orientation.
@@ -104,7 +115,7 @@ class ParticleRepresentation:
         all_faces_corners = []
         for face_nr in range(self.n_faces):
             face_corners = np.copy(self.face_0_corners)
-            rotation = TriangularParticle().orientation_rotations[face_nr]
+            rotation = self._particle.orientation_rotations[face_nr]
             for i in range(2):
                 this_corner = face_corners[:, i]
                 face_corners[:, i] = rotation.apply(this_corner)
@@ -118,7 +129,7 @@ class ParticleRepresentation:
         y_center_lattice: int,
         ax: Axes,
         squared: bool = False,
-        fill_color: str = ""
+        fill_color: str | None = None
     ) -> None:
         """
         Plots the outline of a particle, optionally filled with color `fill_color`
@@ -126,8 +137,8 @@ class ParticleRepresentation:
         x_center, y_center = self.lattice.lattice_to_cartesian(
             x_center_lattice, y_center_lattice
         )
-        if fill_color == "":
-            fill = False
+        # Fill only if the fill color is defined
+        fill = bool(fill_color)
         if squared:
             x_center = self.square_coordinates(x_center)
         h = mpatches.RegularPolygon(
@@ -158,7 +169,7 @@ class ParticleRepresentation:
         # Get the edge corresponding to face 0 in current orientation
         # And deduce the arrow orientation in lattice coordinates
         arrow_vector = np.array([a_length, 0, 0])
-        orientation_rotation = TriangularParticle().orientation_rotations[orientation]
+        orientation_rotation = self._particle.orientation_rotations[orientation]
         arrow_vector = orientation_rotation.inv().apply(arrow_vector)
         # FancyArrow uses arrow base location as input, so we'll need that
         x_center_cartesian, y_center_cartesian = self.lattice.lattice_to_cartesian(
@@ -222,6 +233,8 @@ class ParticleRepresentation:
     # ----- PLOTTING SIMULATION RESULTS -----
     def plot_result_outlines(
         self,
+        results: np.ndarray | None = None,
+        *,
         results_index: int = -1,
         results_file: str | Path = "",
         results_folder: str | Path = "",
@@ -247,6 +260,9 @@ class ParticleRepresentation:
           conditions to wrap the lattice into a square window rather.
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
+        if results is None:
+            results = load_structure_from_args(results_index, results_folder, results_file)
+
         if ax is None:
             fig, ax = plt.subplots(**kwargs)
         else:
@@ -260,9 +276,11 @@ class ParticleRepresentation:
 
     def plot_results_arrows(
         self,
+        results: np.ndarray | None = None,
+        *,
         results_index: int = -1,
-        results_folder: str | Path = "",
         results_file: str | Path = "",
+        results_folder: str | Path = "",
         squared: bool = False,
         **kwargs,
     ) -> tuple[Figure, Axes]:
@@ -288,7 +306,8 @@ class ParticleRepresentation:
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
         fig, ax = plt.subplots()
-        results = cfg.load_structure(results_index, results_folder,  results_file)
+        if results is None:
+            results = cfg.load_structure(results_index, results_folder,  results_file)
 
         for (
             site,
@@ -322,6 +341,8 @@ class ParticleRepresentation:
         self,
         ax: Axes,
         contact_to_color,
+        results: np.ndarray | None = None,
+        *,
         results_index: int = -1,
         results_folder: str | Path = "",
         results_file: str | Path = "",
@@ -350,7 +371,8 @@ class ParticleRepresentation:
           conditions to wrap the lattice into a square window rather.
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
-        results = cfg.load_structure(results_index, results_folder, results_file)
+        if results is None:
+            results = cfg.load_structure(results_index, results_folder, results_file)
 
         for site, _, orientation in cfg.get_full_sites_characteristics(results):
             x_1, y_1, _= self.lattice.lattice_site_to_lattice_coords(site)
@@ -363,7 +385,7 @@ class ParticleRepresentation:
                 neighbour_orientation = results[1, neighbour]
                     # f"\tbond {bond}, neighbour {neighbour} ({x_2, y_2}), with orientation {neighbour_orientation}"
                 # Let's avoid plotting the same contact twice
-                face_1, face_2 = TriangularParticle().get_faces_in_contact(
+                face_1, face_2 = self._particle.get_faces_in_contact(
                     orientation, neighbour_orientation, bond
                 )
                 # print(f"\t\tfaces:{face_1}, {face_2}")
@@ -373,7 +395,4 @@ class ParticleRepresentation:
         return
 
     def square_coordinates(self, x_cartesian):
-        if x_cartesian >= self.lattice.lx:
-            return x_cartesian - self.lattice.lx
-        else:
-            return x_cartesian
+        return x_cartesian % (self.lattice.lx * self.lattice_spacing)

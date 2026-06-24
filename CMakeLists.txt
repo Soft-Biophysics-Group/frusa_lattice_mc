@@ -78,6 +78,15 @@ set(INCLUDE_FRUSA_UTILITY ${PROJECT_SOURCE_DIR}/include/utility)
 set(INCLUDE_FRUSA_THIRDPARTY ${PROJECT_SOURCE_DIR}/include/thirdparty)
 set(INCLUDE_FRUSA_GEOMETRY ${PROJECT_SOURCE_DIR}/include/geometry)
 
+### Vendored single-header libraries (json.hpp, CLI11.hpp).
+### Exposed as SYSTEM includes so their warnings are not promoted to errors by
+### -Werror, while our own code keeps the full warning set. Targets that use
+### these headers link `thirdparty` instead of adding the include directory
+### directly (a plain -I would re-add it as non-system and reinstate the
+### warnings).
+add_library(thirdparty INTERFACE)
+target_include_directories(thirdparty SYSTEM INTERFACE ${INCLUDE_FRUSA_THIRDPARTY})
+
 ### Propagate variables to project subdirectories
 add_subdirectory(${PROJECT_SOURCE_DIR}/app)
 add_subdirectory(${PROJECT_SOURCE_DIR}/include)

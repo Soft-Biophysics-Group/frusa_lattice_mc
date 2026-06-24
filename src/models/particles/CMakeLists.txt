@@ -33,8 +33,10 @@ endif()
 target_include_directories(user_library PUBLIC
                            ${INCLUDE_FRUSA_MODELS}/particles
                            ${INCLUDE_FRUSA_GEOMETRY}
-                           ${INCLUDE_FRUSA_UTILITY}
-                           ${INCLUDE_FRUSA_THIRDPARTY})
+                           ${INCLUDE_FRUSA_UTILITY})
+
+### Vendored headers as SYSTEM includes (see top-level CMakeLists.txt)
+target_link_libraries(user_library PUBLIC thirdparty)
 
 target_link_libraries(user_library PRIVATE compiler_flags)
 target_link_libraries(user_library PRIVATE utils_library)
@@ -45,8 +47,10 @@ target_link_libraries(particles_library PRIVATE user_library)
 target_include_directories(particles_library PUBLIC
                            ${INCLUDE_FRUSA_MODELS}/particles
                            ${INCLUDE_FRUSA_UTILITY}
-                           ${INCLUDE_FRUSA_GEOMETRY}
-                           ${INCLUDE_FRUSA_THIRDPARTY})
+                           ${INCLUDE_FRUSA_GEOMETRY})
+
+### Vendored headers as SYSTEM includes (see top-level CMakeLists.txt)
+target_link_libraries(particles_library PUBLIC thirdparty)
 
 target_link_libraries(particles_library PRIVATE compiler_flags)
 target_link_libraries(particles_library PRIVATE utils_library)

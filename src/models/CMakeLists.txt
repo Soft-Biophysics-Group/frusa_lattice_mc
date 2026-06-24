@@ -5,8 +5,10 @@ add_library(model_library model.cc
 
 target_include_directories(model_library PUBLIC
                            ${INCLUDE_FRUSA_MODELS}
-                           ${INCLUDE_FRUSA_GEOMETRY}
-                           ${INCLUDE_FRUSA_THIRDPARTY})
+                           ${INCLUDE_FRUSA_GEOMETRY})
+
+### Vendored headers as SYSTEM includes (see top-level CMakeLists.txt)
+target_link_libraries(model_library PUBLIC thirdparty)
 
 target_link_libraries(model_library PRIVATE compiler_flags)
 

@@ -7,6 +7,8 @@ add_executable(${META_PROJECT_NAME} main.cc
 target_link_libraries(${META_PROJECT_NAME} PUBLIC compiler_flags)
 target_link_libraries(${META_PROJECT_NAME} PUBLIC model_library)
 target_link_libraries(${META_PROJECT_NAME} PUBLIC mc_library)
+### CLI11.hpp as a SYSTEM include (see top-level CMakeLists.txt)
+target_link_libraries(${META_PROJECT_NAME} PUBLIC thirdparty)
 
 ### Setup directories
 # Copy python directory

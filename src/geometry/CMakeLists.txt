@@ -13,8 +13,10 @@ add_library(geometry_library
 
 target_include_directories(geometry_library PUBLIC
                            ${INCLUDE_FRUSA_GEOMETRY}
-                           ${INCLUDE_FRUSA_THIRDPARTY}
                            ${INCLUDE_FRUSA_UTILITY})
+
+### Vendored headers as SYSTEM includes (see top-level CMakeLists.txt)
+target_link_libraries(geometry_library PUBLIC thirdparty)
 
 ### Link the library to utils to make sure we have access to all of the
 ### helper functions

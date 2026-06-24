@@ -11,8 +11,8 @@ compile_command.json: build
 
 .venv: python/requirements.txt
 	(\
-	python -m venv ".venv";\
-	source .venv/bin/activate;\
+	python3 -m venv ".venv";\
+	. .venv/bin/activate;\
 	python -m pip install -r python/requirements.txt;\
 	python -m pip install -e python;\
 	)

@@ -4,42 +4,45 @@
 #ifndef SQUARE_GEOMETRY_HEADER_H
 #define SQUARE_GEOMETRY_HEADER_H
 
-#include <iostream>
+#include "vector_utils.h"
+#include <map>
+
+using BondIndexMap = std::map<std::array<int,3> , int>;
 
 namespace geometry_space {
   namespace square_space {
-  
-    struct bond_structure {
-      bond_structure();
-      
-      constexpr unsigned int bond_permutation[4][4] = {
-        { 0, 1, 2, 3 },
-        { 1, 2, 3, 0 },
-        { 2, 3, 0, 1 },
-        { 3, 0, 1, 2 }
-      }; // bond_permutation
+    struct bond_struct {
+      static inline const vec2i bond_permutation = {
+          {0, 1, 2, 3},  // E
+          {1, 2, 3, 0},  // C4(1)
+          {2, 3, 0, 1},  // C2
+          {3, 0, 1, 2},  // C4(2)
+      };  // bond_permutation
 
-      constexpr int bond_array[4][3] = {
-        {  1,  0, 0 },
-        {  0,  1, 0 },
-        { -1,  0, 0 },
-        {  0, -1, 0 }
+      static inline const vec2i bond_array {
+        {  1,  0,  0 },
+        {  0,  1,  0 },
+        {  0,  0,  0 },
+        { -1, 0,  0 },
+        {  0, -1,  0 },
       }; // bond_array
 
-      std::map<int[3], unsigned int> bond_index {
-        { 0, {  1,  0, 0 } },
-        { 1, {  0,  1, 0 } },
-        { 2, { -1,  0, 0 } },
-        { 3, {  0, -1, 0 } }
+      static inline const BondIndexMap bond_index {
+        {{  1,  0,  0 }, 0},
+        {{  0,  1,  0 }, 1},
+        {{ -1,  0,  0 }, 2},
+        {{  0, -1,  0 }, 3},
       }; // bond_index
+
+      static inline const vec1i opposite_bonds {
+        2, 3, 0, 1
+      };
     }; // bond_structure
 
-    void get_bond();
-    void get_neighbour();
-    void get_interaction();
-    void get_interaction_indices();
+static constexpr int n_neighbours {4};
+static constexpr int n_orientations {4};
 
   } // square_space
 } // geometry_space
- 
+
 #endif //SQUARE_GEOMETRY_HEADER_H

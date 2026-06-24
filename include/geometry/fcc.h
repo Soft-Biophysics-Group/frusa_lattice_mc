@@ -5,7 +5,6 @@
 #define FCC_GEOMETRY_HEADER_H
 
 #include "vector_utils.h"
-#include <iostream>
 #include <map>
 
 using BondIndexMap = std::map<std::array<int,3> , int>;

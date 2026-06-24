@@ -27,11 +27,8 @@ namespace geometry_space {
             {{ 1, 0, 0}, 0},
             {{-1, 0, 0}, 1},
         };
-        //std::map<int[3], unsigned int> bond_index{
-            //{{1, 0, 0}, 0},
-            //{{-1, 0, 0}, 1},
-        //}; // bond_index
-      }; // bond_structure
+        static inline const vec1i opposite_bonds {1, 0};
+    }; // bond_structure
 
     //void get_bond();
     //void get_neighbour();

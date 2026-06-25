@@ -11,39 +11,39 @@ void update_system(state_struct& state,
                    interactions_struct& interactions,
                    model_parameters_struct& parameters,
                    geometry_space::Geometry& geometry,
+                   acceptance_struct& acceptance,
                    double T)
 {
   // Pick the kind of move we'll be making
   for (int i {0}; i < state.n_sites; i++) {
     mc_moves chosen_move {pick_random_move(parameters)};
-    // std::cout << "\n\nChosen move:" << mc_moves_str[chosen_move] << '\n'
-    //<< "Orientations before move:" << state << '\n';
-    // std::cout << chosen_move << '\n';
     switch (chosen_move) {
       case mc_moves::swap_empty_full:
         interactions.energy += attempt_swap_empty_full(
-            state, parameters, interactions, geometry, T);
+            state, parameters, interactions, geometry, acceptance, T);
         break;
       case mc_moves::swap_full_full:
         interactions.energy += attempt_swap_full_full(
-            state, parameters, interactions, geometry, T);
+            state, parameters, interactions, geometry, acceptance, T);
         break;
       case mc_moves::rotate:
-        interactions.energy +=
-            attempt_rotate(state, parameters, interactions, geometry, T);
+        interactions.energy += attempt_rotate(
+            state, parameters, interactions, geometry, acceptance, T);
         break;
       case mc_moves::mutate:
-        interactions.energy +=
-            attempt_mutate(state, parameters, interactions, geometry, T);
+        interactions.energy += attempt_mutate(
+            state, parameters, interactions, geometry, acceptance, T);
         break;
       case mc_moves::rotate_and_swap_w_empty:
         interactions.energy += attempt_rotate_and_swap_w_empty(
-            state, parameters, interactions, geometry, T);
+            state, parameters, interactions, geometry, acceptance, T);
         break;
       default:
         throw std::runtime_error("Something went wrong in the move selection");
     }
-    // std::cout << "Orientation after move:" << state << '\n';
+    acceptance.attempted[chosen_move] += 1;
+    if (acceptance.last_accepted)
+      acceptance.accepted[chosen_move] += 1;
   }
 }
 
@@ -125,26 +125,20 @@ double attempt_swap_sites(int index1,
                           model_parameters_struct& parameters,
                           interactions_struct& interactions,
                           geometry_space::Geometry& geometry,
+                          acceptance_struct& acceptance,
                           double T)
 {
   double energy_change {0.0};
   int bond {geometry.get_bond(index1, index2)};
-  // std::cout << "Sites are neighbours: " << sites_are_neighbours << '\n' ;
-  //  Initial energy, possibly including neighbour correction
   energy_change -=
       measure_pair_energy(index1, index2, bond, state, interactions, geometry);
-  // If the sites are neighbours, we need to avoid double counting
-  // Make move and calculate energy after
   swap_sites(state, index1, index2);
   energy_change +=
       measure_pair_energy(index1, index2, bond, state, interactions, geometry);
-  // std::cout << "Energy change is: " << energy_change << '\n' ;
-  //  Accept or reject move
-  if (is_move_accepted(energy_change, T, parameters)) {
-    // std::cout << "Move accepted!\n" ;
+  acceptance.last_accepted = is_move_accepted(energy_change, T, parameters);
+  if (acceptance.last_accepted) {
     return energy_change;
   } else {
-    // std::cout << "Move rejected :(\n";
     swap_sites(state, index1, index2);
     return 0.0;
   }
@@ -154,19 +148,19 @@ double attempt_swap_empty_full(state_struct& state,
                                model_parameters_struct& parameters,
                                interactions_struct& interactions,
                                geometry_space::Geometry& geometry,
+                               acceptance_struct& acceptance,
                                double T)
 {
   int full_site_index {state.full_empty_sites.get_random_full_site(parameters)};
   int empty_site_index {
       state.full_empty_sites.get_random_empty_site(parameters)};
-  // std::cout << "Attempting swap of empty site " << empty_site_index
-  //<< " with full site " << full_site_index << '\n';
   return attempt_swap_sites(full_site_index,
                             empty_site_index,
                             state,
                             parameters,
                             interactions,
                             geometry,
+                            acceptance,
                             T);
 }
 
@@ -174,6 +168,7 @@ double attempt_swap_full_full(state_struct& state,
                               model_parameters_struct& parameters,
                               interactions_struct& interactions,
                               geometry_space::Geometry& geometry,
+                              acceptance_struct& acceptance,
                               double T)
 {
   int site1 {state.full_empty_sites.get_random_full_site(parameters)};
@@ -182,16 +177,15 @@ double attempt_swap_full_full(state_struct& state,
   // try again
   while (site2 == site1)
     site2 = state.full_empty_sites.get_random_full_site(parameters);
-  // std::cout << "Attempting swap of full sites " << site1 << " and " << site2
-  //<< '\n';
   return attempt_swap_sites(
-      site1, site2, state, parameters, interactions, geometry, T);
+      site1, site2, state, parameters, interactions, geometry, acceptance, T);
 }
 
 double attempt_rotate(state_struct& state,
                       model_parameters_struct& parameters,
                       interactions_struct& interactions,
                       geometry_space::Geometry& geometry,
+                      acceptance_struct& acceptance,
                       double T)
 {
   int site_index {state.full_empty_sites.get_random_full_site(parameters)};
@@ -200,12 +194,10 @@ double attempt_rotate(state_struct& state,
 
   int old_orientation {perform_random_rotation(state, parameters, site_index)};
   energy_change += get_site_energy(state, interactions, geometry, site_index);
-  // std::cout << "Energy change is: " << energy_change << '\n' ;
-  if (is_move_accepted(energy_change, T, parameters)) {
-    // std::cout << "Move accepted!\n";
+  acceptance.last_accepted = is_move_accepted(energy_change, T, parameters);
+  if (acceptance.last_accepted) {
     return energy_change;
   } else {
-    // std::cout << "Move rejected!\n";
     state.lattice_sites.set_orientation(site_index, old_orientation);
     return 0.0;
   }
@@ -215,6 +207,7 @@ double attempt_mutate(state_struct& state,
                       model_parameters_struct& parameters,
                       interactions_struct& interactions,
                       geometry_space::Geometry& geometry,
+                      acceptance_struct& acceptance,
                       double T)
 {
   int site_index {state.full_empty_sites.get_random_full_site(parameters)};
@@ -229,17 +222,12 @@ double attempt_mutate(state_struct& state,
   // Let's avoid doing a mutation to the same type as before
   while (new_type == old_type)
     new_type = type_dist(parameters.rng);
-  // std::cout << "Attempting rotation of site " << site_index
-  //<< " with orientation " << old_orientation << " to "
-  //<< new_orientation << '\n';
   state.lattice_sites.set_type(site_index, new_type);
   energy_change += get_site_energy(state, interactions, geometry, site_index);
-  // std::cout << "Energy change is: " << energy_change << '\n' ;
-  if (is_move_accepted(energy_change, T, parameters)) {
-    // std::cout << "Move accepted!\n";
+  acceptance.last_accepted = is_move_accepted(energy_change, T, parameters);
+  if (acceptance.last_accepted) {
     return energy_change;
   } else {
-    // std::cout << "Move rejected!\n";
     state.lattice_sites.set_type(site_index, old_type);
     return 0.0;
   }
@@ -249,6 +237,7 @@ double attempt_rotate_and_swap_w_empty(state_struct& state,
                                        model_parameters_struct& parameters,
                                        interactions_struct& interactions,
                                        geometry_space::Geometry& geometry,
+                                       acceptance_struct& acceptance,
                                        double T)
 {
   int full_site_index {state.full_empty_sites.get_random_full_site(parameters)};
@@ -266,7 +255,8 @@ double attempt_rotate_and_swap_w_empty(state_struct& state,
   delta_e += measure_pair_energy(
       full_site_index, empty_site_index, bond, state, interactions, geometry);
 
-  if (is_move_accepted(delta_e, T, parameters)) {
+  acceptance.last_accepted = is_move_accepted(delta_e, T, parameters);
+  if (acceptance.last_accepted) {
     return delta_e;
   } else {
     swap_sites(state, full_site_index, empty_site_index);

@@ -19,6 +19,7 @@ model::model(std::string& model_params_file)
     , interactions {particles_space::interactions_struct {}}
     , averages {particles_space::averages_struct {}}
     , records {particles_space::records_struct {}}
+    , acceptance {particles_space::acceptance_struct {}}
 {
   /*
    * Initialize the system of particles and calculate the initial energy
@@ -53,7 +54,8 @@ void model::print_model_energy()
 
 void model::update_model_system(double T)
 {
-  particles_space::update_system(state, interactions, parameters, geometry, T);
+  particles_space::update_system(
+      state, interactions, parameters, geometry, acceptance, T);
 }
 
 void model::initialize_model_averages()
@@ -79,6 +81,21 @@ void model::update_model_records()
 void model::save_model_records(double T)
 {
   save_records(parameters, T, records);
+}
+
+void model::initialize_model_acceptance()
+{
+  acceptance.reset();
+}
+
+void model::record_model_acceptance(double T)
+{
+  record_acceptance(acceptance, T);
+}
+
+void model::save_model_acceptance()
+{
+  save_acceptance(acceptance, parameters);
 }
 
 }  // namespace model_space

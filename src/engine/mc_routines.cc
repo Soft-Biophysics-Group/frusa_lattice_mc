@@ -127,6 +127,7 @@ namespace simulation_space{
       simulation_model.print_model_energy();
       std::cout << '\n' ;
     }
+    simulation_model.save_model_acceptance();
     std::string final_state_save_loc{parameters.final_structure_address +
                                      "final_structure.dat"};
     simulation_model.save_model_state(final_state_save_loc);
@@ -144,6 +145,7 @@ namespace simulation_space{
     // Depending on the options in the mc_params structure, initialize the
     // containers that will store the MC averages
     simulation_model.initialize_model_averages();
+    simulation_model.initialize_model_acceptance();
 
     // Collect the averages
     for(int step=0;step<parameters.mcs_av;step++){
@@ -153,5 +155,6 @@ namespace simulation_space{
 
     /*Save averages to the files*/
     simulation_model.save_model_averages(T,parameters.mcs_av);
+    simulation_model.record_model_acceptance(T);
   }
 }

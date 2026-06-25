@@ -41,6 +41,11 @@ model_parameters_struct::model_parameters_struct(const std::string& input_file)
     e_record_output =
         json_model_params["e_record_output"].template get<std::string>();
   }
+  acceptance_option = json_model_params.value("acceptance_option", false);
+  if (acceptance_option) {
+    acceptance_output =
+        json_model_params.value("acceptance_output", std::string {});
+  }
 }
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params) {

@@ -90,6 +90,8 @@ struct model_parameters_struct
   std::string state_av_output {};
   bool e_record_option {false};
   std::string e_record_output {};
+  bool acceptance_option {false};
+  std::string acceptance_output {};
 };
 
 std::ostream &operator<<(std::ostream &out, model_parameters_struct &params);

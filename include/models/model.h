@@ -18,6 +18,7 @@
 // #include "fields_update.h"
 
 #include "geometry.h"
+#include "particles_acceptance.h"
 #include "particles_averages.h"
 #include "particles_interactions.h"
 #include "particles_parameters.h"
@@ -67,6 +68,9 @@ private:
   // Structure containing records of energy after each lattice update
   particles_space::records_struct records;
 
+  // Per-move-type acceptance counters and per-temperature history
+  particles_space::acceptance_struct acceptance;
+
 public:
   /*Class constructor*/
   model(std::string& model_params_file);
@@ -104,6 +108,15 @@ public:
 
   // Save a set of recorded energies after a lattice update
   void save_model_records(double T);
+
+  // Reset the acceptance counters before a measurement phase
+  void initialize_model_acceptance();
+
+  // Append the acceptance rates measured at temperature T to the history
+  void record_model_acceptance(double T);
+
+  // Write the accumulated acceptance history to file
+  void save_model_acceptance();
 };
 } // namespace model_space
 #endif

@@ -13,6 +13,7 @@
 #include "particles_parameters.h"
 #include "particles_state.h"
 #include "particles_records.h"
+#include "particles_acceptance.h"
 
 namespace particles_space {
 using json = nlohmann::json;
@@ -30,6 +31,7 @@ void update_system(state_struct& state,
                    interactions_struct& interactions,
                    model_parameters_struct& parameters,
                    geometry_space::Geometry& geometry,
+                   acceptance_struct& acceptance,
                    double T);
 
 /*
@@ -72,31 +74,37 @@ double attempt_swap_sites(int index1,
                           model_parameters_struct& parameters,
                           interactions_struct& interactions,
                           geometry_space::Geometry& geometry,
+                          acceptance_struct& acceptance,
                           double T);
 double attempt_swap_empty_full(state_struct& state,
                                model_parameters_struct& parameters,
                                interactions_struct& interactions,
                                geometry_space::Geometry& geometry,
+                               acceptance_struct& acceptance,
                                double T);
 double attempt_swap_full_full(state_struct& state,
                               model_parameters_struct& parameters,
                               interactions_struct& interactions,
                               geometry_space::Geometry& geometry,
+                              acceptance_struct& acceptance,
                               double T);
 double attempt_rotate(state_struct& state,
                       model_parameters_struct& parameters,
                       interactions_struct& interactions,
                       geometry_space::Geometry& geometry,
+                      acceptance_struct& acceptance,
                       double T);
 double attempt_mutate(state_struct& state,
                       model_parameters_struct& parameters,
                       interactions_struct& interactions,
                       geometry_space::Geometry& geometry,
+                      acceptance_struct& acceptance,
                       double T);
 double attempt_rotate_and_swap_w_empty(state_struct& state,
                                        model_parameters_struct& parameters,
                                        interactions_struct& interactions,
                                        geometry_space::Geometry& geometry,
+                                       acceptance_struct& acceptance,
                                        double T);
 
 // Accept or reject a move associated with energy delta_e at temperature T

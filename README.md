@@ -82,6 +82,7 @@ The results include, depending on what you want to include:
 [Temperature]
 [Average total energy]
 [Energy second moment]
+[Autocorellation time of the energy]
 ```
 - an `e_record/` folder, with one file per temperature step. The first line of each file is
 the temperature at which samples are recorded. Each following line corresponds to the energy

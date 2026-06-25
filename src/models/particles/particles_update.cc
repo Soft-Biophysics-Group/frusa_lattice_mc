@@ -107,7 +107,8 @@ double measure_pair_energy(int index1,
   if (sites_are_neighbours and !state.lattice_sites.is_empty(index1)
       and !state.lattice_sites.is_empty(index2))
   {
-    energy -= get_contact_energy(state, index1, index2, interactions, geometry);
+    energy -=
+        get_contact_energy(state, index1, index2, bond, interactions, geometry);
     /*energy -= geometry.get_interaction(site_1_orientation,*/
     /*                                   site_1_type,*/
     /*                                   site_2_type,*/

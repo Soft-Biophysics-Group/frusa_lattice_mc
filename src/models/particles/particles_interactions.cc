@@ -42,6 +42,35 @@ double get_contact_energy(state_struct& state,
                                   interactions.couplings);
 }
 
+double get_contact_energy(state_struct& state,
+                          int site1,
+                          int site2,
+                          int bond,
+                          interactions_struct& interactions,
+                          geometry_space::Geometry& geometry)
+{
+  // Contacts with empty site count as 0 energy
+  if (state.lattice_sites.is_empty(site1)
+      or state.lattice_sites.is_empty(site2))
+  {
+    return 0.0;
+  }
+
+  int site_1_orientation {state.lattice_sites.get_orientation(site1)};
+  int site_2_orientation {state.lattice_sites.get_orientation(site2)};
+  int site_1_type {state.lattice_sites.get_type(site1)};
+  int site_2_type {state.lattice_sites.get_type(site2)};
+
+  return geometry.get_interaction(site_1_orientation,
+                                  site_1_type,
+                                  site_2_orientation,
+                                  site_2_type,
+                                  bond,
+                                  state.n_types,
+                                  interactions.couplings);
+}
+
+
 double get_site_energy(state_struct& state,
                        interactions_struct& interactions,
                        geometry_space::Geometry& geometry,
@@ -56,7 +85,7 @@ double get_site_energy(state_struct& state,
       int neighbour_site {geometry.get_neighbour(site_index, bond)};
       /*std::cout << "Checking neighbour " << neighbour_site << '\n' ;*/
       site_energy += get_contact_energy(
-          state, site_index, neighbour_site, interactions, geometry);
+          state, site_index, neighbour_site, bond, interactions, geometry);
     }
   }
   return site_energy;

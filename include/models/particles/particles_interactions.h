@@ -48,6 +48,15 @@ double get_contact_energy(state_struct& state,
                           interactions_struct& interactions,
                           geometry_space::Geometry& geometry);
 
+// Get contact energy when the bond between the sites is already known
+double get_contact_energy(state_struct& state,
+                          int site1,
+                          int site2,
+                          int bond,
+                          interactions_struct& interactions,
+                          geometry_space::Geometry& geometry);
+
+
 // Get total energy of a given site, which is the sum of contact energies with
 // its neighbours
 double get_site_energy(state_struct& state,

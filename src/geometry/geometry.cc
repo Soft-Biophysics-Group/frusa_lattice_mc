@@ -5,6 +5,7 @@
 #include "cubic.h"
 #include "fcc.h"
 #include "vector_utils.h"
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 
@@ -112,21 +113,9 @@ Geometry::Geometry(const std::string& geometry_input)
 
 int Geometry::get_neighbour(const int site_ind, const int bond_ind) const
 {
-  // Found at https://stackoverflow.com/a/26282004
-  int i {};
-  int j {};
-  int k {};
-  array_space::r_to_ijk(site_ind, i, j, k, lx_m, ly_m, lz_m);
-
-  std::size_t u_bond_ind {static_cast<std::size_t>(bond_ind)};
-  const vec1i& bond_direction {bond_struct_m.bond_array[u_bond_ind]};
-  int i_neigh {array_space::mod(i + bond_direction[0], lx_m)};
-  int j_neigh {array_space::mod(j + bond_direction[1], ly_m)};
-  int k_neigh {array_space::mod(k + bond_direction[2], lz_m)};
-
-  int neigh_ind {0};
-  array_space::ijk_to_r(neigh_ind, i_neigh, j_neigh, k_neigh, lx_m, ly_m, lz_m);
-  return neigh_ind;
+  std::size_t neigh_ind {
+      static_cast<std::size_t>(site_ind * n_neighbours_m + bond_ind)};
+  return neighbour_table_m[neigh_ind];
 }
 
 int Geometry::get_bond(const int site_1_ind, const int site_2_ind) const {
@@ -278,6 +267,39 @@ void Geometry::set_lattice_properties()
 
     default:
       throw(std::runtime_error("Invalid lattice option"));
+  }
+  build_neighbour_table();
+}
+
+// TODO Fill up
+int Geometry::compute_neighbour(const int site_ind, const int bond_ind){
+  // Found at https://stackoverflow.com/a/26282004
+  int i {};
+  int j {};
+  int k {};
+  array_space::r_to_ijk(site_ind, i, j, k, lx_m, ly_m, lz_m);
+
+  std::size_t u_bond_ind {static_cast<std::size_t>(bond_ind)};
+  const vec1i& bond_direction {bond_struct_m.bond_array[u_bond_ind]};
+  int i_neigh {array_space::mod(i + bond_direction[0], lx_m)};
+  int j_neigh {array_space::mod(j + bond_direction[1], ly_m)};
+  int k_neigh {array_space::mod(k + bond_direction[2], lz_m)};
+
+  int neigh_ind {0};
+  array_space::ijk_to_r(neigh_ind, i_neigh, j_neigh, k_neigh, lx_m, ly_m, lz_m);
+  return neigh_ind;
+}
+
+void Geometry::build_neighbour_table()
+{
+  neighbour_table_m.resize(
+      static_cast<std::size_t>(n_sites_m * n_neighbours_m));
+  for (int site_ind {0}; site_ind < n_sites_m; site_ind++) {
+    for (int bond_ind {0}; bond_ind < n_neighbours_m; bond_ind++) {
+      size_t neighbour_ind {
+          static_cast<std::size_t>(site_ind * n_neighbours_m + bond_ind)};
+      neighbour_table_m[neighbour_ind] = compute_neighbour(site_ind, bond_ind);
+    }
   }
 }
 

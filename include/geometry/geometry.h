@@ -197,8 +197,13 @@ private:
   int n_sites_m {1};
   // Structure describing how neighbouring sites are linked
   bond_struct bond_struct_m {bond_struct(chain)};
+  // Precomputed neighbour table, flattened as 
+  // neighbour_table_m[site_ind * n_neighbours_m + bond_ind]
+  vec1i neighbour_table_m {};
 
   void set_lattice_properties();
+  int compute_neighbour(const int site_ind, const int bond_ind);
+  void build_neighbour_table();
 };
 
 }  // namespace geometry_space

@@ -305,6 +305,4 @@ def get_camembert_cmap(e_crystal, e_defect, e_repel):
     cmap_wrapper[0, 4] = e_defect
     cmap_wrapper[1, 5] = e_defect
 
-    print(cmap_wrapper.get_single_species_contact_matrix(0))
-
     return cmap_wrapper.get_formatted_couplings()

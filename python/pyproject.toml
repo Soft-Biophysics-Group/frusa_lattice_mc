@@ -1,3 +1,20 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "frusa_lattice_mc_helpers"
 version = "1.0.0"
+
+# Modules live in src/ and are imported flat (source-root layout):
+#   import config, contact_utils, ...
+#   from gen_param_functions import ...
+# Install once so the modules resolve without PYTHONPATH (run in python/):
+#   pip install -e .
+[tool.setuptools]
+package-dir = { "" = "src" }
+py-modules = ["config", "contact_utils", "json_dump", "lattice_utils"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = true

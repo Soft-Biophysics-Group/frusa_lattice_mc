@@ -4,7 +4,6 @@
 # To be loaded before doing anything else
 
 from pathlib import Path
-import json
 import numpy as np
 import subprocess
 import sys
@@ -12,6 +11,8 @@ import sys
 from numpy.typing import NDArray
 
 from typing import TypedDict, cast
+
+from json_dump import load_json
 
 # Reliably make absolute paths to the right place.
 # #ILovePathLib <3 <3 <3
@@ -60,10 +61,7 @@ class ModelParams(TypedDict, total=False):
     move_probas: dict[str, float]
 
 def load_model_file(model_file: str | Path = default_model_params_file) -> ModelParams:
-    model_file_str = str(model_file)
-    with open(model_file_str, "r") as f:
-        params = cast(ModelParams, json.load(f))
-    return params
+    return cast(ModelParams, load_json(model_file))
 
 
 class McParams(TypedDict):
@@ -82,10 +80,7 @@ class McParams(TypedDict):
 def load_mc_file(
     mc_file: str | Path = default_mc_params_file,
 ) -> McParams:
-    mc_file_str = str(mc_file)
-    with open(mc_file_str, "r") as f:
-        params = cast(McParams, json.load(f))
-    return params
+    return cast(McParams, load_json(mc_file))
 
 
 def load_structure(

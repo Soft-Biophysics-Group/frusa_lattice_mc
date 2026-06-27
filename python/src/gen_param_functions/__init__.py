@@ -2,12 +2,14 @@
 
 Typical use:
 
-    from gen_param_functions import write_run_series, slurm
+    from gen_param_functions import ModelParams, MCParams, write_run_series, slurm
 
-    jobs = write_run_series(root, "00_my_run", series_index=0,
-                            crystal_to_defect_ratio=0.5, n_steps_per_T=1000,
-                            n_particles=500, lattice_side=40, n_runs=20)
-    script = slurm.generate_script_for_prefix(root, "00_my_run", job_name="my_run")
+    run_name = "00_my_run"
+    model = ModelParams(couplings=couplings, n_particles=[500], lx=40, ly=40)
+    mc = MCParams(mcs_eq=1000, Ti=0.0, Tf=2.0, Nt=200)
+    jobs = write_run_series(root, run_name, series_index=0,
+                            model=model, mc=mc, n_runs=20)
+    script = slurm.generate_script_for_prefix(root, run_name, job_name="my_run")
 """
 
 from . import slurm, continuation

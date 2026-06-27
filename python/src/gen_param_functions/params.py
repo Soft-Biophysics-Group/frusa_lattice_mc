@@ -23,17 +23,11 @@ from .paths import (
 # ── Dataclasses ─────────────────────────────────────────────────────
 
 
-MOVES_WITH_SWAPS: dict[str, float] = {
+DEFAULT_MOVE_PROBAS: dict[str, float] = {
     "swap_empty_full": 0.25,
     "rotate": 0.25,
     "rotate_and_swap_w_empty": 0.25,
     "swap_full_full": 0.25,
-}
-
-MOVES_WITHOUT_SWAPS: dict[str, float] = {
-    "swap_empty_full": 1 / 3,
-    "rotate": 1 / 3,
-    "rotate_and_swap_w_empty": 1 / 3,
 }
 
 def calc_ec_ed_ratio(target_radius: float) -> float:
@@ -75,7 +69,7 @@ class ModelParams:
     e_record_output: str | None = None
 
     # moves
-    move_probas: dict[str, float] = field(default_factory=lambda: MOVES_WITH_SWAPS)
+    move_probas: dict[str, float] = field(default_factory=lambda: dict(DEFAULT_MOVE_PROBAS))
 
     def to_dict(self) -> dict:
         """Produce the dict that gets written to JSON for the C++ reader."""
@@ -142,55 +136,38 @@ def camembert_couplings(
 
 def build_params(
     root: Path,
-    run_name:str,
+    run_name: str,
     series_index: int,
-    crystal_to_defect_ratio: float,
-    n_steps_per_T: int,
-    n_particles: int,
-    lattice_side:int,
     run_index: int,
+    model: ModelParams,
+    mc: MCParams,
     *,
-    allow_p_p_swaps: bool = True,
-    record_option: bool = False,
-    couplings: list | None = None,
-    e_crystal: float = -18.7,
-    e_repel: float = 10.0,
-    model_overrides: dict | None = None,
-    mc_overrides: dict | None = None,
+    label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
-    continue_from_step : int | None = None
+    continue_from_step: int | None = None,
 ) -> tuple[ModelParams, MCParams, Path, Path]:
     """
-    Construct a (ModelParams, MCParams) pair for a single run,
-    creating output directories as needed.
+    Wire a (ModelParams, MCParams) pair to its on-disk locations for a single
+    run, creating output directories as needed.
 
-    `couplings` is the flattened coupling map fed to the C++ side. When None it
-    defaults to the camembert map built from `e_crystal`, `crystal_to_defect_ratio`
-    and `e_repel`; pass any other map (e.g. from `contact_utils.ContactMapWrapper`)
-    to run a different model.
+    `model` and `mc` act as templates: the function returns copies with the
+    path-dependent fields filled in. `model.couplings` must be set. `label`
+    tags the output slug, e.g. to record explicit parameters.
 
     Returns (model_params, mc_params, model_file, mc_file).
     """
-    slug = run_slug(series_index, crystal_to_defect_ratio)
+    if model.couplings is None:
+        raise ValueError("model.couplings must be set.")
+
+    slug = run_slug(series_index, label)
     model_file, mc_file = input_file_paths(root, run_name, slug, run_index)
     data = data_dir(root, run_name, slug, run_index)
 
-    # -- model --
-    moves = MOVES_WITH_SWAPS if allow_p_p_swaps else MOVES_WITHOUT_SWAPS
+    # Copy the templates so per-run path wiring never leaks back to the caller.
+    model = replace(model)
+    mc = replace(mc)
 
-    if couplings is None:
-        couplings = camembert_couplings(e_crystal, crystal_to_defect_ratio, e_repel)
-
-    model = ModelParams(
-        couplings=couplings,
-        move_probas=dict(moves),  # copy to avoid shared mutation
-        e_av_option=True,
-        e_record_option=record_option,
-        n_particles=[n_particles],
-        lx=lattice_side,
-        ly=lattice_side,
-    )
-
+    # -- model output dirs --
     if model.e_av_option:
         d = energy_av_dir(data)
         d.mkdir(parents=True, exist_ok=True)
@@ -201,25 +178,15 @@ def build_params(
         d.mkdir(parents=True, exist_ok=True)
         model.e_record_output = c_path(d)
 
-    if model_overrides:
-        model = replace(model, **model_overrides)
-
     if continue_from_mc_file is not None:
         model.get_input_from_prev_mc(continue_from_mc_file, continue_from_step)
 
-    # -- mc --
+    # -- mc output dirs --
     structs = structures_dir(data)
     structs.mkdir(parents=True, exist_ok=True)
-
-    mc = MCParams(
-        mcs_eq=n_steps_per_T,
-        checkpoint_address=c_path(structs),
-        final_structure_address=c_path(structs),
-        model_params_file=str(model_file.resolve()),
-    )
-
-    if mc_overrides:
-        mc = replace(mc, **mc_overrides)
+    mc.checkpoint_address = c_path(structs)
+    mc.final_structure_address = c_path(structs)
+    mc.model_params_file = str(model_file.resolve())
 
     return model, mc, model_file, mc_file
 
@@ -228,35 +195,23 @@ def write_run(
     root: Path,
     run_name: str,
     series_index: int,
-    crystal_to_defect_ratio: float,
-    n_steps_per_T: int,
-    n_particles: int,
-    lattice_side: int,
     run_index: int,
+    model: ModelParams,
+    mc: MCParams,
     *,
-    allow_p_p_swaps: bool = True,
-    record_option: bool = False,
-    couplings: list | None = None,
-    model_overrides: dict | None = None,
-    mc_overrides: dict | None = None,
+    label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
-    continue_from_step : int | None = None
+    continue_from_step: int | None = None,
 ) -> tuple[Path, Path]:
     """Build and write parameter files for a single run. Returns (model_file, mc_file)."""
     model, mc, model_file, mc_file = build_params(
         root,
         run_name,
         series_index,
-        crystal_to_defect_ratio,
-        n_steps_per_T,
-        n_particles,
-        lattice_side,
         run_index,
-        allow_p_p_swaps=allow_p_p_swaps,
-        record_option=record_option,
-        couplings=couplings,
-        model_overrides=model_overrides,
-        mc_overrides=mc_overrides,
+        model,
+        mc,
+        label=label,
         continue_from_mc_file=continue_from_mc_file,
         continue_from_step=continue_from_step,
     )
@@ -270,40 +225,28 @@ def write_run(
 
 def write_run_series(
     root: Path,
-    run_name:str,
+    run_name: str,
     series_index: int,
-    crystal_to_defect_ratio: float,
-    n_steps_per_T: int,
-    n_particles: int,
-    lattice_side:int,
+    model: ModelParams,
+    mc: MCParams,
     n_runs: int = 20,
     *,
-    allow_p_p_swaps: bool = True,
-    record_option: bool = True,
-    couplings: list | None = None,
+    label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
-    continue_from_step : int | None = None,
-    model_overrides: dict | None = None,
-    mc_overrides: dict | None = None,
+    continue_from_step: int | None = None,
 ) -> list[tuple[Path, Path]]:
-    """Write parameter files for a series of independent runs."""
+    """Write parameter files for a series of independent runs sharing one model/mc template."""
     return [
         write_run(
             root,
             run_name,
             series_index,
-            crystal_to_defect_ratio,
-            n_steps_per_T,
-            n_particles,
-            lattice_side,
             i,
-            allow_p_p_swaps=allow_p_p_swaps,
-            record_option=record_option,
-            couplings=couplings,
+            model,
+            mc,
+            label=label,
             continue_from_mc_file=continue_from_mc_file,
             continue_from_step=continue_from_step,
-            model_overrides=model_overrides,
-            mc_overrides=mc_overrides
         )
         for i in range(n_runs)
     ]

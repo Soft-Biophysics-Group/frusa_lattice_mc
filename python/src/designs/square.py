@@ -21,7 +21,9 @@ def set_vortex_contacts(defect_e:float, cmap:ContactMapWrapper):
 def gen_vortex_contacts(
     defect_e: float, crystal_e: float = -0.5, mismatch_e: float = 10.0
 ):
-    cmap = ContactMapWrapper.from_lattice_name("square")
+    cmap = ContactMapWrapper.from_lattice_name(
+        "square", n_types=1, init_energy=mismatch_e
+    )
     set_crystal_contacts(crystal_e, cmap)
     set_vortex_contacts(defect_e, cmap)
 

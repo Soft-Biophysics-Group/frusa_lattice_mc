@@ -9,13 +9,10 @@ build: src/* include/*
 compile_command.json: build
 	cmake . -DMODEL_TYPE="lattice_particles" -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B build
 
-.venv: python/requirements.txt
-	(\
-	python3 -m venv ".venv";\
-	. .venv/bin/activate;\
-	python -m pip install -r python/requirements.txt;\
-	python -m pip install -e python;\
-	)
+# Bootstrap uv via pip if absent, then let uv own ./.venv at 3.11.
+.venv: pyproject.toml uv.lock
+	@command -v uv >/dev/null 2>&1 || python3 -m pip install --user uv
+	uv sync
 
 data/:
 	mkdir -p data

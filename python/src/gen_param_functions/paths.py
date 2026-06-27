@@ -20,8 +20,10 @@ def c_path(p: Path) -> str:
     return str(p.resolve()) + "/"
 
 
-def run_slug(series_index: int, ec_ed_ratio: float) -> str:
-    return f"{series_index:02}_ec_div_ed_{ec_ed_ratio:.05f}"
+def run_slug(series_index: int, label: str | None = None) -> str:
+    if label is not None:
+        return f"series_{series_index:02}_{label}"
+    return f"series_{series_index:02}"
 
 
 # ── directory builders ──────────────────────────────────────────────

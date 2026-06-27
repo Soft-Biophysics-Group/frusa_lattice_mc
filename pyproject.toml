@@ -117,5 +117,8 @@ dependencies = [
     "zstandard==0.23.0",
 ]
 
+[tool.uv.workspace]
+members = ["python"]
+
 [tool.uv.sources]
-frusa-lattice-mc-helpers = { path = "python", editable = true }
+frusa-lattice-mc-helpers = { workspace = true }

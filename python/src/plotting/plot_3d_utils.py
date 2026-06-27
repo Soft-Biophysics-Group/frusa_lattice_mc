@@ -1145,5 +1145,3 @@ def create_line_material(
     links.new(emission.outputs["Emission"], output.inputs["Surface"])
 
     return mat
-
-

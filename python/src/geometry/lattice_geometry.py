@@ -64,12 +64,18 @@ class LatticeGeometry:
             lattice_spacing: optional float. Cartesian distance between 2 lattice nearest
                 neighbours. Defaults to 1.0
         """
-        self.lattice_vectors_in_cartesian: NDArray[np.float_] = np.array(
+        self.lattice_vectors_in_cartesian: NDArray[np.float64] = np.array(
             basis_vectors, dtype=np.float64
         )
-        self.cartesian_to_lattice_basis: NDArray[np.float_] = np.linalg.inv(
-            self.lattice_vectors_in_cartesian
-        )
+        if (self.lattice_vectors_in_cartesian[:, -1] == 0.0).all():
+            self.cartesian_to_lattice_basis: NDArray[np.float64] = np.hstack((
+                np.linalg.inv(self.lattice_vectors_in_cartesian[:, 0:2]),
+                np.zeros((2, 1))
+            ))
+        else:
+            self.cartesian_to_lattice_basis = np.linalg.inv(
+                self.lattice_vectors_in_cartesian
+            )
         self.lattice_spacing: float = lattice_spacing
         self.bonds: list[Bond]
         if bonds is not None:
@@ -328,7 +334,7 @@ class LatticeGeometry:
 # ----- LATTICE SPECIALIZATIONS -----
 
 
-# The lz = 1.0 is here for conssistency. I put it last so that it doesn't get in the way.
+# The lz = 1.0 is here for consistency. I put it last so that it doesn't get in the way.
 class TriangularLattice(LatticeGeometry, lattice="triangular"):
     def __init__(
         self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0, lz: int = 1
@@ -338,10 +344,9 @@ class TriangularLattice(LatticeGeometry, lattice="triangular"):
         )
 
 
+# The lz = 1.0 is here for consistency. I put it last so that it doesn't get in the way.
 class SquareLattice(LatticeGeometry, lattice="square"):
-    def __init__(
-        self, lx: int = 1, ly: int = 1, lattice_spacing: float = 10.0, lz: int = 1
-    ):
+    def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0, lz:int = 1):
         super().__init__(square.BASIS_VECTORS, square.BONDS, lx, ly, 1, lattice_spacing)
 
 

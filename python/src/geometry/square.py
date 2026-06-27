@@ -25,4 +25,4 @@ BOND_ROTATIONS = [
     *BOND_ORIENTATIONS_POSITIVE,
     *[C2Z * rot for rot in BOND_ORIENTATIONS_POSITIVE],
 ]
-BASIS_VECTORS = np.array([[1., 0., 0.], [0, 1., 0.]])
+BASIS_VECTORS = np.array([[1., 0., 0.], [0., 1., 0.]])

@@ -1,6 +1,14 @@
 # 3DSizeLimitedAssembly
 
-Codes and executable to run defect engineered three-dimensional assemblies introduced in [arXiv:2504.13073](https://doi.org/10.48550/arXiv.2504.13073).
+## Publications using this code
+
+- Lara Koehler, Markus Eder, Vincent Ouazan-Reboul, Christoph Karfusehr, Andrey Zelenskiy,
+Pierre Ronceray, Friedrich C. Simmel, Martin Lenz: **Topological defect engineering enables
+size and shape control in self-assembly**,
+[arXiv:2504.13073](https://arxiv.org/abs/2504.13073).
+  - [Link to the branch used for the publication](https://github.com/Soft-Biophysics-Group/frusa_lattice_mc/tree/VortexAssembly3D)
+
+## Scope of this code
 
 ## Contents
 

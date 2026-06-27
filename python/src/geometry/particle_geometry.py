@@ -289,7 +289,6 @@ class TriangularParticle(ParticleGeometry, lattice="triangular"):
             bond_rotations=triangular.BOND_ROTATIONS,
         )
 
-
 class SquareParticle(ParticleGeometry, lattice="square"):
     def __init__(self):
         super().__init__(

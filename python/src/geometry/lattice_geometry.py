@@ -2,17 +2,20 @@
 
 Typically not used on its own, but rather through its lattice-specific children classes.
 """
+
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 import config as cfg
 from collections.abc import Mapping, MutableMapping
 from scipy.spatial.transform import Rotation as R
 from pathlib import Path
-from . import cubic, triangular, fcc
+from . import cubic, triangular, fcc, square
 from .particle_geometry import ParticleGeometry
 
 from typing import TypeAlias
+
 Bond: TypeAlias = tuple[int, int, int]
+
 
 class LatticeGeometry:
     """Generic class for lattice geometry representation.
@@ -83,6 +86,7 @@ class LatticeGeometry:
         self.n_sites: int = lx * ly * lz
 
         self.particle_geometry: ParticleGeometry
+
     # ----- SUBCLASSES -----
     # Magic code to register lattices upon creation:
     # inspired by https://stackoverflow.com/a/52433482
@@ -104,7 +108,7 @@ class LatticeGeometry:
         lattice_spacing: float = 1.0,
     ):
         if lattice_name in cls._lattices.keys():
-            inst =  cls._lattices[lattice_name](
+            inst = cls._lattices[lattice_name](
                 lx=lx, ly=ly, lz=lz, lattice_spacing=lattice_spacing
             )
             inst.particle_geometry = ParticleGeometry.from_lattice_name(lattice_name)
@@ -332,6 +336,13 @@ class TriangularLattice(LatticeGeometry, lattice="triangular"):
         super().__init__(
             triangular.BASIS_VECTORS, triangular.BONDS, lx, ly, 1, lattice_spacing
         )
+
+
+class SquareLattice(LatticeGeometry, lattice="square"):
+    def __init__(
+        self, lx: int = 1, ly: int = 1, lattice_spacing: float = 10.0, lz: int = 1
+    ):
+        super().__init__(square.BASIS_VECTORS, square.BONDS, lx, ly, 1, lattice_spacing)
 
 
 class CubicLattice(LatticeGeometry, lattice="cubic"):

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from typing import Any
 
-LATTICE_NAMES = ["chain", "triangular", "cubic"]
+LATTICE_NAMES = ["chain", "square", "triangular", "cubic"]
 
 
 class ContactMapWrapper:
@@ -38,6 +38,9 @@ class ContactMapWrapper:
     right, the ones which should be equal through rotational invariance, etc...
 
     ## Constructors:
+    - `square(n_types, init_energy)`: creates a class instance for a square lattice
+      containing `n_types` different particle types, with all face pairs having initial energy
+      `init_energy`.
     - `triangular(n_types, init_energy)`: creates a class instance for a triangular lattice
       containing `n_types` different particle types, with all face pairs having initial energy
       `init_energy`.

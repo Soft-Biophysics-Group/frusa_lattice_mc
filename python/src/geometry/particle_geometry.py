@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from collections.abc import MutableMapping
 import config as cfg
 from pathlib import Path
-from . import cubic, triangular, fcc
+from . import cubic, triangular, fcc, square
 
 
 class ParticleGeometry:
@@ -80,8 +80,7 @@ class ParticleGeometry:
         rotations_around_face_0,
         opposite_face_rotation,
     ):
-        """Generates all the possible orientations of the particle.
-        """
+        """Generates all the possible orientations of the particle."""
         # Rotation operations are defined as quaternions and compositions of quaternions
         rotations = [R.identity() for i in range(self.n_orientations)]
         # Generate first rotation
@@ -98,7 +97,7 @@ class ParticleGeometry:
         return R.concatenate(rotations)
 
     def gen_bond_permutations(self):
-        """ Returns an array describing how the particle orientations are permuted when a given bond
+        """Returns an array describing how the particle orientations are permuted when a given bond
         is considered.
         """
         all_bond_permutations = []
@@ -143,7 +142,7 @@ class ParticleGeometry:
         return cls.from_lattice_name(lattice_name)
 
     # ----- UTILITIES -----
-    def identify_orientation(self, rotation, atol:float = 1e-2):
+    def identify_orientation(self, rotation, atol: float = 1e-2):
         """Identifies which orientation the rotation `rotation` puts the particle in, defined as
         the face which takes the place of face 0.
         Returns -1 if the supplied rotation does not put the particle in one of its 24 possible
@@ -254,6 +253,7 @@ class ParticleGeometry:
 
 # ----- SPECIALIZATION -----
 
+
 class CubicParticle(ParticleGeometry, lattice="cubic"):
     def __init__(self):
         super().__init__(
@@ -287,4 +287,15 @@ class TriangularParticle(ParticleGeometry, lattice="triangular"):
             rotations_around_face_0=[triangular.ID_ROT],
             opposite_face_rotation=triangular.C2Z,
             bond_rotations=triangular.BOND_ROTATIONS,
+        )
+
+
+class SquareParticle(ParticleGeometry, lattice="square"):
+    def __init__(self):
+        super().__init__(
+            square.ORIENTATION_0_VEC,
+            square.BOND_ORIENTATIONS_POSITIVE,
+            rotations_around_face_0=[square.ID_ROT],
+            opposite_face_rotation=square.C2Z,
+            bond_rotations=square.BOND_ROTATIONS,
         )

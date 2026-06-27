@@ -152,6 +152,7 @@ def build_params(
     *,
     allow_p_p_swaps: bool = True,
     record_option: bool = False,
+    couplings: list | None = None,
     e_crystal: float = -18.7,
     e_repel: float = 10.0,
     model_overrides: dict | None = None,
@@ -163,6 +164,11 @@ def build_params(
     Construct a (ModelParams, MCParams) pair for a single run,
     creating output directories as needed.
 
+    `couplings` is the flattened coupling map fed to the C++ side. When None it
+    defaults to the camembert map built from `e_crystal`, `crystal_to_defect_ratio`
+    and `e_repel`; pass any other map (e.g. from `contact_utils.ContactMapWrapper`)
+    to run a different model.
+
     Returns (model_params, mc_params, model_file, mc_file).
     """
     slug = run_slug(series_index, crystal_to_defect_ratio)
@@ -172,8 +178,11 @@ def build_params(
     # -- model --
     moves = MOVES_WITH_SWAPS if allow_p_p_swaps else MOVES_WITHOUT_SWAPS
 
+    if couplings is None:
+        couplings = camembert_couplings(e_crystal, crystal_to_defect_ratio, e_repel)
+
     model = ModelParams(
-        couplings=camembert_couplings(e_crystal, crystal_to_defect_ratio, e_repel),
+        couplings=couplings,
         move_probas=dict(moves),  # copy to avoid shared mutation
         e_av_option=True,
         e_record_option=record_option,
@@ -227,6 +236,7 @@ def write_run(
     *,
     allow_p_p_swaps: bool = True,
     record_option: bool = False,
+    couplings: list | None = None,
     model_overrides: dict | None = None,
     mc_overrides: dict | None = None,
     continue_from_mc_file: str | Path | None = None,
@@ -244,6 +254,7 @@ def write_run(
         run_index,
         allow_p_p_swaps=allow_p_p_swaps,
         record_option=record_option,
+        couplings=couplings,
         model_overrides=model_overrides,
         mc_overrides=mc_overrides,
         continue_from_mc_file=continue_from_mc_file,
@@ -269,6 +280,7 @@ def write_run_series(
     *,
     allow_p_p_swaps: bool = True,
     record_option: bool = True,
+    couplings: list | None = None,
     continue_from_mc_file: str | Path | None = None,
     continue_from_step : int | None = None,
     model_overrides: dict | None = None,
@@ -287,6 +299,7 @@ def write_run_series(
             i,
             allow_p_p_swaps=allow_p_p_swaps,
             record_option=record_option,
+            couplings=couplings,
             continue_from_mc_file=continue_from_mc_file,
             continue_from_step=continue_from_step,
             model_overrides=model_overrides,

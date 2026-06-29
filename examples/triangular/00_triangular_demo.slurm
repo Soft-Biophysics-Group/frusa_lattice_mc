@@ -13,7 +13,7 @@
 #SBATCH --output=./logs/00_triangular_demo_%A_%a.log
 #SBATCH --nodelist=titan-node[1-4]
 
-FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {print $1, $2}' /Users/vincent/research/projects/2606_camembertEntropicControl/src/frusa_lattice_mc/python/examples/triangular/input/00_triangular_demo/model_mc_files.txt)
+FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {print $1, $2}' /Users/vincent/research/projects/2606_camembertEntropicControl/src/frusa_lattice_mc/examples/triangular/input/00_triangular_demo/model_mc_files.txt)
 
 MCFILE=$(echo $FILES | awk '{print $1}')
 MODELFILE=$(echo $FILES | awk '{print $2}')

@@ -17,7 +17,7 @@ def generate_array_script(
     time_limit: str = "336:00:00",
     mem: str = "4gb",
     mail_user: str = "vincent.ouazan-reboul@universite-paris-saclay.fr",
-    executable: str = "./frusa_lattice_mc/build/app/frusa_mc",
+    executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     file_list_path: Path | None = None,
 ) -> str:

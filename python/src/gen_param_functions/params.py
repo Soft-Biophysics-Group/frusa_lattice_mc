@@ -30,13 +30,16 @@ DEFAULT_MOVE_PROBAS: dict[str, float] = {
     "swap_full_full": 0.25,
 }
 
+
 def calc_ec_ed_ratio(target_radius: float) -> float:
     """Crystal-to-defect energy ratio that stabilises a domain of `target_radius`."""
     return (2 * target_radius**2 - 2 * target_radius - 1) / (3 * target_radius**2)
 
+
 class InitializeOptions(StrEnum):
     RANDOM = "random"
     FROM_FILE = "from_file"
+
 
 @dataclass
 class ModelParams:
@@ -50,7 +53,7 @@ class ModelParams:
 
     # particles
     n_types: int = 1
-    n_particles: list[int] = field(default_factory = lambda:[1000])
+    n_particles: list[int] = field(default_factory=lambda: [1000])
 
     # couplings — stored as the nested list the C++ side expects
     couplings: list | None = None
@@ -69,7 +72,9 @@ class ModelParams:
     e_record_output: str | None = None
 
     # moves
-    move_probas: dict[str, float] = field(default_factory=lambda: dict(DEFAULT_MOVE_PROBAS))
+    move_probas: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_MOVE_PROBAS)
+    )
 
     def to_dict(self) -> dict:
         """Produce the dict that gets written to JSON for the C++ reader."""
@@ -78,7 +83,7 @@ class ModelParams:
         return {k: v for k, v in d.items() if v is not None}
 
     def get_input_from_prev_mc(
-        self, previous_mc_file: str | Path, start_step: int | None=None
+        self, previous_mc_file: str | Path, start_step: int | None = None
     ) -> None:
         self.initialize_option = InitializeOptions.FROM_FILE
 
@@ -89,7 +94,9 @@ class ModelParams:
                 f"{prev_mc['final_structure_address']}final_structure.dat"
             )
         else:
-            self.state_input = prev_mc["checkpoint_address"] + f"structure_{start_step}.dat"
+            self.state_input = (
+                prev_mc["checkpoint_address"] + f"structure_{start_step}.dat"
+            )
 
 
 class CoolingSchedules(StrEnum):
@@ -250,6 +257,7 @@ def write_run_series(
         )
         for i in range(n_runs)
     ]
+
 
 def write_manifest(path: Path, jobs: list[list[tuple[Path, Path]]]) -> None:
     """Write a manifest of the model and mc parameter files, used as input for the slurm scripts.

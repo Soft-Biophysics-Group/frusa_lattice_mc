@@ -20,12 +20,11 @@ namespace geometry_space {
       };  // bond_permutation
 
       static inline const vec2i bond_array {
-        {  1,  0,  0 },
-        {  0,  1,  0 },
-        {  0,  0,  0 },
-        { -1, 0,  0 },
-        {  0, -1,  0 },
-      }; // bond_array
+        {  1,  0,  0 },  // +x : bond 0
+        {  0,  1,  0 },  // +y : bond 1
+        { -1,  0,  0 },  // -x : bond 2
+        {  0, -1,  0 },  // -y : bond 3
+      }; // bond_array, index-aligned with bond_index / opposite_bonds
 
       static inline const BondIndexMap bond_index {
         {{  1,  0,  0 }, 0},
@@ -43,9 +42,6 @@ static constexpr int n_neighbours {4};
 static constexpr int n_orientations {4};
 
   static inline const vec1i opposite_bonds {2, 3, 0, 1};
-}; // bond_struct
-static constexpr int n_neighbours {4};
-static constexpr int n_orientations {4};
   } // square_space
 } // geometry_space
 

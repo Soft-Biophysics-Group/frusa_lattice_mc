@@ -5,11 +5,12 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
 import numpy as np
-from geometry.triangular import TriangularLattice, TriangularParticle
+from geometry import LatticeGeometry
 from pathlib import Path
 import config as cfg
 from matplotlib.axes import Axes
 from contact_utils import ContactMapWrapper
+import matplotlib.figure
 
 # Global color sets
 ARROW_COLORS = ["black", "blue", "red", "green"]
@@ -64,7 +65,12 @@ class ParticleRepresentation:
         """
         self.lattice_spacing = lattice_spacing
         self.radius = 0.5 / sr32 * self.lattice_spacing
-        self.lattice = TriangularLattice(lx, ly, lattice_spacing)
+        self.lattice = LatticeGeometry.from_lattice_name(
+            "triangular", lx, ly, lattice_spacing=lattice_spacing
+        )
+        # Reuse the particle geometry attached to the lattice rather than
+        # rebuilding it on every call
+        self.particle = self.lattice.particle_geometry
         # Face colors in the reference orientation (0)
         self.colors = [
             "bf9c76ff",
@@ -104,7 +110,7 @@ class ParticleRepresentation:
         all_faces_corners = []
         for face_nr in range(self.n_faces):
             face_corners = np.copy(self.face_0_corners)
-            rotation = TriangularParticle().orientation_rotations[face_nr]
+            rotation = self.particle.orientation_rotations[face_nr]
             for i in range(2):
                 this_corner = face_corners[:, i]
                 face_corners[:, i] = rotation.apply(this_corner)
@@ -128,13 +134,17 @@ class ParticleRepresentation:
         )
         if fill_color == "":
             fill = False
+            facecolor = None
+        else:
+            fill = True
+            facecolor = fill_color
         if squared:
             x_center = self.square_coordinates(x_center)
         h = mpatches.RegularPolygon(
             (x_center, y_center),
             self.n_faces,
             radius=self.radius,
-            facecolor=None,
+            facecolor=facecolor,
             fill=fill,
             edgecolor="black",
         )
@@ -158,7 +168,7 @@ class ParticleRepresentation:
         # Get the edge corresponding to face 0 in current orientation
         # And deduce the arrow orientation in lattice coordinates
         arrow_vector = np.array([a_length, 0, 0])
-        orientation_rotation = TriangularParticle().orientation_rotations[orientation]
+        orientation_rotation = self.particle.orientation_rotations[orientation]
         arrow_vector = orientation_rotation.inv().apply(arrow_vector)
         # FancyArrow uses arrow base location as input, so we'll need that
         x_center_cartesian, y_center_cartesian = self.lattice.lattice_to_cartesian(
@@ -228,7 +238,7 @@ class ParticleRepresentation:
         ax: Axes | None = None,
         squared: bool = False,
         **kwargs,
-    ) -> tuple[Figure, Axes]:
+    ) -> tuple[matplotlib.figure.Figure, Axes]:
         """
         Plots the outline of the particles contained in a structure file.
 
@@ -251,6 +261,8 @@ class ParticleRepresentation:
             fig, ax = plt.subplots(**kwargs)
         else:
             fig = ax.get_figure()
+            if not isinstance(fig, matplotlib.figure.Figure):
+                raise ValueError("The provided Axes is not attached to a Figure.")
         results = cfg.load_structure(results_index, results_folder, results_file)
         for site in cfg.get_full_sites(results):
             x_lattice, y_lattice, _ = self.lattice.lattice_site_to_lattice_coords(site)
@@ -263,6 +275,7 @@ class ParticleRepresentation:
         results_index: int = -1,
         results_folder: str | Path = "",
         results_file: str | Path = "",
+        ax: Axes | None = None,
         squared: bool = False,
         **kwargs,
     ) -> tuple[Figure, Axes]:
@@ -283,11 +296,17 @@ class ParticleRepresentation:
         folder>/data/structures` folder.
 
         ## Extra parameters:
+        - `ax` is an optional Axes to draw onto; if None, a new figure is created.
         - `squared` is a boolean which, if set to True, will use the periodic boundary
           conditions to wrap the lattice into a square window rather.
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
-        fig, ax = plt.subplots()
+        if ax is None:
+            fig, ax = plt.subplots(**kwargs)
+        else:
+            fig = ax.get_figure()
+            if not isinstance(fig, matplotlib.figure.Figure):
+                raise ValueError("The provided Axes is not attached to a Figure.")
         results = cfg.load_structure(results_index, results_folder,  results_file)
 
         for (
@@ -363,7 +382,7 @@ class ParticleRepresentation:
                 neighbour_orientation = results[1, neighbour]
                     # f"\tbond {bond}, neighbour {neighbour} ({x_2, y_2}), with orientation {neighbour_orientation}"
                 # Let's avoid plotting the same contact twice
-                face_1, face_2 = TriangularParticle().get_faces_in_contact(
+                face_1, face_2 = self.particle.get_faces_in_contact(
                     orientation, neighbour_orientation, bond
                 )
                 # print(f"\t\tfaces:{face_1}, {face_2}")
@@ -373,7 +392,5 @@ class ParticleRepresentation:
         return
 
     def square_coordinates(self, x_cartesian):
-        if x_cartesian >= self.lattice.lx:
-            return x_cartesian - self.lattice.lx
-        else:
-            return x_cartesian
+        # Wrap x into [0, lx): shear offsets top rows by up to 0.5*ly, so use full period
+        return np.mod(x_cartesian, self.lattice.lx)

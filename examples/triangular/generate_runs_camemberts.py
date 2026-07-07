@@ -36,9 +36,10 @@ for series_index, radius in enumerate(TARGET_RADII):
         label=f"r_{radius:g}",
     )
 
-print(f"Wrote {len(jobs)} runs under {ROOT / 'input' / RUN_NAME}")
+input_path = ROOT / "input" / RUN_NAME
+print(f"Wrote {len(jobs)} runs under {input_path}")
 
-script = slurm.generate_script_for_prefix(ROOT, RUN_NAME, job_name=RUN_NAME)
+script = slurm.generate_array_script(input_path, jobs, job_name=RUN_NAME)
 script_path = ROOT / f"{RUN_NAME}.slurm"
 script_path.write_text(script)
 print(f"Wrote SLURM script to {script_path}")

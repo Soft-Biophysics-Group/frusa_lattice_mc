@@ -4,15 +4,16 @@ SLURM job script generation for frusa_mc runs.
 
 from pathlib import Path
 from textwrap import dedent
+import numpy as np
 
 from .params import load_json
 
 
 def generate_array_script(
     input_root: Path,
+    jobs: list[tuple[Path, Path]],
     *,
     job_name: str = "frusa_mc",
-    mc_glob: str = "**/mc_params_*.json",
     partition: str = "q-2sem",
     time_limit: str = "336:00:00",
     mem: str = "4gb",
@@ -28,19 +29,14 @@ def generate_array_script(
     """
     input_root = Path(input_root).resolve()
 
-    mc_files = sorted(input_root.glob(mc_glob))
-    if not mc_files:
-        raise FileNotFoundError(f"No MC param files matching {mc_glob!r} in {input_root}")
-
     if file_list_path is None:
         file_list_path = input_root / "model_mc_files.txt"
 
     with file_list_path.open("w") as f:
-        for mc_file in mc_files:
-            mc = load_json(mc_file)
-            f.write(f"{mc_file.resolve()} {mc['model_params_file']}\n")
+        for model_file, mc_file in jobs:
+            f.write(f"{mc_file.resolve()} {model_file.resolve()}\n")
 
-    n = len(mc_files)
+    n = len(jobs)
 
     return dedent(f"""\
         #!/bin/bash
@@ -69,26 +65,6 @@ def generate_array_script(
     """)
 
 
-def generate_script_for_prefix(
-    root: Path,
-    script_prefix: str,
-    **kwargs,
-) -> str:
-    """
-    Convenience wrapper: find all MC files under the input directory
-    for a given script prefix, then generate the SLURM script.
-
-    Usage:
-        script = generate_script_for_prefix(
-            root_folder,
-            "00_gen_params_constant_n_low_A",
-            job_name="constant_n_low_A",
-        )
-        Path("run.slurm").write_text(script)
-    """
-    search_root = root / "input" / script_prefix
-    return generate_array_script(search_root, **kwargs)
-
 def generate_array_script_by_stages(
     manifest_path: Path,
     n_jobs: int,
@@ -110,10 +86,10 @@ def generate_array_script_by_stages(
         col_model = stage_idx * 2 + 1
         col_mc = col_model + 1
         srun_lines.append(
-            f'MCFILE=$(echo $FILES | awk \'{{print ${col_mc}}}\')\n'
-            f'MODELFILE=$(echo $FILES | awk \'{{print ${col_model}}}\')\n'
+            f"MCFILE=$(echo $FILES | awk '{{print ${col_mc}}}')\n"
+            f"MODELFILE=$(echo $FILES | awk '{{print ${col_model}}}')\n"
             f'echo "Stage {stage_idx + 1}/{n_stages}: $MCFILE $MODELFILE"\n'
-            f'srun {executable} \\\n'
+            f"srun {executable} \\\n"
             f'    -M "${{MCFILE}}" \\\n'
             f'    -m "${{MODELFILE}}"'
         )

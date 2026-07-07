@@ -122,3 +122,9 @@ members = ["python"]
 
 [tool.uv.sources]
 frusa-lattice-mc-helpers = { workspace = true }
+
+# Modules live in python/src and are imported flat (source-root layout)
+[tool.pyright]
+extraPaths = ["python/src"]
+venvPath = "."
+venv = ".venv"

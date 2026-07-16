@@ -28,6 +28,22 @@ def get_temperature_energy_records(
 
     return all_T_sorted, np.hstack(all_e_sorted)
 
+def get_average_energies_and_squared(averages_folder: str | Path = ""):
+    all_T = []
+    all_avg_e = []
+    all_avg_sq_e = []
+    avgs_path = Path(averages_folder)
+    for f in sorted(avgs_path.iterdir()):
+        this_avg = np.loadtxt(f)
+        all_T.append(this_avg[0])
+        all_avg_e.append(this_avg[1])
+        all_avg_sq_e.append(this_avg[2])
+    sorting_inds = np.argsort(all_T)[::-1]
+    all_T_sorted = np.array(all_T)[sorting_inds]
+    all_e_sorted = np.array(all_avg_e)[sorting_inds]
+    all_sq_e_sorted = np.array(all_avg_sq_e)[sorting_inds]
+    return all_T_sorted, all_e_sorted, all_sq_e_sorted
+
 def get_average_energies(averages_folder: str | Path = ""):
 
     all_T = []

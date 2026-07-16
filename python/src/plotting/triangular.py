@@ -20,7 +20,7 @@ CAMEMBERT_CONTACTS[5, 1] = 2
 
 
 class TriangularParticleRepresentation(ParticleRepresentation2D):
-    """Plots hexagonal particles tiling a triangular lattice (6 faces, 6 neighbours)."""
+    """Plots hexagonal particles tiling a triangular lattice."""
 
     lattice_name = "triangular"
     n_faces = 6

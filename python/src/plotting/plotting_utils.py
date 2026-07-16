@@ -32,10 +32,11 @@ DEFAULT_CONTACT_COLORS = {
     "empty": "#ff856fff",
 }
 
+
 def load_structure_from_args(
-    results_index: int = -1,
-    results_folder: str | Path = "",
-    results_file: str | Path = "",
+    results_index: int | None = None,
+    results_folder: str | Path | None = None,
+    results_file: str | Path | None = None,
 ) -> np.ndarray:
     """
     Resolves structure location from the various argument combinations
@@ -93,7 +94,7 @@ class ParticleRepresentation2D:
         self.all_face_corners = self.init_face_coords()
 
     @classmethod
-    def for_lattice_name(
+    def from_lattice_name(
         cls, lattice_name: str, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0
     ) -> "ParticleRepresentation2D":
         """Returns the representation for `lattice_name` (e.g. "triangular", "square")."""
@@ -118,7 +119,7 @@ class ParticleRepresentation2D:
         lx, ly = model_dict.get("lx"), model_dict.get("ly")
         if lattice_name is None or lx is None or ly is None:
             raise KeyError("model file must define 'lattice_name', 'lx' and 'ly'")
-        return cls.for_lattice_name(lattice_name, lx, ly, lattice_spacing)
+        return cls.from_lattice_name(lattice_name, lx, ly, lattice_spacing)
 
     def _resolve_fig_ax(self, ax: Axes | None, **kwargs) -> tuple[Figure, Axes]:
         """Returns the (figure, axes) to draw on, creating a new figure when ax is None."""
@@ -245,9 +246,9 @@ class ParticleRepresentation2D:
         self,
         results: np.ndarray | None = None,
         *,
-        results_index: int = -1,
-        results_file: str | Path = "",
-        results_folder: str | Path = "",
+        results_index: int | None = None,
+        results_file: str | Path | None = None,
+        results_folder: str | Path | None = None,
         ax: Axes | None = None,
         squared: bool = False,
         **kwargs,

@@ -6,6 +6,7 @@ from contact_utils import ContactMapWrapper
 
 CRYSTAL_CONTACTS = [(i, i+3) for i in range(3)]
 VORTEX_CAMEMBERT_CONTACTS = [(0,4), (1,5)]
+PATTERN_BULK_CONTACTS = [(0, 2), (0, 4), (1, 5), (3, 5)]
 
 
 def set_contacts(contacts: list[tuple[int, int]], energy:float, cmap:ContactMapWrapper):

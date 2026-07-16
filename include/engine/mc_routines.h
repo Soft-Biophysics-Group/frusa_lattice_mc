@@ -28,6 +28,7 @@ namespace simulation_space{
     bool checkpoint_option {};
     std::string checkpoint_address {};
     std::string final_structure_address {};
+    int structure_index_offset {0};
   };
 
   class mc {

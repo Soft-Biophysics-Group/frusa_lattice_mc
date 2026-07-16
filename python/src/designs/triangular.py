@@ -4,9 +4,9 @@ Storing the contact map designs for triangular lattice particles (i.e. hexagons)
 
 from contact_utils import ContactMapWrapper
 
-CRYSTAL_CONTACTS = [(i, i + 3) for i in range(3)]
-VORTEX_CAMEMBERT_CONTACTS = [(0, 4), (1, 5)]
-PATTERN_BULK_CONTACTS = [(0, 2), (0, 4), (1, 5), (3, 5)]
+CRYSTAL_CONTACTS = [(i, i+3) for i in range(3)]
+VORTEX_CAMEMBERT_CONTACTS = [(0,4), (1,5)]
+DEFECT_LATTICE_CONTACTS = VORTEX_CAMEMBERT_CONTACTS + [(3, 3), (2, 2)]
 
 
 def set_contacts(contacts: list[tuple[int, int]], energy:float, cmap:ContactMapWrapper):

@@ -9,8 +9,14 @@ TODOS:
 """
 
 # mathutils is provided by bpy
+from pathlib import Path
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
+import config as cfg
+from geometry.lattice_geometry import LatticeGeometry
+from geometry.particle_geometry import ParticleGeometry
 
 # Globals
 ID_ROT = R.identity()
@@ -32,6 +38,18 @@ BOND_ROTATIONS = [
 ]
 SR32: float = np.sqrt(3) / 2
 BASIS_VECTORS = np.array([[1, 0.5, 0.], [0, SR32, 0.]])
+
+    @classmethod
+    def from_model_file(
+        cls,
+        model_file: str | Path = cfg.default_model_params_file,
+        lattice_spacing: float = 1.0,
+    ):
+        model_params = cfg.load_model_file(model_file)
+        lx = model_params["lx"]
+        ly = model_params["ly"]
+
+        return cls(lx, ly, lattice_spacing)
 
 
 

@@ -19,16 +19,20 @@ namespace simulation_space{
 
     json json_mc_params = json::parse(mc_f);
 
-    mcs_eq            = json_mc_params["mcs_eq"].template get<int>();
-    mcs_av            = json_mc_params["mcs_av"].template get<int>();
+    mcs_eq = json_mc_params["mcs_eq"].template get<int>();
+    mcs_av = json_mc_params["mcs_av"].template get<int>();
     cooling_schedule =
         json_mc_params["cooling_schedule"].template get<std::string>();
-    Ti                = json_mc_params["Ti"].template get<double>();
-    Tf                = json_mc_params["Tf"].template get<double>();
-    Nt                = json_mc_params["Nt"].template get<int>();
+    Ti = json_mc_params["Ti"].template get<double>();
+    Tf = json_mc_params["Tf"].template get<double>();
+    Nt = json_mc_params["Nt"].template get<int>();
+    if (json_mc_params.contains("structure_index_offset")) {
+      structure_index_offset =
+          json_mc_params["structure_index_offset"].template get<int>();
+    }
     checkpoint_option =
         json_mc_params["checkpoint_option"].template get<bool>();
-  std::cout << "All mc parameters loaded successfully" ;
+    std::cout << "All mc parameters loaded successfully";
 
     if (checkpoint_option) {
       checkpoint_address =
@@ -120,7 +124,8 @@ namespace simulation_space{
 
       if(parameters.checkpoint_option){
         std::string save_loc {parameters.checkpoint_address + "structure_"
-                              + std::to_string(i) + ".dat"};
+                              + std::to_string(i + static_cast<std::size_t>(parameters.structure_index_offset))
+                              + ".dat"};
         simulation_model.save_model_state(save_loc);
       }
       std::cout << "Energy at T = " << T << ": ";

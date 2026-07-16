@@ -13,6 +13,7 @@ Code is strongly inspired from Lara's; see
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
@@ -23,6 +24,17 @@ import config as cfg
 
 # Arrow color per particle species
 ARROW_COLORS = ["black", "blue", "red", "green"]
+
+def load_structure_from_args(
+    results_index: int = -1,
+    results_folder: str | Path = "",
+    results_file: str | Path = "",
+) -> np.ndarray:
+    """
+    Resolves structure location from the various argument combinations
+    and returns the loaded structure array.
+    """
+    return cfg.load_structure(results_index, results_folder, results_file)
 
 
 class ParticleRepresentation2D:
@@ -227,6 +239,8 @@ class ParticleRepresentation2D:
     # ----- PLOTTING SIMULATION RESULTS -----
     def plot_result_outlines(
         self,
+        results: np.ndarray | None = None,
+        *,
         results_index: int = -1,
         results_file: str | Path = "",
         results_folder: str | Path = "",
@@ -327,6 +341,8 @@ class ParticleRepresentation2D:
         self,
         ax: Axes,
         contact_to_color,
+        results: np.ndarray | None = None,
+        *,
         results_index: int = -1,
         results_folder: str | Path = "",
         results_file: str | Path = "",
@@ -353,7 +369,8 @@ class ParticleRepresentation2D:
         - `squared` is a boolean which, if set to True, will use the periodic boundary
           conditions to wrap the lattice into a square window rather.
         """
-        results = cfg.load_structure(results_index, results_folder, results_file)
+        if results is None:
+            results = cfg.load_structure(results_index, results_folder, results_file)
 
         for site, _, orientation in cfg.get_full_sites_characteristics(results):
             x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)

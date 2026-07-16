@@ -44,8 +44,6 @@ def get_average_energies_and_squared(averages_folder: str | Path = ""):
     return all_T_sorted, all_e_sorted, all_sq_e_sorted
 
 def get_average_energies(averages_folder: str | Path = ""):
-
-def get_average_energies(averages_folder: str | Path = ""):
     all_T = []
     all_avg_e = []
     avgs_path = Path(averages_folder)

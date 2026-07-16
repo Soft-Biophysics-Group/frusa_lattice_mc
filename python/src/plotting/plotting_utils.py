@@ -278,6 +278,9 @@ class ParticleRepresentation2D:
             x_lattice, y_lattice, _ = self.lattice.lattice_site_to_lattice_coords(site)
             self.plot_particle_outline(x_lattice, y_lattice, ax, squared=squared)
 
+        ax.set_xticks([])
+        ax.set_yticks([])
+
         return fig, ax
 
     def plot_results_arrows(
@@ -340,6 +343,9 @@ class ParticleRepresentation2D:
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(y_min, y_max)
 
+        ax.set_xticks([])
+        ax.set_yticks([])
+
         return fig, ax
 
     def plot_contacts(
@@ -348,7 +354,7 @@ class ParticleRepresentation2D:
         contacts: list[tuple[int, int]],
         color: str,
         results_index: int | None = None,
-        results_folder: str | Path = "",
+        results_folder: str | Path | None = None,
         results_file: str | Path | None = None,
         squared=False,
     ):
@@ -373,8 +379,7 @@ class ParticleRepresentation2D:
         - `squared` is a boolean which, if set to True, will use the periodic boundary
           conditions to wrap the lattice into a square window rather.
         """
-        if results is None:
-            results = cfg.load_structure(results_index, results_folder, results_file)
+        results = cfg.load_structure(results_index, results_folder, results_file)
 
         for site, _, orientation in cfg.get_full_sites_characteristics(results):
             x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)

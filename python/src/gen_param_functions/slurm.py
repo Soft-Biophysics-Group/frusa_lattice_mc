@@ -21,6 +21,7 @@ def generate_array_script(
     executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     file_list_path: Path | None = None,
+    nodelist:str = "[1-4]"
 ) -> str:
     """
     Build a SLURM array job script for all MC param files under input_root.
@@ -52,7 +53,7 @@ def generate_array_script(
         #SBATCH --time={time_limit}
         #SBATCH --mail-user={mail_user}
         #SBATCH --output={log_dir}/{job_name}_%A_%a.log
-        #SBATCH --nodelist=titan-node[1-4]
+        #SBATCH --nodelist=titan-node[{nodelist}]
 
         FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {{print $1, $2}}' {file_list_path})
 

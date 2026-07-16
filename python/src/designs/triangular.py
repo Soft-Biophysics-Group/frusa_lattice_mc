@@ -6,7 +6,6 @@ from contact_utils import ContactMapWrapper
 
 CRYSTAL_CONTACTS = [(i, i+3) for i in range(3)]
 VORTEX_CAMEMBERT_CONTACTS = [(0,4), (1,5)]
-DEFECT_LATTICE_CONTACTS = VORTEX_CAMEMBERT_CONTACTS + [(3, 3), (2, 2)]
 
 def set_crystal_contacts(crystal_e:float, cmap: ContactMapWrapper):
     for contact in CRYSTAL_CONTACTS:

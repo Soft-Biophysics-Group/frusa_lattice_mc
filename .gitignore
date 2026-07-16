@@ -6,6 +6,7 @@
 *.envrc
 *.blend
 *.blend1
+*.png
 
 /build*/
 /test/build*/

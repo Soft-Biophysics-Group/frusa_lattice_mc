@@ -7,16 +7,16 @@ from geometry import load_geometry
 import numpy as np
 from pathlib import Path
 import config as cfg
-from geometry.load_geometry import geometry_from_model_file
+from geometry import LatticeGeometry
 
 from typing import TypeAlias
 Aggregates: TypeAlias = list[set[int]]
 
 
 def get_aggregates(
-    struct_index: int = -1,
-    struct_folder: str | Path = "",
-    struct_file: str | Path = "",
+    struct_index: int | None = None,
+    struct_folder: str | Path | None = None,
+    struct_file: str | Path | None = None,
     model_file: str | Path = cfg.default_mc_params_file,
 ) -> Aggregates:
     """
@@ -33,10 +33,9 @@ def get_aggregates(
     )
     full_sites = cfg.get_full_sites(site_orientations)
     full_sites_set = set(full_sites)
-    lattice, _ = geometry_from_model_file(model_file)
+    lattice = LatticeGeometry.from_model_file(model_file)
 
     visited_sites = set()
-    first_shell = set()
     to_visit = set()
     all_clusters = []
 

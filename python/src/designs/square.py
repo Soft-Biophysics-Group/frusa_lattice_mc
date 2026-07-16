@@ -8,6 +8,7 @@ CRYSTAL_CONTACTS = [(i, i+2) for i in range(2)]
 SQUARE_VORTEX_CONTACTS = [(0, 1), (0, 3)]
 
 
+
 def set_crystal_contacts(crystal_e:float, cmap: ContactMapWrapper):
     for contact in CRYSTAL_CONTACTS:
         cmap[*contact] = crystal_e

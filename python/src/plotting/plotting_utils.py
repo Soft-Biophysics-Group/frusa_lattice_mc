@@ -24,6 +24,13 @@ import config as cfg
 
 # Arrow color per particle species
 ARROW_COLORS = ["black", "blue", "red", "green"]
+# Contact colors
+DEFAULT_CONTACT_COLORS = {
+    "mismatch": "#8b0000ff",
+    "crystal": "#66cdaaff",
+    "defect": "#0000cdff",
+    "empty": "#ff856fff",
+}
 
 def load_structure_from_args(
     results_index: int = -1,
@@ -92,6 +99,7 @@ class ParticleRepresentation2D:
         """Returns the representation for `lattice_name` (e.g. "triangular", "square")."""
         # Import the concrete modules so their subclasses register themselves
         from . import triangular, square  # noqa: F401
+
         if lattice_name not in cls._representations:
             raise ValueError(
                 f"No 2D plotting for lattice '{lattice_name}'. "
@@ -112,9 +120,7 @@ class ParticleRepresentation2D:
             raise KeyError("model file must define 'lattice_name', 'lx' and 'ly'")
         return cls.for_lattice_name(lattice_name, lx, ly, lattice_spacing)
 
-    def _resolve_fig_ax(
-        self, ax: Axes | None, **kwargs
-    ) -> tuple[Figure, Axes]:
+    def _resolve_fig_ax(self, ax: Axes | None, **kwargs) -> tuple[Figure, Axes]:
         """Returns the (figure, axes) to draw on, creating a new figure when ax is None."""
         if ax is not None:
             fig = ax.get_figure()
@@ -231,9 +237,7 @@ class ParticleRepresentation2D:
                 [0, 0],
             ]
         )
-        ax.plot(
-            particles_face_corners[0, :], particles_face_corners[1, :], color=color
-        )
+        ax.plot(particles_face_corners[0, :], particles_face_corners[1, :], color=color)
         return
 
     # ----- PLOTTING SIMULATION RESULTS -----
@@ -340,12 +344,11 @@ class ParticleRepresentation2D:
     def plot_contacts(
         self,
         ax: Axes,
-        contact_to_color,
-        results: np.ndarray | None = None,
-        *,
-        results_index: int = -1,
+        contacts: list[tuple[int, int]],
+        color: str,
+        results_index: int | None = None,
         results_folder: str | Path = "",
-        results_file: str | Path = "",
+        results_file: str | Path | None = None,
         squared=False,
     ):
         """
@@ -381,8 +384,60 @@ class ParticleRepresentation2D:
                 face_1, face_2 = self.particle.get_faces_in_contact(
                     orientation, neighbour_orientation, bond
                 )
-                color = contact_to_color[face_1, face_2]
-                self.plot_contact(x_1, y_1, bond, ax, color, squared)
+                if (face_1, face_2) in contacts or (face_2, face_1) in contacts:
+                    self.plot_contact(x_1, y_1, bond, ax, color, squared)
+        return
+
+    def plot_other_contacts(
+        self,
+        ax: Axes,
+        contacts: list[tuple[int, int]],
+        color: str,
+        results_index: int | None = None,
+        results_folder: str | Path = "",
+        results_file: str | Path | None = None,
+        squared=False,
+    ):
+        results = cfg.load_structure(results_index, results_folder, results_file)
+
+        for site, _, orientation in cfg.get_full_sites_characteristics(results):
+            x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)
+            neighbours = self.lattice.get_neighbour_sites(site)
+
+            for bond, neighbour in enumerate(neighbours):
+                neighbour_orientation = results[1, neighbour]
+                face_1, face_2 = self.particle.get_faces_in_contact(
+                    orientation, neighbour_orientation, bond
+                )
+                not_in_contacts = (face_1, face_2) not in contacts and (
+                    face_2,
+                    face_1,
+                ) not in contacts
+                not_empty = neighbour_orientation != -1
+                if not_in_contacts and not_empty:
+                    self.plot_contact(x_1, y_1, bond, ax, color, squared)
+        return
+
+    def plot_contacts_w_empty(
+        self,
+        ax: Axes,
+        color: str,
+        results_index: int | None = None,
+        results_folder: str | Path = "",
+        results_file: str | Path | None = None,
+        squared=False,
+    ):
+        results = cfg.load_structure(results_index, results_folder, results_file)
+
+        for site, _, orientation in cfg.get_full_sites_characteristics(results):
+            x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)
+            neighbours = self.lattice.get_neighbour_sites(site)
+
+            for bond, neighbour in enumerate(neighbours):
+                neighbour_orientation = results[1, neighbour]
+                is_empty = neighbour_orientation == -1
+                if is_empty:
+                    self.plot_contact(x_1, y_1, bond, ax, color, squared)
         return
 
     def square_coordinates(self, x_cartesian):

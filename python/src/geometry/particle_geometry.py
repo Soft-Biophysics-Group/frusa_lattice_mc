@@ -10,7 +10,6 @@ from numpy.typing import NDArray
 from collections.abc import MutableMapping
 import config as cfg
 from pathlib import Path
-from . import cubic, triangular, fcc, square
 
 
 class ParticleGeometry:
@@ -82,10 +81,10 @@ class ParticleGeometry:
     ):
         """Generates all the possible orientations of the particle."""
         # Rotation operations are defined as quaternions and compositions of quaternions
-        rotations = [R.identity() for i in range(self.n_orientations)]
+        rotations = [R.identity() for _ in range(self.n_orientations)]
         # Generate first rotation
         # Generate the faces/orientations along + directions
-        for i, bond_rotation in enumerate(face_0_permutation_rotations):
+        for i, _ in enumerate(face_0_permutation_rotations):
             for j in range(len(rotations_around_face_0)):
                 face_index = i * len(rotations_around_face_0) + j
                 rotations[face_index] = (
@@ -142,7 +141,7 @@ class ParticleGeometry:
         return cls.from_lattice_name(lattice_name)
 
     # ----- UTILITIES -----
-    def identify_orientation(self, rotation, atol: float = 1e-2):
+    def identify_orientation(self, rotation, atol: float = 1e-2) -> int:
         """Identifies which orientation the rotation `rotation` puts the particle in, defined as
         the face which takes the place of face 0.
         Returns -1 if the supplied rotation does not put the particle in one of its 24 possible
@@ -175,7 +174,7 @@ class ParticleGeometry:
         combinations reproducing the contact between the 2 particles still occupying the same
         spots.
         """
-        all_face_pairs = []
+        all_face_pairs: list[tuple[int, int]] = []
         opposite_face_2 = self.get_opposite_face_index(face_2)
         for rot in self.rotations_around_face_0:
             orientation_1 = self.identify_orientation(
@@ -185,7 +184,7 @@ class ParticleGeometry:
                 rot * self.orientation_rotations[opposite_face_2]
             )
             all_face_pairs.append(
-                [orientation_1, self.get_opposite_face_index(orientation_2)]
+                (orientation_1, self.get_opposite_face_index(orientation_2))
             )
         return all_face_pairs
 
@@ -246,7 +245,7 @@ class ParticleGeometry:
         else:
             return []
 
-    def get_opposite_face_index(self, orientation):
+    def get_opposite_face_index(self, orientation) -> int:
         """Standardized way to get the face opposite to a given face"""
         return (orientation + (self.n_orientations // 2)) % self.n_orientations
 
@@ -256,6 +255,7 @@ class ParticleGeometry:
 
 class CubicParticle(ParticleGeometry, lattice="cubic"):
     def __init__(self):
+        from . import cubic
         super().__init__(
             orientation_0_vectors=cubic.ORIENTATION_0_VECTORS,
             face_0_permutation_rotations=cubic.BOND_ORIENTATIONS_POSITIVE,
@@ -267,6 +267,7 @@ class CubicParticle(ParticleGeometry, lattice="cubic"):
 
 class FccParticle(ParticleGeometry, lattice="fcc"):
     def __init__(self):
+        from . import fcc
         super().__init__(
             orientation_0_vectors=fcc.ORIENTATION_0_VECTORS,
             face_0_permutation_rotations=fcc.BOND_ORIENTATIONS_POSITIVE,
@@ -281,6 +282,7 @@ class FccParticle(ParticleGeometry, lattice="fcc"):
 
 class TriangularParticle(ParticleGeometry, lattice="triangular"):
     def __init__(self):
+        from . import triangular
         super().__init__(
             triangular.ORIENTATION_0_VEC,
             triangular.BOND_ORIENTATIONS_POSITIVE,
@@ -291,6 +293,7 @@ class TriangularParticle(ParticleGeometry, lattice="triangular"):
 
 class SquareParticle(ParticleGeometry, lattice="square"):
     def __init__(self):
+        from . import square
         super().__init__(
             square.ORIENTATION_0_VEC,
             square.BOND_ORIENTATIONS_POSITIVE,

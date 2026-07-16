@@ -9,7 +9,6 @@ import config as cfg
 from collections.abc import Mapping, MutableMapping
 from scipy.spatial.transform import Rotation as R
 from pathlib import Path
-from . import cubic, triangular, fcc, square
 from .particle_geometry import ParticleGeometry
 
 from typing import TypeAlias
@@ -339,6 +338,7 @@ class TriangularLattice(LatticeGeometry, lattice="triangular"):
     def __init__(
         self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0, lz: int = 1
     ):
+        from . import triangular
         super().__init__(
             triangular.BASIS_VECTORS, triangular.BONDS, lx, ly, 1, lattice_spacing
         )
@@ -347,6 +347,7 @@ class TriangularLattice(LatticeGeometry, lattice="triangular"):
 # The lz = 1.0 is here for consistency. I put it last so that it doesn't get in the way.
 class SquareLattice(LatticeGeometry, lattice="square"):
     def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0, lz:int = 1):
+        from . import square
         super().__init__(square.BASIS_VECTORS, square.BONDS, lx, ly, 1, lattice_spacing)
 
 
@@ -354,6 +355,7 @@ class CubicLattice(LatticeGeometry, lattice="cubic"):
     def __init__(
         self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
     ):
+        from . import cubic
         super().__init__(cubic.BASIS_VECTORS, cubic.BONDS, lx, ly, lz, lattice_spacing)
 
 
@@ -361,4 +363,5 @@ class FccLattice(LatticeGeometry, lattice="fcc"):
     def __init__(
         self, lx: int = 1, ly: int = 1, lz: int = 1, lattice_spacing: float = 1.0
     ):
+        from . import fcc
         super().__init__(fcc.BASIS_VECTORS, fcc.BONDS, lx, ly, lz, lattice_spacing)

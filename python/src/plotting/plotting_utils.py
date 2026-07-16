@@ -263,9 +263,9 @@ class ParticleRepresentation2D:
 
     def plot_results_arrows(
         self,
-        results_index: int = -1,
-        results_folder: str | Path = "",
-        results_file: str | Path = "",
+        results_index: int | None = None,
+        results_folder: str | Path | None = None,
+        results_file: str | Path | None = None,
         ax: Axes | None = None,
         squared: bool = False,
         **kwargs,

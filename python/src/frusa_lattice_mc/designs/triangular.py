@@ -16,7 +16,6 @@ PATTERN_BULK_CONTACTS = (
     | TriangularParticle().get_all_canonical_contacts([(2, 2), (3, 3)])
 )
 
-
 # -------- Geometry functions ---------
 
 

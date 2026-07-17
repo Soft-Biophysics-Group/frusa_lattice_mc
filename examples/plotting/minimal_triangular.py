@@ -5,6 +5,7 @@ Run with:  uv run python examples/plotting/minimal_triangular.py
 from pathlib import Path
 import numpy as np
 from frusa_lattice_mc.plotting.triangular import TriangularParticleRepresentation, CAMEMBERT_CONTACTS
+from frusa_lattice_mc.lattice_state import LatticeState
 
 LX, LY = 8, 8
 OUT = Path(__file__).parent / "figures"
@@ -23,10 +24,15 @@ for x in range(2, 6):
 struct_file = OUT / "triangular_structure.dat"
 np.savetxt(struct_file, structure, fmt="%d")
 
+lattice_state = LatticeState._from_lattice_config(structure, rep.lattice, rep.particle)
+
 # Outlines + orientation arrows, then a contact overlay colouring the camembert contacts.
-fig, ax = rep.plot_results_arrows(results_file=struct_file)
-contact_colors = np.array(["black", "cyan", "blue", "orange"])[CAMEMBERT_CONTACTS]
-rep.plot_contacts(ax, contact_colors, results_file=struct_file)
+fig, ax = rep.plot_results_arrows(lattice_state)
+contact_colors = ["black", "cyan", "blue", "orange"]
+for contact_type, color in enumerate(contact_colors):
+    pairs = list(zip(*np.where(CAMEMBERT_CONTACTS == contact_type)))
+    if pairs:
+        rep.plot_contacts(lattice_state, ax, pairs, color)
 ax.set_aspect("equal")
 
 fig.savefig(OUT / "minimal_triangular.png", dpi=150)

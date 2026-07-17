@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import numpy as np
 from frusa_lattice_mc.plotting.plotting_utils import ParticleRepresentation2D
+from frusa_lattice_mc.lattice_state import LatticeState
 
 LX, LY = 8, 8
 OUT = Path(__file__).parent / "figures"
@@ -29,7 +30,8 @@ for x in range(2, 6):
 struct_file = OUT / "square_structure.dat"
 np.savetxt(struct_file, structure, fmt="%d")
 
-fig, ax = rep.plot_results_arrows(results_file=struct_file)
+lattice_state = LatticeState(struct_file, model_file)
+fig, ax = rep.plot_results_arrows(lattice_state=lattice_state)
 ax.set_aspect("equal")
 
 fig.savefig(OUT / "minimal_square.png", dpi=150)

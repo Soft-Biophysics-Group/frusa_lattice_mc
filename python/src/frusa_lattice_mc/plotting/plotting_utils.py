@@ -21,6 +21,8 @@ import numpy as np
 from ..geometry import LatticeGeometry
 from pathlib import Path
 from .. import config as cfg
+from ..lattice_state import LatticeState
+from typing import Collection
 
 # Arrow color per particle species
 ARROW_COLORS = ["black", "blue", "red", "green"]
@@ -31,18 +33,6 @@ DEFAULT_CONTACT_COLORS = {
     "defect": "#0000cdff",
     "empty": "#ff856fff",
 }
-
-
-def load_structure_from_args(
-    results_index: int | None = None,
-    results_folder: str | Path | None = None,
-    results_file: str | Path | None = None,
-) -> np.ndarray:
-    """
-    Resolves structure location from the various argument combinations
-    and returns the loaded structure array.
-    """
-    return cfg.load_structure(results_index, results_folder, results_file)
 
 
 class ParticleRepresentation2D:
@@ -58,6 +48,7 @@ class ParticleRepresentation2D:
     lattice_name: str
     n_faces: int
     colors: list[str]
+    lattice_state: LatticeState
 
     # Concrete subclasses register here by lattice_name (see __init_subclass__)
     _representations: dict[str, type["ParticleRepresentation2D"]] = {}
@@ -244,11 +235,8 @@ class ParticleRepresentation2D:
     # ----- PLOTTING SIMULATION RESULTS -----
     def plot_result_outlines(
         self,
-        results: np.ndarray | None = None,
         *,
-        results_index: int | None = None,
-        results_file: str | Path | None = None,
-        results_folder: str | Path | None = None,
+        lattice_state: LatticeState,
         ax: Axes | None = None,
         squared: bool = False,
         **kwargs,
@@ -273,8 +261,7 @@ class ParticleRepresentation2D:
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
         fig, ax = self._resolve_fig_ax(ax, **kwargs)
-        results = cfg.load_structure(results_index, results_folder, results_file)
-        for site in cfg.get_full_sites(results):
+        for site in lattice_state.full_sites:
             x_lattice, y_lattice, _ = self.lattice.lattice_site_to_lattice_coords(site)
             self.plot_particle_outline(x_lattice, y_lattice, ax, squared=squared)
 
@@ -285,9 +272,7 @@ class ParticleRepresentation2D:
 
     def plot_results_arrows(
         self,
-        results_index: int | None = None,
-        results_folder: str | Path | None = None,
-        results_file: str | Path | None = None,
+        lattice_state: LatticeState,
         ax: Axes | None = None,
         squared: bool = False,
         **kwargs,
@@ -315,13 +300,12 @@ class ParticleRepresentation2D:
         - Any additional keyword arguments will be passed to matplotlib to create the figure.
         """
         fig, ax = self._resolve_fig_ax(ax, **kwargs)
-        results = cfg.load_structure(results_index, results_folder, results_file)
 
         for (
             site,
             ptype,
             orientation,
-        ) in cfg.get_full_sites_characteristics(results):
+        ) in lattice_state.full_sites_characteristics:
             x_lattice, y_lattice, _ = self.lattice.lattice_site_to_lattice_coords(site)
             color = ARROW_COLORS[ptype]
             self.plot_particle_outline(x_lattice, y_lattice, ax, squared)
@@ -350,12 +334,10 @@ class ParticleRepresentation2D:
 
     def plot_contacts(
         self,
+        lattice_state: LatticeState,
         ax: Axes,
-        contacts: list[tuple[int, int]],
+        contacts: Collection[tuple[int, int]],
         color: str,
-        results_index: int | None = None,
-        results_folder: str | Path | None = None,
-        results_file: str | Path | None = None,
         squared=False,
     ):
         """
@@ -379,14 +361,13 @@ class ParticleRepresentation2D:
         - `squared` is a boolean which, if set to True, will use the periodic boundary
           conditions to wrap the lattice into a square window rather.
         """
-        results = cfg.load_structure(results_index, results_folder, results_file)
 
-        for site, _, orientation in cfg.get_full_sites_characteristics(results):
+        for site, _, orientation in lattice_state.full_sites_characteristics:
             x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)
             neighbours = self.lattice.get_neighbour_sites(site)
 
             for bond, neighbour in enumerate(neighbours):
-                neighbour_orientation = results[1, neighbour]
+                neighbour_orientation = lattice_state.lattice_config[1, neighbour]
                 face_1, face_2 = self.particle.get_faces_in_contact(
                     orientation, neighbour_orientation, bond
                 )
@@ -396,22 +377,19 @@ class ParticleRepresentation2D:
 
     def plot_other_contacts(
         self,
+        lattice_state: LatticeState,
         ax: Axes,
-        contacts: list[tuple[int, int]],
+        contacts: Collection[tuple[int, int]],
         color: str,
-        results_index: int | None = None,
-        results_folder: str | Path = "",
-        results_file: str | Path | None = None,
         squared=False,
     ):
-        results = cfg.load_structure(results_index, results_folder, results_file)
 
-        for site, _, orientation in cfg.get_full_sites_characteristics(results):
+        for site, _, orientation in lattice_state.full_sites_characteristics:
             x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)
             neighbours = self.lattice.get_neighbour_sites(site)
 
             for bond, neighbour in enumerate(neighbours):
-                neighbour_orientation = results[1, neighbour]
+                neighbour_orientation = lattice_state.lattice_config[1, neighbour]
                 face_1, face_2 = self.particle.get_faces_in_contact(
                     orientation, neighbour_orientation, bond
                 )
@@ -426,21 +404,17 @@ class ParticleRepresentation2D:
 
     def plot_contacts_w_empty(
         self,
+        lattice_state: LatticeState,
         ax: Axes,
         color: str,
-        results_index: int | None = None,
-        results_folder: str | Path = "",
-        results_file: str | Path | None = None,
         squared=False,
     ):
-        results = cfg.load_structure(results_index, results_folder, results_file)
-
-        for site, _, orientation in cfg.get_full_sites_characteristics(results):
+        for site, _, orientation in lattice_state.full_sites_characteristics:
             x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)
             neighbours = self.lattice.get_neighbour_sites(site)
 
             for bond, neighbour in enumerate(neighbours):
-                neighbour_orientation = results[1, neighbour]
+                neighbour_orientation = lattice_state.lattice_config[1, neighbour]
                 is_empty = neighbour_orientation == -1
                 if is_empty:
                     self.plot_contact(x_1, y_1, bond, ax, color, squared)

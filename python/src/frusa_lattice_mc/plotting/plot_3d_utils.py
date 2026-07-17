@@ -25,7 +25,7 @@ from ..designs.fcc import CRYSTAL_INTS_CORNER
 from .build_grain_boundary_geo_nodes import geometry_nodes_node_group
 from .build_composition_nodes import build_composition_nodes
 
-from ..analysis.get_clusters import get_aggregates
+from ..analysis.clusters import get_aggregates
 
 DEFAULT_MATERIAL = (14, 0, 255, 1.0)
 

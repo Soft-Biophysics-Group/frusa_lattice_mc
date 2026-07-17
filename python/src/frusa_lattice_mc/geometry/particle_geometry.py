@@ -202,7 +202,8 @@ class ParticleGeometry:
             if min(contact) < min(canonical_contact):
                 canonical_contact = contact
 
-        return canonical_contact
+        face_min, face_max = sorted(canonical_contact)
+        return (face_min, face_max)
 
     def get_all_canonical_contacts(
         self, list_of_face_pairs: list[tuple[int, int]]

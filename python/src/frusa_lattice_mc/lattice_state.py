@@ -83,7 +83,7 @@ class LatticeState:
         return np.vstack([sites, types, orientations]).T
 
     @cached_property
-    def face_face_contacts(self) -> dict[frozenset[int], frozenset[int]]:
+    def face_face_contacts(self) -> dict[frozenset[int], tuple[int, int]]:
         """All the particle face-face contacts in this state, as a dict for data analysis.
 
         Returns:
@@ -92,7 +92,7 @@ class LatticeState:
         occupying them. Only pairs of full sites appear as keys.
         """
 
-        all_contacts: dict[frozenset[int], frozenset[int]] = {}
+        all_contacts: dict[frozenset[int], tuple[int, int]] = {}
 
         for site_1 in self.full_sites:
             orientation_1 = self.orientations[site_1]

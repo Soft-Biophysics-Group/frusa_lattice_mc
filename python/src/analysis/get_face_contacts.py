@@ -5,9 +5,9 @@ import config as cfg
 
 
 def get_particle_face_face_contacts(
-    struct_index: int = -1,
-    struct_folder: str | Path = "",
-    struct_file: str | Path = "",
+    struct_index: int | None = None,
+    struct_folder: str | Path | None = None,
+    struct_file: str | Path | None = None,
     model_file: str | Path = cfg.default_mc_params_file,
 ):
     """Returns all the particle face-face contacts as a dict for data analysis.

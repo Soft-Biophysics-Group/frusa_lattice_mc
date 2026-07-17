@@ -2,12 +2,13 @@
 Vincent Ouazan-Reboul, 2025
 Few functions to get the size of aggregates on any implemented lattice.
 """
+from geometry.particle_geometry import ParticleGeometry
 
-from geometry import load_geometry
 import numpy as np
 from pathlib import Path
 import config as cfg
 from geometry import LatticeGeometry
+from dataclasses import dataclass
 
 from typing import TypeAlias
 Aggregates: TypeAlias = list[set[int]]
@@ -71,9 +72,9 @@ def get_aggregate_sizes(aggregates: Aggregates) -> list[int]:
 
 
 def get_crystalline_domains(
-    struct_index: int = -1,
-    struct_folder: str | Path = "",
-    struct_file: str | Path = "",
+    struct_index: int | None = None,
+    struct_folder: str | Path | None = None,
+    struct_file: str | Path | None = None,
     model_file: str | Path = cfg.default_mc_params_file,
 ) -> Aggregates:
     """
@@ -90,7 +91,7 @@ def get_crystalline_domains(
     )
     full_sites = cfg.get_full_sites(site_orientations)
     full_sites_set = set(full_sites)
-    lattice, _ = geometry_from_model_file(model_file)
+    lattice = LatticeGeometry.from_model_file(model_file)
 
     visited_sites = set()
     to_visit = set()
@@ -130,7 +131,7 @@ def get_n_interfaces_w_ext(
 ) -> list[int]:
     """Returns the number of interfaces between each aggregate and the outside."""
     n_interfaces = []
-    lattice, _ = geometry_from_model_file(model_file)
+    lattice = LatticeGeometry.from_model_file(model_file)
     all_full_sites = set()
 
     for agg in aggregates:

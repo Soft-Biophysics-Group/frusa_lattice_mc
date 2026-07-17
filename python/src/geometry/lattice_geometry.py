@@ -66,6 +66,8 @@ class LatticeGeometry:
         self.lattice_vectors_in_cartesian: NDArray[np.float64] = np.array(
             basis_vectors, dtype=np.float64
         )
+        # Compute the base change from cartesian to lattice
+        # Particular case of 2D lattices: the periodicity matrix has a column of zeros and is non-invertible. So invert only the 3x2 sub-matrix.
         if (self.lattice_vectors_in_cartesian[:, -1] == 0.0).all():
             self.cartesian_to_lattice_basis: NDArray[np.float64] = np.hstack((
                 np.linalg.inv(self.lattice_vectors_in_cartesian[:, 0:2]),
@@ -90,6 +92,8 @@ class LatticeGeometry:
 
         self.n_sites: int = lx * ly * lz
 
+        self._neighbour_table_cache: NDArray[np.int64] | None = None
+
         self.particle_geometry: ParticleGeometry
 
     # ----- SUBCLASSES -----
@@ -107,9 +111,9 @@ class LatticeGeometry:
     def from_lattice_name(
         cls,
         lattice_name: str,
-        lx: int | float,
-        ly: int | float,
-        lz: int | float = 1,
+        lx: int = 1,
+        ly: int = 1,
+        lz: int = 1,
         lattice_spacing: float = 1.0,
     ):
         if lattice_name in cls._lattices.keys():
@@ -135,14 +139,21 @@ class LatticeGeometry:
 
         return cls.from_lattice_name(lattice_name, lx, ly, lz, lattice_spacing)
 
+
     # ----- GEOMETRY -----
+    @property
+    def _neighbour_table(self):
+        if self._neighbour_table_cache is None:
+            self._neighbour_table_cache = self._precompute_neighbour_bonds()
+        return self._neighbour_table_cache
+
     def lattice_to_cartesian(
         self,
         x_lattice: int,
         y_lattice: int,
         z_lattice: int = 1,
-        linear_transform: NDArray[np.int_ | np.float_] | None = None,
-    ) -> NDArray[np.float_]:
+        linear_transform: NDArray[np.int_ | np.float64] | None = None,
+    ) -> NDArray[np.float64]:
         if linear_transform is not None:
             new_lattice_vectors = self.lattice_vectors_in_cartesian @ linear_transform
             return (
@@ -166,7 +177,7 @@ class LatticeGeometry:
         # return naive_coords
         return self.apply_pbc(*naive_coords)
 
-    def cartesian_to_lattice_avoid_pbc(self, coords: NDArray[np.float_]):
+    def cartesian_to_lattice_avoid_pbc(self, coords: NDArray[np.float64]):
         lattice_loc = self.cartesian_to_lattice_basis @ np.reshape(coords, (3))
         min_coords_lattice = np.min(lattice_loc, axis=0)
         lattice_loc -= min_coords_lattice
@@ -213,38 +224,32 @@ class LatticeGeometry:
     ) -> int:
         return x_lattice + y_lattice * self.lx + z_lattice * self.lx * self.ly
 
+    def _precompute_neighbour_bonds(self) -> NDArray[np.int_]:
+        sites = np.arange(self.n_sites)
+        z = sites // (self.lx * self.ly)
+        y = (sites - self.lx * self.ly * z) // self.lx
+        x = sites - self.lx * self.ly * z - self.lx * y
+        table = np.empty((self.n_sites, len(self.bonds)), dtype=int)
+        for i_bond, (bx, by, bz) in enumerate(self.bonds):
+            table[:, i_bond] = (
+                (x + bx) % self.lx
+                + ((y + by) % self.ly) * self.lx
+                + ((z + bz) % self.lz) * self.lx * self.ly
+            )
+        return table
+
     def get_neighbour_sites(self, site_index: int) -> list[int]:
         """Return as 1D array of site indices corresponding to the neighbours of site_index.
         The jth element of this array is the neighbour of site_index following the jth bond.
         """
-        x: int
-        y: int
-        z: int
-        x, y, z = self.lattice_site_to_lattice_coords(site_index)
-
-        neighbours: list[int] = []
-        bond: Bond
-        for bond in self.bonds:
-            x_neighbour: int
-            y_neighbour: int
-            z_neighbour: int
-            x_neighbour, y_neighbour, z_neighbour = np.array([x, y, z]) + bond
-            # Quick and dirty implementation of periodic boundary conditions
-            x_neighbour, y_neighbour, z_neighbour = self.apply_pbc(
-                x_neighbour, y_neighbour, z_neighbour
-            )
-            neighbour_index = self.lattice_coords_to_lattice_site(
-                x_neighbour, y_neighbour, z_neighbour
-            )
-            neighbours.append(neighbour_index)
-        return neighbours
+        return self._neighbour_table[site_index, :].tolist()
 
     def apply_pbc(
         self,
         x: int,
         y: int,
         z: int,
-        linear_transform: NDArray[np.int_ | np.float_] | None = None,
+        linear_transform: NDArray[np.int_ | np.float64] | None = None,
     ) -> tuple[int, int, int]:
         if linear_transform is not None:
             new_box_coords = linear_transform @ np.array([self.lx, self.ly, self.lz]).T
@@ -258,7 +263,7 @@ class LatticeGeometry:
 
         return x, y, z
 
-    def apply_pbc_vector(self, vec: NDArray[np.float_]):
+    def apply_pbc_vector(self, vec: NDArray[np.float64]):
         """Applies periodic boundary conditions to a vector linking 2 sites.
 
         If the vector has components with magnitude larger than half of the lattice, we wrap

@@ -11,4 +11,4 @@ def get_particle_lattice(model_file: str | Path = default_model_params_file):
     )
 
 
-__all_ = ["LatticeGeometry", "ParticleGeometry", "get_particle_lattice"]
+__all__ = ["LatticeGeometry", "ParticleGeometry", "get_particle_lattice"]

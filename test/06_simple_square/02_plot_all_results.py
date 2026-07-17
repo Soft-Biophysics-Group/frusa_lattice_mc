@@ -1,4 +1,4 @@
-from plotting import BlenderPlot
+from frusa_lattice_mc.plotting import BlenderPlot
 from pathlib import Path
 
 def plot_one_run(

@@ -30,16 +30,16 @@ N_TEMPERATURE_STEPS = 120
 
 # ----- IMPORTS -----
 import numpy as np
-from json_dump import *
+from frusa_lattice_mc.json_dump import *
 from pathlib import Path
-from designs.fcc import (
+from frusa_lattice_mc.designs.fcc import (
     CRYSTAL_INTS_CORNER,
     DEFECT_CORNER
 )
-from contact_utils import ContactMapWrapper
-import config as cfg
-from plotting import BlenderPlot
-from plotting.plot_3d_utils import create_line_material
+from frusa_lattice_mc.contact_utils import ContactMapWrapper
+from frusa_lattice_mc import config as cfg
+from frusa_lattice_mc.plotting import BlenderPlot
+from frusa_lattice_mc.plotting.plot_3d_utils import create_line_material
 
 # ----- CREATING FOLDERS -----
 ROOT_FOLDER = Path(__file__).parent.parent

@@ -5,7 +5,7 @@ array script that runs them.
 
 from pathlib import Path
 
-from gen_param_functions import (
+from frusa_lattice_mc.gen_param_functions import (
     ModelParams,
     MCParams,
     write_run_series,

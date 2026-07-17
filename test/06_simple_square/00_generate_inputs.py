@@ -4,9 +4,9 @@ Make crystal-forming particles with a different number of particles to observe f
 effects.
 """
 
-from contact_utils import ContactMapWrapper
-from geometry import ParticleGeometry
-from json_dump import *
+from frusa_lattice_mc.contact_utils import ContactMapWrapper
+from frusa_lattice_mc.geometry import ParticleGeometry
+from frusa_lattice_mc.json_dump import *
 from pathlib import Path
 import numpy as np
 

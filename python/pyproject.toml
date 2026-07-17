@@ -117,14 +117,15 @@ dependencies = [
     "zstandard==0.23.0",
 ]
 
-# Modules live in src/ and are imported flat (source-root layout):
-#   import config, contact_utils, ...
-#   from gen_param_functions import ...
-# Install once so the modules resolve without PYTHONPATH (run in python/):
+# Everything lives in the single `frusa_lattice_mc` package under src/ (src layout):
+#   from frusa_lattice_mc import config
+#   from frusa_lattice_mc.analysis.get_clusters import get_aggregates
+# One top-level name keeps the package from colliding with anything else in the venv, and
+# lets modules import each other with relative imports.
+# Install once so it resolves without PYTHONPATH (run in python/):
 #   pip install -e .
 [tool.setuptools]
 package-dir = { "" = "src" }
-py-modules = ["config", "contact_utils", "json_dump", "lattice_utils"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

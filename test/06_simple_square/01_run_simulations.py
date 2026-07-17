@@ -5,7 +5,7 @@ Utility to run several MC simulations in parallel.
 """
 
 from multiprocessing import Pool
-from config import run_simulation
+from frusa_lattice_mc.config import run_simulation
 
 overwrite = True
 

@@ -5,8 +5,8 @@ coupling map, built with `contact_utils.ContactMapWrapper`.
 
 from pathlib import Path
 
-from contact_utils import ContactMapWrapper
-from gen_param_functions import ModelParams, MCParams, write_run_series, slurm
+from frusa_lattice_mc.contact_utils import ContactMapWrapper
+from frusa_lattice_mc.gen_param_functions import ModelParams, MCParams, write_run_series, slurm
 
 ROOT = Path(__file__).parent.resolve()
 RUN_NAME = "01_custom_couplings_demo"

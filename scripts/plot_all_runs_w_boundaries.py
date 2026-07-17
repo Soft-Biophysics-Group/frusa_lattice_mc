@@ -6,14 +6,14 @@ Usage: python plot_all_runs_w_boundaries.py {path_to_input_folder/}. e.g: python
 plot_all_runs_w_boundaries input/notebook_run.
 """
 
-from plotting import BlenderPlot
-import config as cfg
+from frusa_lattice_mc.plotting import BlenderPlot
+from frusa_lattice_mc import config as cfg
 from pathlib import Path
-from designs.fcc import DEFECT_CORNER, CRYSTAL_CONTACTS
+from frusa_lattice_mc.designs.fcc import DEFECT_CORNER, CRYSTAL_CONTACTS
 
 import sys
 
-from plotting.plot_3d_utils import create_line_material
+from frusa_lattice_mc.plotting.plot_3d_utils import create_line_material
 from typing import cast
 
 

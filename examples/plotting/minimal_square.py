@@ -6,7 +6,7 @@ Run with:  uv run python examples/plotting/minimal_square.py
 import json
 from pathlib import Path
 import numpy as np
-from plotting.plotting_utils import ParticleRepresentation2D
+from frusa_lattice_mc.plotting.plotting_utils import ParticleRepresentation2D
 
 LX, LY = 8, 8
 OUT = Path(__file__).parent / "figures"

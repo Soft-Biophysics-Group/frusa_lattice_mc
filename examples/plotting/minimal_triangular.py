@@ -4,7 +4,7 @@ Run with:  uv run python examples/plotting/minimal_triangular.py
 """
 from pathlib import Path
 import numpy as np
-from plotting.triangular import TriangularParticleRepresentation, CAMEMBERT_CONTACTS
+from frusa_lattice_mc.plotting.triangular import TriangularParticleRepresentation, CAMEMBERT_CONTACTS
 
 LX, LY = 8, 8
 OUT = Path(__file__).parent / "figures"

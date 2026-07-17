@@ -3,7 +3,7 @@
 
 import numpy as np
 import os
-from json_dump import * 
+from frusa_lattice_mc.json_dump import * 
 
 def make_dir(name):
     """

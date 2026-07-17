@@ -32,17 +32,18 @@ def get_particle_face_face_contacts(
         struct_index=struct_index, struct_folder=struct_folder, struct_file=struct_file
     )
     full_sites = cfg.get_full_sites(site_orientations)
+    full_sites_set = set(full_sites)
     orientations = site_orientations[1, :]
     lattice = LatticeGeometry.from_model_file(model_file)
     particle = ParticleGeometry.from_model_file(model_file)
 
     all_contacts = {}
 
-    for i, site_1 in enumerate(full_sites):
+    for _, site_1 in enumerate(full_sites):
         orientation_1 = orientations[site_1]
         neighbours_of_1 = lattice.get_neighbour_sites(site_1)
         for neighbour in neighbours_of_1:
-            if neighbour in full_sites:
+            if neighbour in full_sites_set:
                 site_2 = neighbour
                 particles_set = frozenset((site_1, site_2))
                 if particles_set not in all_contacts.keys():

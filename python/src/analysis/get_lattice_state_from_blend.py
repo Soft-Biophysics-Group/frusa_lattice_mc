@@ -51,14 +51,12 @@ def get_objs_in_collection_locs_rots(
     return all_locations, all_rotations_xyz_rad
 
 def auto_fit_lattice(
-    particle_locations: NDArray[np.float_],
+    particle_locations: NDArray[np.float64],
     lattice_name: str,
     make_dims_equal: bool = True,
-) -> tuple[NDArray[np.float_], int, int, int]:
-    # Make a ridiculously large lattice for our purposes
-    infinite_lattice = LatticeGeometry.from_lattice_name(
-        lattice_name, np.inf, np.inf, np.inf
-    )
+) -> tuple[NDArray[np.float64], int, int, int]:
+    # Make a dummy lattice for our purposes
+    dummy_lattice = LatticeGeometry.from_lattice_name(lattice_name)
     # Convert all cartesian coordinates to infinite lattice to find span of lattice that fits
     # our structure snugly
     lattice_locations = np.zeros_like(particle_locations)
@@ -67,7 +65,7 @@ def auto_fit_lattice(
         # At this point some of our lattice coordinates may stil be negative, and so this would
         # lead to infinities in our coordinates. Instead, we only multiply by the inverse basis
         # matrix.
-        lattice_locations[i, :] = infinite_lattice.cartesian_to_lattice_basis @ location
+        lattice_locations[i, :] = dummy_lattice.cartesian_to_lattice_basis @ location
 
     # print("Lattice_locations")
     # print(lattice_locations)

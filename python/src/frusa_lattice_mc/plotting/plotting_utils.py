@@ -17,9 +17,7 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
-import numpy as np
 from ..geometry import LatticeGeometry
-from pathlib import Path
 from .. import config as cfg
 from ..lattice_state import LatticeState
 from typing import Collection
@@ -48,7 +46,6 @@ class ParticleRepresentation2D:
     lattice_name: str
     n_faces: int
     colors: list[str]
-    lattice_state: LatticeState
 
     # Concrete subclasses register here by lattice_name (see __init_subclass__)
     _representations: dict[str, type["ParticleRepresentation2D"]] = {}
@@ -235,7 +232,6 @@ class ParticleRepresentation2D:
     # ----- PLOTTING SIMULATION RESULTS -----
     def plot_result_outlines(
         self,
-        *,
         lattice_state: LatticeState,
         ax: Axes | None = None,
         squared: bool = False,

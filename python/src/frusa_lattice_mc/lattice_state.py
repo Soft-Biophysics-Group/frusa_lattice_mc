@@ -76,7 +76,7 @@ class LatticeState:
         return self.lattice_config[1, :]
 
     @cached_property
-    def get_full_sites_characteristics(self):
+    def full_sites_characteristics(self):
         sites = self.full_sites
         types = self.lattice_config[0, sites]
         orientations = self.lattice_config[1, sites]

@@ -49,10 +49,10 @@ class Clusters:
         self._site_sets = list(site_sets)
 
     @classmethod
-    def connected_components(
+    def connected_components_with_condition(
         cls,
         state: LatticeState,
-        same_component: Callable[[int, int], bool] = lambda x, y: True,
+        same_component: Callable[[int, int], bool],
     ) -> "Clusters":
         """Finds the connected components of a LatticeState sharing some conditions, same_component, on their orientation.
         same_condition is typically going to be lambda x,y : True for connected components,
@@ -84,6 +84,25 @@ class Clusters:
             components.append(frozenset(component))
 
         return cls(state, components)
+
+    # Let's specialize the connected_components to the 2 most common cases:
+    @classmethod
+    def connected_components(cls, state: LatticeState):
+        """Builds all the connected components of state, i.e. the aggregates formed by connected
+        particles with any orientation.
+        """
+        return cls.connected_components_with_condition(state, lambda x, y: True)
+
+    # Let's specialize the connected_components to the 2 most common cases:
+    @classmethod
+    def crystalline_domains(cls, state: LatticeState):
+        """Builds all the crystalline domains of state, i.e. the aggregates or parts of
+        aggregates which have the same orientations.
+        """
+        orientations = state.orientations
+        return cls.connected_components_with_condition(
+            state, lambda x, y: orientations[x] == orientations[y]
+        )
 
     @cached_property
     def _partition(self) -> tuple[list[PairsToContacts], PairsToContacts]:
@@ -153,11 +172,8 @@ class Clusters:
 
 
 def get_aggregates(state: LatticeState) -> Clusters:
-    return Clusters.connected_components(state, lambda a, b: True)
+    return Clusters.connected_components(state)
 
 
 def get_crystalline_domains(state: LatticeState) -> Clusters:
-    orientations = state.orientations
-    return Clusters.connected_components(
-        state, lambda a, b: orientations[a] == orientations[b]
-    )
+    return Clusters.crystalline_domains(state)

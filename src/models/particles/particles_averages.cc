@@ -62,7 +62,7 @@ static double calc_autocorr_time(const vec1d& e_series)
     for (std::size_t i = 0; i < n_steps - t; ++i) {
       corr_fct_of_t += (e_series[i] - mean_e) * (e_series[i + t] - mean_e);
     }
-    corr_fct_of_t /= static_cast<double>(n_steps - t) * var_e;
+    corr_fct_of_t /= static_cast<double>(n_steps) * var_e;
     sum += corr_fct_of_t;
 
     // See docstring link for derivation

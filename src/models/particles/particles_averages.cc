@@ -36,6 +36,8 @@ void update_averages(averages_struct& averages,
 // Returns 1.0 (no autocorrelation) if not enough samples or negative variance
 // See https://emcee.readthedocs.io/en/stable/tutorials/autocorr/
 // and Sokal 1997, Monte-Carlo Methods in Statistical Physics
+// NOTE: The first link I gave has a typo, the normalization should be by the
+// total number of steps
 static double calc_autocorr_time(const vec1d& e_series)
 {
   const std::size_t n_steps {e_series.size()};

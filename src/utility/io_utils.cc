@@ -136,8 +136,10 @@ namespace io_space{
       exit(1);
     }
 
+    // Save the results with the maximum possible number of digits.
     for(std::size_t i=0;i<static_cast<std::size_t>(N);i++){
-      array_f << std::setprecision(8) << array[i] << "\n";
+      array_f << std::setprecision(std::numeric_limits<double>::max_digits10)
+              << array[i] << "\n";
     }
     array_f.close();
   }
@@ -175,7 +177,8 @@ namespace io_space{
 
     for(std::size_t i=0;i<static_cast<std::size_t>(N1);i++){
       for(std::size_t j=0;j<static_cast<std::size_t>(N2);j++){
-        array_f << std::setprecision(8) << array[i][j] << " ";
+        array_f << std::setprecision(std::numeric_limits<double>::max_digits10)
+                << array[i][j] << " ";
       }
       array_f << "\n";
     }

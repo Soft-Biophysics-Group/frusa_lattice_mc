@@ -38,5 +38,5 @@ class Averages:
 
     @property
     def heat_capacity(self):
-        variance = np.maximum(self.squared_energies - self.energies**2, 0.0)
+        variance = self.squared_energies - self.energies**2
         return variance / self.temperatures**2

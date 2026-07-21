@@ -21,7 +21,7 @@ def generate_array_script(
     executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     file_list_path: Path | None = None,
-    nodelist:str = "[1-4]"
+    nodelist:str = "[1-4]",
 ) -> str:
     """
     Build a SLURM array job script for all MC param files under input_root.

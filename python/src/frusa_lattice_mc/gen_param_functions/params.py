@@ -1,6 +1,7 @@
 """
 Simulation parameter dataclasses with JSON serialization.
 """
+from frusa_lattice_mc.contact_utils import ContactMapWrapper
 
 import json
 from dataclasses import dataclass, asdict, replace, field
@@ -75,6 +76,19 @@ class ModelParams:
     move_probas: dict[str, float] = field(
         default_factory=lambda: dict(DEFAULT_MOVE_PROBAS)
     )
+
+    def __post_init__(self):
+        # Check that the length of couplings matches the chosen lattice
+        cu = ContactMapWrapper.from_lattice_name(self.lattice_name)
+        if self.couplings is not None and len(cu.get_formatted_couplings()) != len(
+            self.couplings
+        ):
+            raise ValueError(
+                f"ModelParams instance initiated with {self.lattice_name} lattice expects"
+                + f" couplings of length {len(cu.get_formatted_couplings())}"
+                + f" but was instead provided couplings of length {len(self.couplings)}"
+            )
+
 
     def to_dict(self) -> dict:
         """Produce the dict that gets written to JSON for the C++ reader."""

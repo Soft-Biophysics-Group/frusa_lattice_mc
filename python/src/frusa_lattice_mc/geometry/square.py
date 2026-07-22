@@ -8,6 +8,7 @@ simulation results
 # mathutils is provided by bpy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from ..analysis.clusters import Cluster
 
 # Globals
 ID_ROT = R.identity()
@@ -26,3 +27,16 @@ BOND_ROTATIONS = [
     *[C2Z * rot for rot in BOND_ORIENTATIONS_POSITIVE],
 ]
 BASIS_VECTORS = np.array([[1., 0., 0.], [0., 1., 0.]])
+
+# Function to measure dimensions of a rectangular cluster
+def measure_effective_length_width(cluster:Cluster) -> tuple[int, int]:
+    """See calculation AAH, 26-07-22 for derivation. Returns the largest dimension first,
+    smallest second."""
+    area = cluster.size
+    perimeter = cluster.n_interfaces_with_exterior
+
+    # Convention: length = largest dimension, width = smallest
+    length = perimeter / 4 * (perimeter / 2 + np.sqrt(1 - 16 * area / perimeter**2))
+    width = perimeter / 4 * (perimeter / 2 - np.sqrt(1 - 16 * area / perimeter**2))
+
+    return (length, width)

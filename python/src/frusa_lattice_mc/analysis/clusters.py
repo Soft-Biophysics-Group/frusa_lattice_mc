@@ -40,6 +40,86 @@ class Cluster:
             if nb not in full
         )
 
+    @property
+    def _relative_coords_cartesian(self) -> NDArray[np.float64]:
+        r = np.array(list(self.coords_relative_to_center.values()))
+        return r @ self.state.lattice.lattice_vectors_in_cartesian.T
+
+
+    @property
+    def bounding_box_dims(self) -> NDArray[np.float64]:
+        return np.ptp(self._relative_coords_cartesian[:, :2], axis=0)
+
+    @property
+    def aspect_ratio_bb(self) -> float:
+        """Measure the aspect ratio of a two-dimensional aggregate, taken as the ratio of the
+        bounding box dimensions"""
+        # Obtain the bounding box dimensions of the cluster
+        bb_dims = self.bounding_box_dims
+        max_dim = np.max(bb_dims)
+        min_dim = np.min(bb_dims)
+        return max_dim / min_dim
+
+    @property
+    def aspect_ratio_gyr(self) -> float:
+        """Measure the aspect ratio of a two-dimensional aggregate, taken as the ratio between
+        the eigenvalues of the gyration tensor"""
+        latt = self.state.lattice
+        # percolating clusters have no well-defined shape — guard first
+        span = np.ptp(np.array(list(self.particle_coords_no_pbc.values())), axis=0)
+        if (span[:2] >= np.array([latt.lx, latt.ly])).any():
+            return np.nan
+
+        r = self._relative_coords_cartesian
+        G = (r.T @ r) / len(r)
+        lam = np.linalg.eigvalsh(G)
+        lam = lam[lam > 1e-9]            # drop flat dimensions (z in a 2D system)
+        if lam.size < 2:
+            return 1.0                  # single point / line
+        return float(np.sqrt(lam.max() / lam.min()))
+
+    @property
+    def particle_coords_no_pbc(self) -> dict[int, NDArray[np.int_]]:
+        """Absolute (unwrapped) lattice coordinates for every site in the cluster,
+        keyed by site index. """
+        latt = self.state.lattice
+        first = next(iter(self.sites))
+        bond_sequences = {first: []}
+        to_be_added = [first]
+
+        for site in to_be_added:
+            for i_bond, neigh in enumerate(latt.get_neighbour_sites(site)):
+                if neigh not in self.sites or neigh in bond_sequences:
+                    continue
+                bond_sequences[neigh] = bond_sequences[site] + [i_bond]
+                to_be_added.append(neigh)
+
+        origin = latt.lattice_site_to_lattice_coords(first)
+        return {
+            site: origin
+            + (
+                np.sum([latt.bonds[i] for i in seq], axis=0)
+                if seq
+                else np.zeros(3, dtype=int)
+            )
+            for site, seq in bond_sequences.items()
+        }
+
+    @property
+    def center_no_pbc(self) -> NDArray[np.int_]:
+        raw_coords = np.vstack(
+            [coord for coord in self.particle_coords_no_pbc.values()]
+        )
+        return np.mean(raw_coords, axis=0)
+
+    @property
+    def coords_relative_to_center(self) -> dict[int, NDArray[np.int_]]:
+        """Lattice coordinates of each constitutive site relative to the cluster center"""
+        return {
+            site: coords - self.center_no_pbc
+            for site, coords in self.particle_coords_no_pbc.items()
+        }
+
 
 class Clusters:
     """A decomposition of one LatticeState into connected components."""

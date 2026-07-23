@@ -8,6 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..lattice_state import LatticeState
+from typing import Self
 
 SitePair: TypeAlias = frozenset[int]
 Contact: TypeAlias = tuple[int, int]
@@ -40,11 +41,39 @@ class Cluster:
             if nb not in full
         )
 
+    @cached_property
+    def outer_perimeter(self) -> int:
+        """Bonds from the cluster to the outside, not counting bonds towards holes."""
+        latt = self.state.lattice
+
+        # Seed in a cluster-free column: a hole cannot enclose a column, so it is outside
+        occupied_cols = {latt.lattice_site_to_lattice_coords(s)[0] for s in self.sites}
+        free_col = next((x for x in range(latt.lx) if x not in occupied_cols), None)
+        if free_col is None:
+            raise ValueError("cluster spans every column: it has no outside")
+        outside_seed = latt.lattice_coords_to_lattice_site(free_col, 0, 0)
+
+        # Flood fill the exterior. Holes are never reached, so their bonds are not counted
+        outside = {outside_seed}
+        stack = [outside_seed]
+        while stack:
+            site = stack.pop()
+            for nb in latt.get_neighbour_sites(site):
+                if nb not in self.sites and nb not in outside:
+                    outside.add(nb)
+                    stack.append(nb)
+
+        return sum(
+            1
+            for site in self.sites
+            for nb in latt.get_neighbour_sites(site)
+            if nb in outside
+        )
+
     @property
     def _relative_coords_cartesian(self) -> NDArray[np.float64]:
         r = np.array(list(self.coords_relative_to_center.values()))
         return r @ self.state.lattice.lattice_vectors_in_cartesian.T
-
 
     @property
     def bounding_box_dims(self) -> NDArray[np.float64]:
@@ -73,15 +102,15 @@ class Cluster:
         r = self._relative_coords_cartesian
         G = (r.T @ r) / len(r)
         lam = np.linalg.eigvalsh(G)
-        lam = lam[lam > 1e-9]            # drop flat dimensions (z in a 2D system)
+        lam = lam[lam > 1e-9]  # drop flat dimensions (z in a 2D system)
         if lam.size < 2:
-            return 1.0                  # single point / line
+            return 1.0  # single point / line
         return float(np.sqrt(lam.max() / lam.min()))
 
     @property
     def particle_coords_no_pbc(self) -> dict[int, NDArray[np.int_]]:
         """Absolute (unwrapped) lattice coordinates for every site in the cluster,
-        keyed by site index. """
+        keyed by site index."""
         latt = self.state.lattice
         first = next(iter(self.sites))
         bond_sequences = {first: []}
@@ -120,50 +149,71 @@ class Cluster:
             for site, coords in self.particle_coords_no_pbc.items()
         }
 
+def find_connected_site_sets(
+    state: LatticeState,
+    same_component: Callable[[int, int], bool],
+    within: frozenset[int] | None = None,
+) -> list[frozenset[int]]:
+    """Site sets of the connected components of state, grouped by same_component.
+
+    same_component is lambda x, y: True for aggregates, or an equality test on
+    orientations for crystalline domains. If within is given, only those sites are
+    considered, so the components returned are subsets of it.
+    """
+    full = state.full_sites_set if within is None else within
+    # The tolist() converts the elements of full_sites from numpy int64 to int
+    seeds = state.full_sites.tolist() if within is None else sorted(within)
+    visited: set[int] = set()
+    components: list[frozenset[int]] = []
+
+    for seed in seeds:
+        if seed in visited:
+            continue
+        # Build a cluster from an unvisited site
+        component: set[int] = set()
+        to_visit = {seed}
+        visited.add(seed)
+        while to_visit:
+            site = to_visit.pop()
+            component.add(site)
+            for neigh in state.lattice.get_neighbour_sites(site):
+                # Site gets added to component if if verifies same_component
+                if (
+                    neigh in full
+                    and neigh not in visited
+                    and same_component(site, neigh)
+                ):
+                    visited.add(neigh)
+                    to_visit.add(neigh)
+        components.append(frozenset(component))
+
+    return components
+
 
 class Clusters:
     """A decomposition of one LatticeState into connected components."""
+
+    # Hidden attribute: the specific type of cluster I use I am planning on specializing
+    # Cluster to different types (e.g. vortex assembly, pattern bulk...) with specific
+    # properties. Having this _cluster_class property allows me to integrate these
+    # particularities in the aggregate Clusters object
+    _cluster_class: type[Cluster] = Cluster
 
     def __init__(self, state: LatticeState, site_sets: Sequence[frozenset[int]]):
         self.state = state
         self._site_sets = list(site_sets)
 
+    @cached_property
+    def clusters(self) -> list[Cluster]:
+        internal, _ = self._partition
+        return [
+            self._cluster_class(sites, self.state, contacts)
+            for sites, contacts in zip(self._site_sets, internal)
+        ]
+
     @classmethod
-    def connected_components_with_condition(
-        cls,
-        state: LatticeState,
-        same_component: Callable[[int, int], bool],
-    ) -> "Clusters":
-        """Finds the connected components of a LatticeState sharing some conditions, same_component, on their orientation.
-        same_condition is typically going to be lambda x,y : True for connected components,
-        or lambda x, y: x==y for crystalline domains"""
-        full = state.full_sites_set
-        visited: set[int] = set()
-        components: list[frozenset[int]] = []
-
-        # The tolist() converts the elements of full_sites from numpy int64 to int
-        for seed in state.full_sites.tolist():
-            if seed in visited:
-                continue
-            # Build a cluster from an unvisited site
-            component: set[int] = set()
-            to_visit = {seed}
-            visited.add(seed)
-            while to_visit:
-                site = to_visit.pop()
-                component.add(site)
-                for neigh in state.lattice.get_neighbour_sites(site):
-                    # Site gets added to component if if verifies same_component
-                    if (
-                        neigh in full
-                        and neigh not in visited
-                        and same_component(site, neigh)
-                    ):
-                        visited.add(neigh)
-                        to_visit.add(neigh)
-            components.append(frozenset(component))
-
-        return cls(state, components)
+    def connected_components_with_condition(cls, state, same_component) -> Self:
+        return cls(state, find_connected_site_sets(state, same_component))
 
     # Let's specialize the connected_components to the 2 most common cases:
     @classmethod
@@ -182,6 +232,20 @@ class Clusters:
         orientations = state.orientations
         return cls.connected_components_with_condition(
             state, lambda x, y: orientations[x] == orientations[y]
+        )
+
+    def to_sub_clusters(self, same_component: Callable[[int, int], bool]) -> "Clusters":
+        """Refines each cluster with the stricter condition same_component. Typical use
+        case: break a patterned bulk into crystalline domains."""
+        return Clusters(
+            self.state,
+            [
+                sub_set
+                for site_set in self._site_sets
+                for sub_set in find_connected_site_sets(
+                    self.state, same_component, within=site_set
+                )
+            ],
         )
 
     @cached_property
@@ -204,14 +268,6 @@ class Clusters:
             else:
                 boundary[pair] = contact
         return internal, boundary
-
-    @cached_property
-    def clusters(self) -> list[Cluster]:
-        internal, _ = self._partition
-        return [
-            Cluster(sites, self.state, contacts)
-            for sites, contacts in zip(self._site_sets, internal)
-        ]
 
     @cached_property
     def boundary_contacts(self) -> PairsToContacts:
@@ -257,3 +313,5 @@ def get_aggregates(state: LatticeState) -> Clusters:
 
 def get_crystalline_domains(state: LatticeState) -> Clusters:
     return Clusters.crystalline_domains(state)
+
+

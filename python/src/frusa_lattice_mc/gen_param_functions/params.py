@@ -3,6 +3,7 @@ Simulation parameter dataclasses with JSON serialization.
 """
 from frusa_lattice_mc.contact_utils import ContactMapWrapper
 
+import numpy as np
 import json
 from dataclasses import dataclass, asdict, replace, field
 from pathlib import Path
@@ -139,6 +140,31 @@ class MCParams:
     def to_dict(self) -> dict:
         d = asdict(self)
         return {k: v for k, v in d.items() if v is not None}
+
+    @property
+    def temperature_schedule(self):
+        """Simple function to get the temperature schedule associated with these MC
+        parameters. Mimics the behavior of the C++ code."""
+        if self.cooling_schedule == CoolingSchedules.LINEAR:
+            return np.linspace(self.Ti, self.Tf, self.Nt)
+        elif self.cooling_schedule == CoolingSchedules.EXPONENTIAL:
+            return np.logspace(self.Ti, self.Tf, self.Nt)
+        elif self.cooling_schedule == CoolingSchedules.INVERSE:
+            return np.linspace(1 / self.Ti, 1 / self.Tf, self.Nt)
+
+    def get_structure_address(self, structure_index: int) -> Path | None:
+        if not self.checkpoint_option:
+            return None
+        if self.checkpoint_address is None:
+            raise ValueError("No checkpoint address defined")
+        return Path(self.checkpoint_address) / f"structure_{structure_index}.dat"
+
+    def get_final_structure_address(self):
+        if not self.checkpoint_option:
+            return None
+        if self.checkpoint_address is None:
+            raise ValueError("No checkpoint address defined")
+        return Path(self.final_structure_address) / "final_structure.dat"
 
 
 # ── Coupling helpers ────────────────────────────────────────────────

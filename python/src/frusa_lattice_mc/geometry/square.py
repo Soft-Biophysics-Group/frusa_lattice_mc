@@ -36,7 +36,8 @@ def measure_effective_length_width(cluster:Cluster) -> tuple[int, int]:
     perimeter = cluster.n_interfaces_with_exterior
 
     # Convention: length = largest dimension, width = smallest
-    length = perimeter / 4 * (perimeter / 2 + np.sqrt(1 - 16 * area / perimeter**2))
-    width = perimeter / 4 * (perimeter / 2 - np.sqrt(1 - 16 * area / perimeter**2))
+    discriminant = np.sqrt(1 - 16 * area / perimeter**2)
+    length = perimeter / 6 * (1 + discriminant)
+    width  = perimeter / 6 * (1 - discriminant)
 
     return (length, width)

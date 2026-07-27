@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Callable, Container, Sequence, TypeAlias
+from typing import Callable, ClassVar, Container, Sequence, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -22,6 +22,10 @@ class Cluster:
     sites: frozenset[int]
     state: LatticeState
     contacts: PairsToContacts
+
+    # What this refines into under a stricter condition, e.g. a patterned bulk into
+    # crystalline domains. None falls back to a plain Cluster
+    sub_cluster_class: ClassVar[type["Cluster"] | None] = None
 
     @property
     def size(self) -> int:
@@ -44,22 +48,29 @@ class Cluster:
     @cached_property
     def outer_perimeter(self) -> int:
         """Bonds from the cluster to the outside, not counting bonds towards holes."""
+        if self.percolates:
+            raise ValueError("percolating cluster: it has no outside")
         latt = self.state.lattice
+        full = self.state.full_sites_set
 
-        # Seed in a cluster-free column: a hole cannot enclose a column, so it is outside
-        occupied_cols = {latt.lattice_site_to_lattice_coords(s)[0] for s in self.sites}
-        free_col = next((x for x in range(latt.lx) if x not in occupied_cols), None)
-        if free_col is None:
-            raise ValueError("cluster spans every column: it has no outside")
-        outside_seed = latt.lattice_coords_to_lattice_site(free_col, 0, 0)
+        # Walk out of the cluster's lowest-x face: nothing of it lies below, so the first
+        # empty site met on the way down cannot be one of its holes
+        coords = self.particle_coords_no_pbc
+        seed = min(coords, key=lambda site: coords[site][0])
+        i_out = next(i for i, bond in enumerate(latt.bonds) if bond[0] < 0)
+        for _ in range(latt.lx):
+            seed = latt.get_neighbour_sites(seed)[i_out]
+            if seed not in full:
+                break
+        else:
+            raise ValueError("cluster is buried: no exterior to seed the fill from")
 
-        # Flood fill the exterior. Holes are never reached, so their bonds are not counted
-        outside = {outside_seed}
-        stack = [outside_seed]
+        # Flood fill the exterior. Occupied sites block it, so holes are never reached
+        outside = {seed}
+        stack = [seed]
         while stack:
-            site = stack.pop()
-            for nb in latt.get_neighbour_sites(site):
-                if nb not in self.sites and nb not in outside:
+            for nb in latt.get_neighbour_sites(stack.pop()):
+                if nb not in outside and nb not in full:
                     outside.add(nb)
                     stack.append(nb)
 
@@ -70,6 +81,31 @@ class Cluster:
             if nb in outside
         )
 
+    @cached_property
+    def box_dims(self) -> NDArray[np.int_]:
+        latt = self.state.lattice
+        return np.array([latt.lx, latt.ly, latt.lz])
+
+    @cached_property
+    def percolates_along(self) -> NDArray[np.bool_]:
+        """Wrap-around, direction by direction: once unwrapped, a bond that closes a loop
+        through the boundary lands one box length off."""
+        latt = self.state.lattice
+        coords = self.particle_coords_no_pbc
+        wrapped = np.zeros(3, dtype=bool)
+        for site, site_coords in coords.items():
+            for i_bond, neigh in enumerate(latt.get_neighbour_sites(site)):
+                if neigh in coords:
+                    wrapped |= coords[neigh] != site_coords + latt.bonds[i_bond]
+        # A one-site-thick direction is flat, not periodic: there a site is its own
+        # neighbour, which would otherwise read as a wrap
+        return wrapped & (self.box_dims > 1)
+
+    @cached_property
+    def percolates(self) -> bool:
+        """Wraps in at least one direction: no well-defined shape, no outside."""
+        return bool(self.percolates_along.any())
+
     @property
     def _relative_coords_cartesian(self) -> NDArray[np.float64]:
         r = np.array(list(self.coords_relative_to_center.values()))
@@ -77,26 +113,26 @@ class Cluster:
 
     @property
     def bounding_box_dims(self) -> NDArray[np.float64]:
-        return np.ptp(self._relative_coords_cartesian[:, :2], axis=0)
+        return np.ptp(self._relative_coords_cartesian, axis=0)
 
     @property
     def aspect_ratio_bb(self) -> float:
-        """Measure the aspect ratio of a two-dimensional aggregate, taken as the ratio of the
-        bounding box dimensions"""
-        # Obtain the bounding box dimensions of the cluster
-        bb_dims = self.bounding_box_dims
-        max_dim = np.max(bb_dims)
-        min_dim = np.min(bb_dims)
-        return max_dim / min_dim
+        """Measure the aspect ratio of an aggregate, taken as the ratio of the bounding
+        box dimensions"""
+        if self.percolates:
+            return np.nan
+
+        dims = self.bounding_box_dims
+        dims = dims[dims > 1e-9]  # drop flat dimensions (z in a 2D system)
+        if dims.size < 2:
+            return 1.0  # single point / line
+        return float(dims.max() / dims.min())
 
     @property
     def aspect_ratio_gyr(self) -> float:
-        """Measure the aspect ratio of a two-dimensional aggregate, taken as the ratio between
-        the eigenvalues of the gyration tensor"""
-        latt = self.state.lattice
-        # percolating clusters have no well-defined shape — guard first
-        span = np.ptp(np.array(list(self.particle_coords_no_pbc.values())), axis=0)
-        if (span[:2] >= np.array([latt.lx, latt.ly])).any():
+        """Measure the aspect ratio of an aggregate, taken as the ratio between the
+        eigenvalues of the gyration tensor"""
+        if self.percolates:
             return np.nan
 
         r = self._relative_coords_cartesian
@@ -193,15 +229,19 @@ def find_connected_site_sets(
 class Clusters:
     """A decomposition of one LatticeState into connected components."""
 
-    # Hidden attribute: the specific type of cluster I use I am planning on specializing
-    # Cluster to different types (e.g. vortex assembly, pattern bulk...) with specific
-    # properties. Having this _cluster_class property allows me to integrate these
-    # particularities in the aggregate Clusters object
+    # The type of Cluster this decomposition is made of. Subclasses set it to carry the
+    # geometry of a specific assembly; the constructor can override it per instance
     _cluster_class: type[Cluster] = Cluster
 
-    def __init__(self, state: LatticeState, site_sets: Sequence[frozenset[int]]):
+    def __init__(
+        self,
+        state: LatticeState,
+        site_sets: Sequence[frozenset[int]],
+        cluster_class: type[Cluster] | None = None,
+    ):
         self.state = state
         self._site_sets = list(site_sets)
+        self._cluster_class = cluster_class or self._cluster_class
 
     @cached_property
     def clusters(self) -> list[Cluster]:
@@ -234,9 +274,14 @@ class Clusters:
             state, lambda x, y: orientations[x] == orientations[y]
         )
 
-    def to_sub_clusters(self, same_component: Callable[[int, int], bool]) -> "Clusters":
+    def to_sub_clusters(
+        self,
+        same_component: Callable[[int, int], bool],
+        cluster_class: type[Cluster] | None = None,
+    ) -> "Clusters":
         """Refines each cluster with the stricter condition same_component. Typical use
-        case: break a patterned bulk into crystalline domains."""
+        case: break a patterned bulk into crystalline domains. The pieces are usually not
+        the same kind of object as their parent, hence sub_cluster_class."""
         return Clusters(
             self.state,
             [
@@ -246,6 +291,7 @@ class Clusters:
                     self.state, same_component, within=site_set
                 )
             ],
+            cluster_class or self._cluster_class.sub_cluster_class,
         )
 
     @cached_property

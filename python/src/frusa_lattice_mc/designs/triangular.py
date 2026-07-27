@@ -5,8 +5,7 @@ Storing the contact map designs for triangular lattice particles (i.e. hexagons)
 from ..geometry.particle_geometry import TriangularParticle
 import numpy as np
 from functools import cached_property
-from ..analysis.clusters import Cluster, Clusters, find_connected_site_sets
-from ..lattice_state import LatticeState
+from ..analysis.clusters import Cluster, Clusters
 
 CRYSTAL_CONTACTS = TriangularParticle().get_all_canonical_contacts(
     [(i, i + 3) for i in range(3)]
@@ -61,6 +60,3 @@ class VortexAssemblies(Clusters):
     """The aggregates of a state, i.e. its connected components."""
 
     _cluster_class = VortexAssembly
-
-    def __init__(self, state: LatticeState):
-        super().__init__(state, find_connected_site_sets(state, lambda x, y: True))

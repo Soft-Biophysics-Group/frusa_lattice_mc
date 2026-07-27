@@ -334,6 +334,10 @@ class Clusters:
     def sizes(self) -> list[int]:
         return [len(s) for s in self._site_sets]
 
+    @property
+    def mean_size_mass_avg(self) -> float:
+        return np.sum(np.array(self.sizes) ** 2) / np.sum(self.sizes)
+
     def count_contacts_by_type(
         self, contact_types: Sequence[Sequence[tuple[int, int]]]
     ) -> NDArray[np.int_]:
@@ -359,5 +363,3 @@ def get_aggregates(state: LatticeState) -> Clusters:
 
 def get_crystalline_domains(state: LatticeState) -> Clusters:
     return Clusters.crystalline_domains(state)
-
-

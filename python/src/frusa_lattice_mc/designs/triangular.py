@@ -24,9 +24,14 @@ PATTERN_BULK_CONTACTS = (
 def calc_ec_ed_ratio_vortex(target_radius: float):
     return (2 * target_radius**2 - 2 * target_radius - 1) / (3 * target_radius**2)
 
+def calc_radius_of_ec_ed_ratio_vortex(ec_ed:float):
+    return (1 + np.sqrt(3 * (1 - ec_ed))) / (2 - 3 * ec_ed)
 
 def calc_vortex_radius_of_size(n_particles: int) -> float:
     return (-1 + np.sqrt(1 + 4 * n_particles / 3)) / 2
+
+def calc_vortex_size_of_radius(radius: float) -> float:
+    return 3 * radius * (radius + 1)
 
 
 def calc_ec_ed_ratio_patterned_bulk(target_radius: float):
@@ -57,6 +62,25 @@ class VortexAssembly(Cluster):
 
 
 class VortexAssemblies(Clusters):
-    """The aggregates of a state, i.e. its connected components."""
-
     _cluster_class = VortexAssembly
+
+    def __init__(self, state: LatticeState):
+        super().__init__(state, find_connected_site_sets(state, lambda x, y: True))
+
+class PatternedBulkTriangle(Cluster):
+    @cached_property
+    def sector_size(self) -> float:
+        return 6 * self.size
+
+
+class PatternedBulks(Clusters):
+    _cluster_class = PatternedBulkTriangle
+
+    def __init__(self, state: LatticeState):
+        orientations = state.orientations
+        super().__init__(
+            state,
+            find_connected_site_sets(
+                state, lambda x, y: orientations[x] == orientations[y]
+            ),
+        )

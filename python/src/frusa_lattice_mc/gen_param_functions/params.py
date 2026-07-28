@@ -118,6 +118,7 @@ class CoolingSchedules(StrEnum):
     INVERSE = "inverse"
     EXPONENTIAL = "exponential"
     LINEAR = "linear"
+    ARBITRARY = "arbitrary"
 
 
 @dataclass
@@ -137,6 +138,39 @@ class MCParams:
 
     model_params_file: str | None = None
 
+    # Only useful for the ARBITRARY schedule
+    T_array: list | None = None
+
+    def __post_init__(self):
+        if self.cooling_schedule == CoolingSchedules.ARBITRARY:
+            if self.T_array is None:
+                raise ValueError(
+                    "Arbitrary cooling schedule picked but no temperature schedule provided"
+                )
+            # Make sure we have a T_array digestible by json
+            t_array: list[float] = np.asarray(self.T_array, dtype=float).tolist()
+            self.T_array = t_array
+            # The C++ side derives Nt from the array; keep the two in step so
+            # the written JSON stays truthful for downstream tooling.
+            self.Nt = len(t_array)
+        elif self.T_array is not None:
+            raise ValueError(
+                f"T_array is only used with cooling_schedule=ARBITRARY,"
+                f" got {self.cooling_schedule}"
+            )
+
+    @classmethod
+    def from_temperatures(cls, temperatures, **kwargs) -> "MCParams":
+        """Anneal through `temperatures` verbatim, in the order given."""
+        temperatures = np.asarray(temperatures, dtype=float)
+        return cls(
+            cooling_schedule=CoolingSchedules.ARBITRARY,
+            T_array=temperatures.tolist(),
+            Ti=float(temperatures[0]),
+            Tf=float(temperatures[-1]),
+            **kwargs,
+        )
+
     def to_dict(self) -> dict:
         d = asdict(self)
         return {k: v for k, v in d.items() if v is not None}
@@ -150,7 +184,12 @@ class MCParams:
         elif self.cooling_schedule == CoolingSchedules.EXPONENTIAL:
             return np.logspace(self.Ti, self.Tf, self.Nt)
         elif self.cooling_schedule == CoolingSchedules.INVERSE:
-            return np.linspace(1 / self.Ti, 1 / self.Tf, self.Nt)
+            return 1 / np.linspace(self.Ti,  self.Tf, self.Nt)
+        elif self.cooling_schedule == CoolingSchedules.ARBITRARY:
+            return np.asarray(self.T_array, dtype=float)
+
+    def n_steps_per_T_total(self, model_params: ModelParams):
+        return self.mcs_eq * model_params.lx * model_params.ly * model_params.lz
 
     def get_structure_address(self, structure_index: int) -> Path | None:
         if not self.checkpoint_option:

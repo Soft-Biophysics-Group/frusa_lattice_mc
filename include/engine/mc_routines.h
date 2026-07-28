@@ -23,6 +23,7 @@ namespace simulation_space{
     int mcs_av {};
     double Ti {};
     double Tf {};
+    vec1d T_array {};
     int Nt {};
     std::string cooling_schedule {};
     bool checkpoint_option {};

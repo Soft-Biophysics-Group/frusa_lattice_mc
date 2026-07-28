@@ -59,6 +59,13 @@ def get_t_schedule(mc_params: dict) -> tuple[np.ndarray, np.ndarray]:
     are what the C++ code steps through (e.g. inverse temperatures).
     """
     schedule = mc_params["cooling_schedule"]
+
+    if schedule == "arbitrary":
+        # The temperatures are given explicitly, so they are also what the
+        # C++ code steps through.
+        t_arr = np.asarray(mc_params["T_array"], dtype=float)
+        return t_arr, t_arr
+
     t_i = mc_params["Ti"]
     t_f = mc_params["Tf"]
     n_t = mc_params["Nt"]
@@ -147,8 +154,17 @@ def write_continuation_inputs(
         _, t_sched = get_t_schedule(mc)
 
         resume_index = job.last_completed_index + 1
-        mc["Ti"] = float(t_sched[resume_index])
-        mc["Nt"] = mc["Nt"] - resume_index
+        if mc["cooling_schedule"] == "arbitrary":
+            # Shrinking Nt is not enough when the temperatures are explicit:
+            # drop the steps already done and re-derive Ti/Tf/Nt from what is left.
+            remaining = [float(t) for t in t_sched[resume_index:]]
+            mc["T_array"] = remaining
+            mc["Nt"] = len(remaining)
+            mc["Ti"] = remaining[0]
+            mc["Tf"] = remaining[-1]
+        else:
+            mc["Ti"] = float(t_sched[resume_index])
+            mc["Nt"] = mc["Nt"] - resume_index
 
         # Save continued structures in a sibling directory to avoid overwriting
         old_checkpoint = Path(mc["checkpoint_address"])

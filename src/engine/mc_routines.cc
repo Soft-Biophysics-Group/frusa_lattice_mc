@@ -2,6 +2,7 @@
 // Part of frusa_mc, released under BSD 3-Clause License.
 
 #include "mc_routines.h"
+#include "vector_utils.h"
 
 namespace simulation_space{
 
@@ -25,10 +26,15 @@ namespace simulation_space{
         json_mc_params["cooling_schedule"].template get<std::string>();
     Ti = json_mc_params["Ti"].template get<double>();
     Tf = json_mc_params["Tf"].template get<double>();
-    Nt = json_mc_params["Nt"].template get<int>();
+    if (json_mc_params.contains("Nt")) {
+      Nt = json_mc_params["Nt"].template get<int>();
+    }
     if (json_mc_params.contains("structure_index_offset")) {
       structure_index_offset =
           json_mc_params["structure_index_offset"].template get<int>();
+    }
+    if (json_mc_params.contains("T_array")) {
+      T_array = json_mc_params["T_array"].template get<vec1d>();
     }
     checkpoint_option =
         json_mc_params["checkpoint_option"].template get<bool>();
@@ -55,6 +61,9 @@ namespace simulation_space{
       else if(parameters.cooling_schedule=="inverse"){
         cooling_option = 2;
       }
+      else if(parameters.cooling_schedule=="arbitrary"){
+        cooling_option = 3;
+      }
       else{
         throw parameters.cooling_schedule;
       }
@@ -66,10 +75,25 @@ namespace simulation_space{
     }
 
     // Define the array of temperatures for the annealing
-    double dT = (parameters.Tf - parameters.Ti) / (parameters.Nt - 1);
+    if (cooling_option == 3) {
+      if (parameters.T_array.empty()) {
+        std::cerr
+            << "Cooling schedule 'arbitrary' requires a non-empty T_array\n";
+        exit(1);
+      }
+      T_array = parameters.T_array;
+      parameters.Nt = static_cast<int>(T_array.size());  // keep Nt consistent
+    } else {
+      if (parameters.Nt == 0) {
+        std::cerr << "Nt (number of temperature steps) missing from .json "
+                     "config file.\n";
+        exit(1);
+      }
+      double dT = (parameters.Tf - parameters.Ti) / (parameters.Nt - 1);
 
-    for (int i = 0; i < parameters.Nt; i++) {
-      T_array.push_back(parameters.Ti + i * dT);
+      for (int i = 0; i < parameters.Nt; i++) {
+        T_array.push_back(parameters.Ti + i * dT);
+      }
     }
   }
 
@@ -117,6 +141,9 @@ namespace simulation_space{
           break;
         case 2:
           T = 1.0 / T_array[i];
+          break;
+        case 3:
+          T = T_array[i];
           break;
       }
 

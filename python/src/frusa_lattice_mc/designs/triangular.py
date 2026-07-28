@@ -5,7 +5,8 @@ Storing the contact map designs for triangular lattice particles (i.e. hexagons)
 from ..geometry.particle_geometry import TriangularParticle
 import numpy as np
 from functools import cached_property
-from ..analysis.clusters import Cluster, Clusters
+from ..analysis.clusters import Cluster, Clusters, find_connected_site_sets
+from ..lattice_state import LatticeState
 
 CRYSTAL_CONTACTS = TriangularParticle().get_all_canonical_contacts(
     [(i, i + 3) for i in range(3)]
@@ -33,9 +34,11 @@ def calc_vortex_radius_of_size(n_particles: int) -> float:
 def calc_vortex_size_of_radius(radius: float) -> float:
     return 3 * radius * (radius + 1)
 
-
 def calc_ec_ed_ratio_patterned_bulk(target_radius: float):
     return (2 * target_radius**2 - 2 * target_radius - 1) / (2 * target_radius**2)
+
+def calc_patterned_bulk_radius_of_ec_ed(ec_ed: float):
+    return (1 + np.sqrt(3 - 2 * ec_ed)) / (2 * (1 - ec_ed))
 
 
 # ---------- Cluster specialization to our aggregates of interest ----------

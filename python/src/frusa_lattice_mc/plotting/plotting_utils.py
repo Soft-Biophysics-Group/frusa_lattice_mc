@@ -46,6 +46,7 @@ class ParticleRepresentation2D:
     lattice_name: str
     n_faces: int
     colors: list[str]
+    squared: bool = False
 
     # Concrete subclasses register here by lattice_name (see __init_subclass__)
     _representations: dict[str, type["ParticleRepresentation2D"]] = {}
@@ -55,7 +56,13 @@ class ParticleRepresentation2D:
         if getattr(cls, "lattice_name", None):
             ParticleRepresentation2D._representations[cls.lattice_name] = cls
 
-    def __init__(self, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0):
+    def __init__(
+        self,
+        lx: int = 1,
+        ly: int = 1,
+        lattice_spacing: float = 1.0,
+        squared: bool = False,
+    ):
         self.lattice_spacing = lattice_spacing
         # The polygon is the Voronoi cell of the site: apothem (centre->edge) is half the
         # nearest-neighbour distance, and circumradius follows from the number of sides.
@@ -81,9 +88,16 @@ class ParticleRepresentation2D:
         )
         self.all_face_corners = self.init_face_coords()
 
+        self.squared = squared
+
     @classmethod
     def from_lattice_name(
-        cls, lattice_name: str, lx: int = 1, ly: int = 1, lattice_spacing: float = 1.0
+        cls,
+        lattice_name: str,
+        lx: int = 1,
+        ly: int = 1,
+        lattice_spacing: float = 1.0,
+        squared: bool = False,
     ) -> "ParticleRepresentation2D":
         """Returns the representation for `lattice_name` (e.g. "triangular", "square")."""
         # Import the concrete modules so their subclasses register themselves
@@ -94,11 +108,14 @@ class ParticleRepresentation2D:
                 f"No 2D plotting for lattice '{lattice_name}'. "
                 f"Available: {sorted(cls._representations)}"
             )
-        return cls._representations[lattice_name](lx, ly, lattice_spacing)
+        return cls._representations[lattice_name](lx, ly, lattice_spacing, squared)
 
     @classmethod
     def from_model_file(
-        cls, model_file=cfg.default_model_params_file, lattice_spacing=1.0
+        cls,
+        model_file=cfg.default_model_params_file,
+        lattice_spacing=1.0,
+        squared=False,
     ) -> "ParticleRepresentation2D":
         """Builds the representation matching the lattice recorded in the model file."""
         model_dict = cfg.load_model_file(model_file)
@@ -107,7 +124,7 @@ class ParticleRepresentation2D:
         lx, ly = model_dict.get("lx"), model_dict.get("ly")
         if lattice_name is None or lx is None or ly is None:
             raise KeyError("model file must define 'lattice_name', 'lx' and 'ly'")
-        return cls.from_lattice_name(lattice_name, lx, ly, lattice_spacing)
+        return cls.from_lattice_name(lattice_name, lx, ly, lattice_spacing, squared)
 
     def _resolve_fig_ax(self, ax: Axes | None, **kwargs) -> tuple[Figure, Axes]:
         """Returns the (figure, axes) to draw on, creating a new figure when ax is None."""
@@ -137,7 +154,6 @@ class ParticleRepresentation2D:
         x_center_lattice: int,
         y_center_lattice: int,
         ax: Axes,
-        squared: bool = False,
         fill_color: str = "",
     ) -> None:
         """Plots the outline of a particle, optionally filled with color `fill_color`."""
@@ -150,7 +166,7 @@ class ParticleRepresentation2D:
         else:
             fill = True
             facecolor = fill_color
-        if squared:
+        if self.squared:
             x_center = self.square_coordinates(x_center)
         h = mpatches.RegularPolygon(
             (x_center, y_center),
@@ -169,7 +185,6 @@ class ParticleRepresentation2D:
         y_center_lattice: int,
         orientation: int,
         ax: Axes,
-        squared: bool = False,
         color="blue",
     ) -> None:
         """
@@ -185,7 +200,7 @@ class ParticleRepresentation2D:
         x_center_cartesian, y_center_cartesian = self.lattice.lattice_to_cartesian(
             x_center_lattice, y_center_lattice
         )
-        if squared:
+        if self.squared:
             x_center_cartesian = self.square_coordinates(x_center_cartesian)
         x_arrow_base = x_center_cartesian - arrow_vector[0] / 2
         y_arrow_base = y_center_cartesian - arrow_vector[1] / 2
@@ -207,7 +222,6 @@ class ParticleRepresentation2D:
         bond,
         ax,
         color,
-        squared: bool = False,
     ):
         """
         Plots the edge shared with the neighbour along `bond`, colored by the contact type.
@@ -217,7 +231,7 @@ class ParticleRepresentation2D:
         x_center_cartesian, y_center_cartesian = self.lattice.lattice_to_cartesian(
             x_center, y_center
         )
-        if squared:
+        if self.squared:
             x_center_cartesian = self.square_coordinates(x_center_cartesian)
         particles_face_corners = centered_face_corners + np.array(
             [
@@ -234,7 +248,6 @@ class ParticleRepresentation2D:
         self,
         lattice_state: LatticeState,
         ax: Axes | None = None,
-        squared: bool = False,
         **kwargs,
     ) -> tuple[Figure, Axes]:
         """
@@ -259,7 +272,7 @@ class ParticleRepresentation2D:
         fig, ax = self._resolve_fig_ax(ax, **kwargs)
         for site in lattice_state.full_sites:
             x_lattice, y_lattice, _ = self.lattice.lattice_site_to_lattice_coords(site)
-            self.plot_particle_outline(x_lattice, y_lattice, ax, squared=squared)
+            self.plot_particle_outline(x_lattice, y_lattice, ax)
 
         ax.set_xticks([])
         ax.set_yticks([])
@@ -270,7 +283,6 @@ class ParticleRepresentation2D:
         self,
         lattice_state: LatticeState,
         ax: Axes | None = None,
-        squared: bool = False,
         **kwargs,
     ) -> tuple[Figure, Axes]:
         """
@@ -304,15 +316,15 @@ class ParticleRepresentation2D:
         ) in lattice_state.full_sites_characteristics:
             x_lattice, y_lattice, _ = self.lattice.lattice_site_to_lattice_coords(site)
             color = ARROW_COLORS[ptype]
-            self.plot_particle_outline(x_lattice, y_lattice, ax, squared)
+            self.plot_particle_outline(x_lattice, y_lattice, ax)
             self.plot_particle_orientation(
-                x_lattice, y_lattice, orientation, ax, color=color, squared=squared
+                x_lattice, y_lattice, orientation, ax, color=color
             )
 
         # Adjusting the viewing window
         x_min = -self.radius * 1.1
         y_min = -self.radius * 1.1
-        if squared:
+        if self.squared:
             x_max = self.lattice.lx + self.radius
             y_max = self.lattice.ly * (np.sqrt(3) / 2) + self.radius
         else:
@@ -334,7 +346,6 @@ class ParticleRepresentation2D:
         ax: Axes,
         contacts: Collection[tuple[int, int]],
         color: str,
-        squared=False,
     ):
         """
         Plots the contacts between particles to visualise crystalline domains and defect lines.
@@ -368,7 +379,7 @@ class ParticleRepresentation2D:
                     orientation, neighbour_orientation, bond
                 )
                 if (face_1, face_2) in contacts or (face_2, face_1) in contacts:
-                    self.plot_contact(x_1, y_1, bond, ax, color, squared)
+                    self.plot_contact(x_1, y_1, bond, ax, color)
         return
 
     def plot_other_contacts(
@@ -377,7 +388,6 @@ class ParticleRepresentation2D:
         ax: Axes,
         contacts: Collection[tuple[int, int]],
         color: str,
-        squared=False,
     ):
 
         for site, _, orientation in lattice_state.full_sites_characteristics:
@@ -395,7 +405,7 @@ class ParticleRepresentation2D:
                 ) not in contacts
                 not_empty = neighbour_orientation != -1
                 if not_in_contacts and not_empty:
-                    self.plot_contact(x_1, y_1, bond, ax, color, squared)
+                    self.plot_contact(x_1, y_1, bond, ax, color)
         return
 
     def plot_contacts_w_empty(
@@ -403,7 +413,6 @@ class ParticleRepresentation2D:
         lattice_state: LatticeState,
         ax: Axes,
         color: str,
-        squared=False,
     ):
         for site, _, orientation in lattice_state.full_sites_characteristics:
             x_1, y_1, _ = self.lattice.lattice_site_to_lattice_coords(site)
@@ -413,7 +422,7 @@ class ParticleRepresentation2D:
                 neighbour_orientation = lattice_state.lattice_config[1, neighbour]
                 is_empty = neighbour_orientation == -1
                 if is_empty:
-                    self.plot_contact(x_1, y_1, bond, ax, color, squared)
+                    self.plot_contact(x_1, y_1, bond, ax, color)
         return
 
     def square_coordinates(self, x_cartesian):

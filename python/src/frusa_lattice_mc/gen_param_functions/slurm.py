@@ -9,6 +9,14 @@ import numpy as np
 from .params import load_json
 
 
+def write_stage_manifest(path: Path, jobs: list[tuple[Path, Path]]) -> None:
+    """Single-stage manifest, one "mc model" line per run. Read by analysis."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w") as f:
+        for model_file, mc_file in jobs:
+            f.write(f"{mc_file.resolve()} {model_file.resolve()}\n")
+
+
 def generate_array_script(
     input_root: Path,
     jobs: list[tuple[Path, Path]],
@@ -21,21 +29,15 @@ def generate_array_script(
     executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     file_list_path: Path | None = None,
-    nodelist:str = "[1-4]",
+    nodelist: str = "1-4",
 ) -> str:
-    """
-    Build a SLURM array job script for all MC param files under input_root.
-
-    Writes a model_mc_files.txt manifest and returns the script as a string.
-    """
+    """Write a model_mc_files.txt manifest and return the array script."""
     input_root = Path(input_root).resolve()
 
     if file_list_path is None:
         file_list_path = input_root / "model_mc_files.txt"
 
-    with file_list_path.open("w") as f:
-        for model_file, mc_file in jobs:
-            f.write(f"{mc_file.resolve()} {model_file.resolve()}\n")
+    write_stage_manifest(file_list_path, jobs)
 
     n = len(jobs)
 
@@ -77,11 +79,12 @@ def generate_array_script_by_stages(
     mail_user: str = "vincent.ouazan-reboul@universite-paris-saclay.fr",
     executable: str = "./frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
+    nodelist: str = "1-4",
 ) -> str:
     srun_lines = []
     with manifest_path.open("r") as f:
         test_line = f.readline()
-    n_stages = len(test_line.split(" ")) // 2
+    n_stages = len(test_line.split()) // 2
 
     for stage_idx in range(n_stages):
         col_model = stage_idx * 2 + 1
@@ -109,7 +112,7 @@ def generate_array_script_by_stages(
 #SBATCH --time={time_limit}
 #SBATCH --mail-user={mail_user}
 #SBATCH --output={log_dir}/{job_name}_%A_%a.log
-#SBATCH --nodelist=titan-node[1-4]
+#SBATCH --nodelist=titan-node[{nodelist}]
 
 set -euo pipefail
 

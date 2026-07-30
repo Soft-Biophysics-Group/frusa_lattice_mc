@@ -8,11 +8,13 @@ import subprocess
 import numpy as np
 from numpy.typing import NDArray
 from .json_dump import load_json
+import os
 
 from typing import TypedDict, cast
 
 # Reliably make absolute paths to the right place.
 # #ILovePathLib <3 <3 <3
+REPO_ROOT = Path(__file__).parents[3]      # …/frusa_lattice_mc
 parent_path = Path(__file__).parent.parent.parent.absolute().resolve()
 
 # ----- OFTEN-USED PATHS -----
@@ -25,7 +27,7 @@ averages_path = data_path/"average_state/"
 energy_path = data_path/"energy_moments/"
 structures_path = data_path/"structures/"
 
-exec_path = parent_path/"build/app/frusa_mc"
+exec_path = REPO_ROOT/"build/app/frusa_mc"
 
 python_path = parent_path/"python"
 
@@ -146,6 +148,18 @@ def check_data_existence(
     return files_exist
 
 
+def find_executable(explicit: str | Path | None = None) -> Path:
+    """Binary location: argument, then $FRUSA_MC_BIN, then the repo's build/."""
+    if explicit is not None:
+        return Path(explicit)
+    if env := os.environ.get("FRUSA_MC_BIN"):
+        return Path(env)
+    candidate = REPO_ROOT / "build/app/frusa_mc"
+    if candidate.is_file():
+        return candidate
+    raise FileNotFoundError("No frusa_mc binary — build it or set FRUSA_MC_BIN.")
+
+
 def run_simulation(
     model_file=default_model_params_file,
     mc_file=default_mc_params_file,
@@ -176,4 +190,6 @@ def run_simulation(
             return
         else:
             print("overwrite flag set to True: running anyway.")
-    subprocess.run([str(exec_path), "-m", str(model_file), "-M", str(mc_file)])
+    subprocess.run(
+        [str(find_executable()), "-m", str(model_file), "-M", str(mc_file)]
+    )

@@ -117,6 +117,9 @@ dependencies = [
     "zstandard==0.23.0",
 ]
 
+[project.scripts]
+frusa-mc-local = "frusa_lattice_mc.runners.local:main"
+
 # Everything lives in the single `frusa_lattice_mc` package under src/ (src layout):
 #   from frusa_lattice_mc import config
 #   from frusa_lattice_mc.analysis.get_clusters import get_aggregates

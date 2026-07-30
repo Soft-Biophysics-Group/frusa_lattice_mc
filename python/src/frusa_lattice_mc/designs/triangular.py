@@ -70,6 +70,10 @@ class VortexAssemblies(Clusters):
     def __init__(self, state: LatticeState):
         super().__init__(state, find_connected_site_sets(state, lambda x, y: True))
 
+    @cached_property
+    def radii(self) -> list[float]:
+        return [v.radius for v in self.clusters]
+
 class PatternedBulkTriangle(Cluster):
     @cached_property
     def sector_size(self) -> float:

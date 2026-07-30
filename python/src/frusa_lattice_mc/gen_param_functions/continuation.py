@@ -39,7 +39,7 @@ class UnfinishedJob:
 _STRUCT_RE = re.compile(r"structure_(\d+)\.dat")
 
 
-def _checkpoint_progress(checkpoint_dir: Path) -> int:
+def checkpoint_progress(checkpoint_dir: Path) -> int:
     """Return the highest structure index found, or -1 if none exist."""
     max_idx = -1
     if not checkpoint_dir.is_dir():
@@ -81,6 +81,9 @@ def get_t_schedule(mc_params: dict) -> tuple[np.ndarray, np.ndarray]:
     else:
         raise ValueError(f"Unknown cooling schedule: {schedule!r}")
 
+def is_finished(mc_file: Path) -> bool:
+    mc = load_json(mc_file)
+    return (Path(mc["final_structure_address"]) / "final_structure.dat").is_file()
 
 def find_unfinished(
     input_root: Path,
@@ -99,7 +102,7 @@ def find_unfinished(
         final = Path(mc["final_structure_address"]) / "final_structure.dat"
 
         if not final.is_file():
-            progress = _checkpoint_progress(Path(mc["checkpoint_address"]))
+            progress = checkpoint_progress(Path(mc["checkpoint_address"]))
             jobs.append(
                 UnfinishedJob(
                     mc_file=mc_file,

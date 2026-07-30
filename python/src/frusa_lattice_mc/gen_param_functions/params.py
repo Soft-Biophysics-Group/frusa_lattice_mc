@@ -20,6 +20,8 @@ from .paths import (
     energy_av_dir,
     energy_records_dir,
 )
+# Legacy import
+from .manifest import write_stages as write_manifest
 
 
 # ── Dataclasses ─────────────────────────────────────────────────────
@@ -336,18 +338,3 @@ def write_run_series(
         )
         for i in range(n_runs)
     ]
-
-
-def write_manifest(path: Path, jobs: list[list[tuple[Path, Path]]]) -> None:
-    """Write a manifest of the model and mc parameter files, used as input for the slurm scripts.
-
-    Args:
-        path: Path is the path to the manifest file
-        jobs: list[list[tuple[Path, Path]]]. Every list element is a list associated with
-        a different run. Every member of that list contains the successive stages of that run,
-        in the form of (model_file, mc_file) tuples.
-    """
-    with path.open("w") as f:
-        for job_stages in jobs:
-            parts = [f"{model.resolve()} {mc.resolve()}" for model, mc in job_stages]
-            f.write(" ".join(parts) + "\n")

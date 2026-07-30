@@ -12,7 +12,7 @@ Typical use:
     script = slurm.generate_script_for_prefix(root, run_name, job_name="my_run")
 """
 
-from . import slurm, continuation
+from . import slurm, continuation, manifest
 from .params import (
     ModelParams,
     MCParams,
@@ -31,6 +31,7 @@ from .paths import run_slug
 
 __all__ = [
     "slurm",
+    "manifest",
     "continuation",
     "ModelParams",
     "MCParams",

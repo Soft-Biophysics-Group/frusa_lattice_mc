@@ -8,18 +8,13 @@ import numpy as np
 
 from .params import load_json
 
-
-def write_stage_manifest(path: Path, jobs: list[tuple[Path, Path]]) -> None:
-    """Single-stage manifest, one "mc model" line per run. Read by analysis."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w") as f:
-        for model_file, mc_file in jobs:
-            f.write(f"{mc_file.resolve()} {model_file.resolve()}\n")
+# Legacy import
+from .manifest import write_single_stage as write_stage_manifest, Stage
 
 
 def generate_array_script(
     input_root: Path,
-    jobs: list[tuple[Path, Path]],
+    jobs: list[Stage],
     *,
     job_name: str = "frusa_mc",
     partition: str = "q-2sem",

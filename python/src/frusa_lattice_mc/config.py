@@ -63,7 +63,7 @@ def load_model_file(model_file: str | Path = default_model_params_file) -> Model
     return cast(ModelParams, load_json(model_file))
 
 
-class McParams(TypedDict):
+class _McParamsRequired(TypedDict):
     mcs_eq: int
     mcs_av: int
 
@@ -75,6 +75,12 @@ class McParams(TypedDict):
     checkpoint_option: bool
     checkpoint_address: str
     final_structure_address: str
+
+
+class McParams(_McParamsRequired, total=False):
+    # Absent from files written before continuations became index-aware; read it
+    # with .get("structure_index_offset", 0).
+    structure_index_offset: int
 
 def load_mc_file(
     mc_file: str | Path = default_mc_params_file,

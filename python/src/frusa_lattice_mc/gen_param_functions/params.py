@@ -138,6 +138,10 @@ class MCParams:
     checkpoint_address: str | None = None
     final_structure_address: str | None = None
 
+    # Added to every checkpoint index, so a continued run numbers its structures
+    # from where the interrupted one stopped. Set by write_continuation_inputs.
+    structure_index_offset: int = 0
+
     model_params_file: str | None = None
 
     # Only useful for the ARBITRARY schedule

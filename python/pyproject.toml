@@ -119,6 +119,7 @@ dependencies = [
 
 [project.scripts]
 frusa-mc-local = "frusa_lattice_mc.runners.local:main"
+frusa-mc-task = "frusa_lattice_mc.runners.task:main"
 
 # Everything lives in the single `frusa_lattice_mc` package under src/ (src layout):
 #   from frusa_lattice_mc import config

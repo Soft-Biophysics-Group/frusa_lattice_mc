@@ -28,6 +28,7 @@ from .params import (
     write_json,
 )
 from .paths import run_slug
+from .manifest import read_manifest
 
 __all__ = [
     "slurm",
@@ -46,4 +47,5 @@ __all__ = [
     "load_json",
     "write_json",
     "run_slug",
+    "read_manifest"
 ]

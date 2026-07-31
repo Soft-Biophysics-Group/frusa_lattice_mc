@@ -163,7 +163,7 @@ def run_manifest(
     )
     executable = find_executable(executable)
 
-    jobs = manifest.read(manifest_path)
+    jobs = manifest.read_manifest(manifest_path)
     if not jobs:
         raise ValueError(f"{manifest_path} is empty")
 

@@ -26,7 +26,7 @@ def write_single_stage(path: Path, jobs: list[Stage]) -> None:
         for model_file, mc_file in jobs:
             f.write(f"{mc_file.resolve()} {model_file.resolve()}\n")
 
-def read(path:Path) -> list[list[Stage]]:
+def read_manifest(path:Path) -> list[list[Stage]]:
     """Read the manifest located at path, whether it is in several or single stage format"""
     jobs = []
     for line in path.read_text().splitlines():

@@ -89,7 +89,11 @@ namespace simulation_space{
                      "config file.\n";
         exit(1);
       }
-      double dT = (parameters.Tf - parameters.Ti) / (parameters.Nt - 1);
+      // A one-step schedule sits at Ti; dividing by Nt - 1 would make it NaN.
+      // Continuations that resume on the last step hit exactly this case.
+      double dT = parameters.Nt > 1
+                      ? (parameters.Tf - parameters.Ti) / (parameters.Nt - 1)
+                      : 0.0;
 
       for (int i = 0; i < parameters.Nt; i++) {
         T_array.push_back(parameters.Ti + i * dT);

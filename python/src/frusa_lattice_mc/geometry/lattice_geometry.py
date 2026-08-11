@@ -7,7 +7,6 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from .. import config as cfg
 from collections.abc import Mapping, MutableMapping
-from scipy.spatial.transform import Rotation as R
 from pathlib import Path
 from .particle_geometry import ParticleGeometry
 

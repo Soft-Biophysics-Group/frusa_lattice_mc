@@ -58,7 +58,7 @@ class ContactMapWrapper:
         self,
         n_types=1,
         n_orientations=6,
-        particle_geometry: Any = ParticleGeometry.from_lattice_name("triangular"),
+        particle_geometry: Any = None,
         init_energy=0.0,
     ):
         self.n_types = n_types
@@ -66,7 +66,11 @@ class ContactMapWrapper:
         self.n_states = self.n_types * self.n_orientations
         self.contact_map = np.zeros(self.n_states**2)
         self.contact_map += init_energy
-        self.geometry = particle_geometry
+        self.geometry = (
+            particle_geometry
+            if particle_geometry is not None
+            else ParticleGeometry.from_lattice_name("triangular")
+        )
 
     @classmethod
     def from_lattice_name(cls, lattice_name: str, n_types = 1, init_energy = 0.0):

@@ -5,7 +5,6 @@ Uses: easy generation of contact maps and plotting of simulation results.
 
 # mathutils is provided by bpy
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 from numpy.typing import NDArray
 from collections.abc import MutableMapping
 from .. import config as cfg
@@ -80,6 +79,7 @@ class ParticleGeometry:
         opposite_face_rotation,
     ):
         """Generates all the possible orientations of the particle."""
+        from scipy.spatial.transform import Rotation as R
         # Rotation operations are defined as quaternions and compositions of quaternions
         rotations = [R.identity() for _ in range(self.n_orientations)]
         # Generate first rotation

@@ -42,6 +42,35 @@ def missing_initial_state(stages: list[Stage]) -> Path | None:
     return None if state.is_file() else state
 
 
+def independent_stages(stages: list[Stage]) -> bool:
+    """
+    Whether a manifest line's stages can run in parallel rather than in order.
+
+    A line is a chain only because a later stage initialises from an earlier
+    one's final structure. If no stage reads a structure from disk at all, the
+    ordering carries no meaning: these are independent runs that were grouped
+    onto one line, typically to keep a SLURM array small.
+
+    Deliberately conservative — any stage reading from a file keeps the whole
+    line sequential, since it may be reading a sibling's output.
+    """
+    return not any(
+        json.loads(stage.model_file.read_text()).get("initialize_option") == "from_file"
+        for stage in stages
+    )
+
+
+def split_independent(jobs: list[list[Stage]]) -> list[list[Stage]]:
+    """One job per stage for every line whose stages do not depend on each other."""
+    split: list[list[Stage]] = []
+    for stages in jobs:
+        if len(stages) > 1 and independent_stages(stages):
+            split.extend([stage] for stage in stages)
+        else:
+            split.append(stages)
+    return split
+
+
 def newest_inputs(stage: Stage, attempt_dir: Path, continue_root: Path) -> Stage:
     """This stage's latest param files: newest earlier attempt, else the original."""
     rel = stage.mc_file.relative_to(stage.mc_file.parents[2])

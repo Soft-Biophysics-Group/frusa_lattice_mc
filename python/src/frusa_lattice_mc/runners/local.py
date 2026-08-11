@@ -26,6 +26,7 @@ from .stages import (
     discard_if_empty,
     missing_initial_state,
     run_stages,
+    split_independent,
     task_name,
 )
 
@@ -36,6 +37,7 @@ def run_manifest(
     workers: int | None = None,
     resume: bool = False,
     force: bool = False,
+    split: bool = True,
     log_dir: Path | None = None,
     continue_root: Path | None = None,
     executable: Path | None = None,
@@ -52,9 +54,14 @@ def run_manifest(
     )
     executable = find_executable(executable)
 
-    jobs = manifest.read_manifest(manifest_path)
-    if not jobs:
+    lines = manifest.read_manifest(manifest_path)
+    if not lines:
         raise ValueError(f"{manifest_path} is empty")
+
+    # Stages on one line run in order, so a line is the unit of parallelism.
+    # Lines whose stages do not actually depend on each other get split, or a
+    # grouping chosen to keep a SLURM array small would cap the pool here too.
+    jobs = split_independent(lines) if split else lines
 
     orphans = [
         (task_name(stages), missing)
@@ -76,7 +83,17 @@ def run_manifest(
 
     if verbose:
         n_stages = max(len(stages) for stages in jobs)
+        if len(jobs) != len(lines):
+            print(
+                f"{len(lines)} manifest line(s) split into {len(jobs)} independent run(s)"
+                " — their stages do not read each other's output"
+            )
         print(f"{len(jobs)} run(s), up to {n_stages} stage(s) each, {workers} at a time")
+        if workers > len(jobs):
+            print(
+                f"Note: {workers} workers requested but only {len(jobs)} job(s) to run;"
+                " parallelism is per manifest line."
+            )
         if attempt_dir is not None:
             print(f"Resuming; continuation inputs in {attempt_dir}")
 
@@ -140,16 +157,28 @@ def main() -> None:
     parser.add_argument(
         "--force", action="store_true", help="Redo stages that already completed."
     )
+    parser.add_argument(
+        "--no-split", action="store_true",
+        help="Keep every manifest line as one job, even when its stages are"
+             " independent and could run in parallel.",
+    )
     args = parser.parse_args()
 
     if args.dry_run:
-        for stages in manifest.read_manifest(args.manifest):
+        lines = manifest.read_manifest(args.manifest)
+        jobs = lines if args.no_split else split_independent(lines)
+        if len(jobs) != len(lines):
+            print(
+                f"{len(lines)} manifest line(s) split into {len(jobs)} independent run(s)"
+            )
+        for stages in jobs:
             todo = [
                 f"stage {i}"
                 for i, stage in enumerate(stages, start=1)
                 if args.force or not continuation.is_finished(stage.mc_file)
             ]
             print(f"  {task_name(stages)}: {', '.join(todo) if todo else 'all done'}")
+        print(f"{len(jobs)} job(s)")
         return
 
     results = run_manifest(
@@ -157,6 +186,7 @@ def main() -> None:
         workers=args.workers,
         resume=args.resume,
         force=args.force,
+        split=not args.no_split,
         log_dir=args.log_dir,
         continue_root=args.continue_root,
     )

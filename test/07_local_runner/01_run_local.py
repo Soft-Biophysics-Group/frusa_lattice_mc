@@ -184,6 +184,28 @@ def main() -> None:
     check("array covers every manifest line", f"--array=1-{len(jobs)}" in script)
     check("passes the task id through", '"$SLURM_ARRAY_TASK_ID"' in script)
 
+    print("8. independent stages on one line run in parallel; chains do not")
+    from frusa_lattice_mc.runners.stages import independent_stages, split_independent
+
+    # The fixture's own lines are chains — stage 2 starts from stage 1's final
+    # structure — so they must survive the split untouched.
+    check("a chained line is not independent", not independent_stages(jobs[0]))
+    check("chained lines are left alone", len(split_independent(jobs)) == len(jobs))
+
+    # Both first stages initialise at random, so a line holding the two of them
+    # is a grouping rather than an ordering: the shape campaign 04's manifest has.
+    grouped = ROOT / "input" / "staged" / "grouped.txt"
+    manifest.write_stages(grouped, [[jobs[0][0], jobs[1][0]]])
+    line = manifest.read_manifest(grouped)
+    check("a line of random-init stages is independent", independent_stages(line[0]))
+    check("it splits into one job per stage", len(split_independent(line)) == 2)
+
+    results = run_manifest(grouped, workers=2, force=True, verbose=False)
+    check("both split jobs ran", len(results) == 2 and sum(r.n_ran for r in results) == 2)
+    check("no failures", all(r.returncode == 0 for r in results))
+    results = run_manifest(grouped, workers=2, split=False, verbose=False)
+    check("--no-split keeps them on one job", len(results) == 1)
+
     print("\nAll checks passed.")
 
 

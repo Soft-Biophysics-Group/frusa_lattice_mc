@@ -6,6 +6,16 @@ class Stage(NamedTuple):
     model_file: Path
     mc_file: Path
 
+def run_dir(stage: Stage) -> Path:
+    """The directory this stage writes into: the parent of its structures/ folder."""
+    mc = json.loads(stage.mc_file.read_text())
+    address = mc.get("final_structure_address")
+    if address is None:
+        # MCParams.to_dict drops None fields, so a run configured without a
+        # final structure has no such key at all. Name the file that is missing
+        # it: a bare KeyError says nothing about which of hundreds it was.
+        raise ValueError(f"{stage.mc_file} has no final_structure_address")
+    return Path(address).parent
 
 def write_stages(path: Path, jobs: list[list[Stage]]) -> None:
     """Write a series of jobs, each made of multiple stages (individual simulations).

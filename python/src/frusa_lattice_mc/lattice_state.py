@@ -1,6 +1,8 @@
 """Vincent Ouazan-Reboul, 2026-07-17
 Unified utilities to load and manipulate lattice states. Useful for plotting, data analysis
 """
+import io
+from frusa_lattice_mc.archive import read_member, archive_for
 
 from pathlib import Path
 import numpy as np
@@ -60,6 +62,35 @@ class LatticeState:
             file_path = struct_path / "final_structure.dat"
 
         return cls(file_path, model_file)
+
+    @classmethod
+    def from_run(
+        cls,
+        run_dir: str | Path,
+        model_file: str | Path,
+        struct_index: int | None = None,
+    ) -> "LatticeState":
+        """Pull a structure from a run, be it a directory or a .tar.zst archive.
+
+        `run_dir` is the run itself, not its structures/ folder — the parent of
+        what the MC params call final_structure_address.
+        """
+        run_dir = Path(run_dir)
+        name = (
+            "final_structure.dat" if struct_index is None
+            else f"structure_{struct_index}.dat"
+        )
+        relpath = f"structures/{name}"
+
+        if run_dir.is_dir():
+            return cls(run_dir / relpath, model_file)
+
+        raw = read_member(archive_for(run_dir), relpath)
+        if raw is None:
+            raise FileNotFoundError(
+                f"{relpath} is in neither {run_dir} nor {archive_for(run_dir)}"
+            )
+        return cls(str(io.BytesIO(raw)), model_file)
 
     @cached_property
     def full_sites(self) -> NDArray[np.int64]:

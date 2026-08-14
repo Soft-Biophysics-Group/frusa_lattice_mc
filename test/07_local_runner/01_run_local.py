@@ -179,7 +179,7 @@ def main() -> None:
     )
 
     print("7. the generated array script")
-    script = slurm.generate_self_resuming_script(MANIFEST_FILE, len(jobs), job_name="t7")
+    script = slurm.generate_self_resuming_script(MANIFEST_FILE, job_name="t7")
     check("one srun per array task, not per stage", script.count("srun") == 1)
     check("array covers every manifest line", f"--array=1-{len(jobs)}" in script)
     check("passes the task id through", '"$SLURM_ARRAY_TASK_ID"' in script)

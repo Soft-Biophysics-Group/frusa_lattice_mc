@@ -262,6 +262,17 @@ def continue_stage(stage: Stage, attempt_dir: Path) -> Stage | None:
     offset = mc.get("structure_index_offset", 0)
     progress = checkpoint_progress(Path(mc["checkpoint_address"]), offset)
     if progress < 0:
+        # Nothing new since this file's schedule began. For a continuation that is
+        # not a dead end: it was interrupted before its first checkpoint, and its
+        # own params still name the right restart state (structure_{offset-1}), so
+        # re-run them unchanged — but only while that state is still on disk. Wiping
+        # a run's data leaves these params behind pointing at a checkpoint that no
+        # longer exists; starting over is then the honest answer, as it is for a run
+        # that never checkpointed at all.
+        if offset > 0:
+            state_input = load_json(stage.model_file).get("state_input")
+            if state_input and Path(state_input).is_file():
+                return stage
         return None
 
     # input/<prefix>/<slug>/mc_params_i.json — mirror from the input root down, so

@@ -121,6 +121,8 @@ def run_manifest(
                     else f"FAILED at stage {result.failed_stage}"
                     f" (rc={result.returncode})"
                 )
+                if result.note:
+                    status = f"{status}\n    {result.note}"
                 print(
                     f"[{n_done}/{len(jobs)}] {result.name}: {status}"
                     f"  ({(time.monotonic() - start) / 60:.1f} min elapsed)"

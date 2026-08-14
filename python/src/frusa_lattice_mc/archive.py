@@ -84,6 +84,10 @@ def read_member(archive: Path, relpath: str) -> bytes | None:
                 return None if extracted is None else extracted.read()
     return None
 
+def read_final(archive: Path) -> bytes | None:
+    """The run's final structure, straight out of the archive."""
+    return read_member(archive, "structures/final_structure.dat")
+
 
 @contextmanager
 def run_data(run_dir: Path, tmp_root: Path | None = None) -> Iterator[Path | None]:

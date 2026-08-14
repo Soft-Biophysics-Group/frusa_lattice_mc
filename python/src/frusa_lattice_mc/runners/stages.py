@@ -18,6 +18,10 @@ from ..gen_param_functions.manifest import Stage
 
 CONTINUE_DIR_NAME = "_continued"
 
+# Returned instead of running a stage that would overwrite existing checkpoints.
+# Distinct from any frusa_mc exit code, so the cause is unambiguous in a summary.
+REFUSED_OVERWRITE_RC = 75
+
 
 class TaskResult(NamedTuple):
     name: str
@@ -26,6 +30,7 @@ class TaskResult(NamedTuple):
     n_resumed: int
     failed_stage: int | None
     returncode: int
+    note: str | None = None
 
 
 def task_name(stages: list[Stage]) -> str:
@@ -88,6 +93,14 @@ def resume_stage(stage: Stage, attempt_dir: Path, continue_root: Path) -> Stage 
     return continuation.continue_stage(source, attempt_dir)
 
 
+def has_checkpoints(stage: Stage) -> bool:
+    """Whether this stage's checkpoint directory already holds structures."""
+    address = json.loads(stage.mc_file.read_text()).get("checkpoint_address")
+    if address is None:
+        return False
+    return continuation.checkpoint_progress(Path(address)) >= 0
+
+
 def discard_if_empty(attempt_dir: Path | None) -> None:
     """Drop an attempt directory nothing was written to, so reruns stay tidy."""
     if attempt_dir is not None and attempt_dir.is_dir() and not any(attempt_dir.iterdir()):
@@ -113,11 +126,29 @@ def run_stages(
                 continue
 
             to_run = stage
+            continued = False
             if attempt_dir is not None and not force:
                 resumed = resume_stage(stage, attempt_dir, continue_root)
                 if resumed is not None:
                     to_run = resumed
+                    continued = True
                     n_resumed += 1
+
+            # Running the original params writes structure_0 onward. Over a populated
+            # checkpoint directory that silently splices a fresh trajectory into an
+            # existing one, so refuse rather than destroy data. --force says the
+            # overwrite is intended; --resume continues instead of restarting.
+            if not continued and not force and has_checkpoints(stage):
+                note = (
+                    f"refused to restart {stage.mc_file} from scratch:"
+                    f" its checkpoint directory already holds structures."
+                    " Re-run with --resume to continue it, or --force to overwrite."
+                )
+                log.write(f"=== stage {stage_index}/{len(stages)}: {note}\n")
+                return TaskResult(
+                    name, n_ran, n_skipped, n_resumed,
+                    stage_index, REFUSED_OVERWRITE_RC, note,
+                )
 
             log.write(f"=== stage {stage_index}/{len(stages)}: {to_run.mc_file}\n")
             log.flush()

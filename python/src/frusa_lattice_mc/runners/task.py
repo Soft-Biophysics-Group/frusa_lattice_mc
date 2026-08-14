@@ -83,6 +83,8 @@ def main() -> None:
     )
     if result.returncode != 0:
         print(f"FAILED at stage {result.failed_stage} (rc={result.returncode})")
+        if result.note:
+            print(result.note)
     print(f"Log: {log_dir / f'{task_name(stages)}.log'}")
     raise SystemExit(result.returncode)
 

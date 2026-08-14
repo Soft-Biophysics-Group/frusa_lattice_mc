@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 from functools import cached_property
+from typing import IO
 from .geometry import LatticeGeometry
 from .geometry import ParticleGeometry
 
@@ -23,7 +24,9 @@ class LatticeState:
     lattice: LatticeGeometry
     particle: ParticleGeometry
 
-    def __init__(self, path_to_config: str | Path, model_file: str | Path) -> None:
+    def __init__(
+        self, path_to_config: str | Path | IO[bytes], model_file: str | Path
+    ) -> None:
         self.lattice_config = np.loadtxt(path_to_config, dtype=int)
         self.lattice = LatticeGeometry.from_model_file(model_file)
         self.particle = ParticleGeometry.from_model_file(model_file)
@@ -90,7 +93,7 @@ class LatticeState:
             raise FileNotFoundError(
                 f"{relpath} is in neither {run_dir} nor {archive_for(run_dir)}"
             )
-        return cls(str(io.BytesIO(raw)), model_file)
+        return cls(io.BytesIO(raw), model_file)
 
     @cached_property
     def full_sites(self) -> NDArray[np.int64]:

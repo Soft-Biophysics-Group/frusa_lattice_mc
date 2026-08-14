@@ -4,12 +4,9 @@ SLURM job script generation for frusa_mc runs.
 
 from pathlib import Path
 from textwrap import dedent
-import numpy as np
-
-from .params import load_json
 
 # Legacy import
-from .manifest import write_single_stage as write_stage_manifest, Stage
+from .manifest import write_single_stage as write_stage_manifest, Stage, read_manifest
 
 
 def generate_array_script(
@@ -65,7 +62,6 @@ def generate_array_script(
 
 def generate_self_resuming_script(
     manifest_path: Path,
-    n_jobs: int,
     *,
     job_name: str = "frusa_mc",
     partition: str = "q-2sem",
@@ -87,6 +83,10 @@ def generate_self_resuming_script(
     generate_array_script_by_stages, the stage loop lives in the runner, so the
     script does not need regenerating when the number of stages changes.
     """
+    jobs = read_manifest(manifest_path)
+    if not jobs:
+        raise ValueError(f"{manifest_path} is empty: there is nothing to submit")
+    n_jobs = len(jobs)
     return f"""\
 #!/bin/bash
 #SBATCH --partition={partition}
@@ -115,21 +115,22 @@ srun {runner} \\
 
 def generate_array_script_by_stages(
     manifest_path: Path,
-    n_jobs: int,
     *,
     job_name: str = "frusa_mc",
     partition: str = "q-2sem",
     time_limit: str = "336:00:00",
     mem: str = "4gb",
     mail_user: str = "vincent.ouazan-reboul@universite-paris-saclay.fr",
-    executable: str = "./frusa_lattice_mc/build/app/frusa_mc",
+    executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     nodelist: str = "1-4",
 ) -> str:
     srun_lines = []
-    with manifest_path.open("r") as f:
-        test_line = f.readline()
-    n_stages = len(test_line.split()) // 2
+    jobs = read_manifest(manifest_path)
+    if not jobs:
+        raise ValueError(f"{manifest_path} is empty: there is nothing to submit")
+    n_jobs = len(jobs)
+    n_stages = len(jobs[0])
 
     for stage_idx in range(n_stages):
         col_model = stage_idx * 2 + 1

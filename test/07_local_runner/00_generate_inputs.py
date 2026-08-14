@@ -66,11 +66,11 @@ def main() -> None:
             model,
             mc_params(),
             label="lbl",
-            continue_from_mc_file=stage_1[1],
+            continue_from_mc_file=stage_1.mc_file,
         )
         jobs.append([stage_1, stage_2])
 
-    manifest.write_stages(MANIFEST_FILE, jobs)
+    manifest.write_manifest(MANIFEST_FILE, jobs)
     print(f"Wrote {len(jobs)} two-stage runs; manifest at {MANIFEST_FILE}")
 
 

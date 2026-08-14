@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .manifest import Stage, read_manifest, write_stages
+from .manifest import Stage, read_manifest, write_manifest
 from .params import write_json, load_json
 
 
@@ -316,5 +316,5 @@ def prepare_continuation(manifest_path: Path, attempt_dir: Path) -> Path | None:
         return None
 
     new_manifest = attempt_dir / manifest_path.name
-    write_stages(new_manifest, new_jobs)
+    write_manifest(new_manifest, new_jobs)
     return new_manifest

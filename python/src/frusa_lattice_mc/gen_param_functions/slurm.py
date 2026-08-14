@@ -4,14 +4,14 @@ SLURM job script generation for frusa_mc runs.
 
 from pathlib import Path
 from textwrap import dedent
+from typing import Sequence
 
-# Legacy import
-from .manifest import write_single_stage as write_stage_manifest, Stage, read_manifest
+from .manifest import Stage, read_manifest, write_manifest
 
 
 def generate_array_script(
     input_root: Path,
-    jobs: list[Stage],
+    stages: Sequence[Stage],
     *,
     job_name: str = "frusa_mc",
     partition: str = "q-2sem",
@@ -23,15 +23,18 @@ def generate_array_script(
     file_list_path: Path | None = None,
     nodelist: str = "1-4",
 ) -> str:
-    """Write a model_mc_files.txt manifest and return the array script."""
+    """Write a model_mc_files.txt manifest and return the array script.
+
+    The script runs one stage per array task, so each stage is its own job.
+    """
     input_root = Path(input_root).resolve()
 
     if file_list_path is None:
         file_list_path = input_root / "model_mc_files.txt"
 
-    write_stage_manifest(file_list_path, jobs)
+    write_manifest(file_list_path, [[stage] for stage in stages])
 
-    n = len(jobs)
+    n = len(stages)
 
     return dedent(f"""\
         #!/bin/bash
@@ -51,8 +54,8 @@ def generate_array_script(
 
         FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {{print $1, $2}}' {file_list_path})
 
-        MCFILE=$(echo $FILES | awk '{{print $1}}')
-        MODELFILE=$(echo $FILES | awk '{{print $2}}')
+        MODELFILE=$(echo $FILES | awk '{{print $1}}')
+        MCFILE=$(echo $FILES | awk '{{print $2}}')
 
         srun {executable} \\
             -M "${{MCFILE}}" \\
@@ -131,6 +134,13 @@ def generate_array_script_by_stages(
         raise ValueError(f"{manifest_path} is empty: there is nothing to submit")
     n_jobs = len(jobs)
     n_stages = len(jobs[0])
+    # The script gets one srun block per stage of the first job, so a ragged
+    # manifest would drop the rest without saying so.
+    ragged = [i for i, stages in enumerate(jobs) if len(stages) != n_stages]
+    if ragged:
+        raise ValueError(
+            f"{manifest_path} is ragged: jobs {ragged[:5]} do not have {n_stages} stages"
+        )
 
     for stage_idx in range(n_stages):
         col_model = stage_idx * 2 + 1

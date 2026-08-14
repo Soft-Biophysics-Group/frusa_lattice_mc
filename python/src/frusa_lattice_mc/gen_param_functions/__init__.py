@@ -7,9 +7,9 @@ Typical use:
     run_name = "00_my_run"
     model = ModelParams(couplings=couplings, n_particles=[500], lx=40, ly=40)
     mc = MCParams(mcs_eq=1000, Ti=0.0, Tf=2.0, Nt=200)
-    jobs = write_run_series(root, run_name, series_index=0,
-                            model=model, mc=mc, n_runs=20)
-    script = slurm.generate_script_for_prefix(root, run_name, job_name="my_run")
+    stages = write_run_series(root, run_name, series_index=0,
+                              model=model, mc=mc, n_runs=20)
+    script = slurm.generate_array_script(input_root, stages, job_name="my_run")
 """
 
 from . import slurm, continuation, manifest
@@ -23,12 +23,11 @@ from .params import (
     build_params,
     write_run,
     write_run_series,
-    write_manifest,
     load_json,
     write_json,
 )
 from .paths import run_slug
-from .manifest import read_manifest
+from .manifest import Stage, read_manifest, run_dir, write_manifest
 
 __all__ = [
     "slurm",
@@ -47,5 +46,7 @@ __all__ = [
     "load_json",
     "write_json",
     "run_slug",
-    "read_manifest"
+    "read_manifest",
+    "run_dir",
+    "Stage",
 ]

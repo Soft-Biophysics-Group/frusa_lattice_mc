@@ -195,7 +195,7 @@ def main() -> None:
     # Both first stages initialise at random, so a line holding the two of them
     # is a grouping rather than an ordering: the shape campaign 04's manifest has.
     grouped = ROOT / "input" / "staged" / "grouped.txt"
-    manifest.write_stages(grouped, [[jobs[0][0], jobs[1][0]]])
+    manifest.write_manifest(grouped, [[jobs[0][0], jobs[1][0]]])
     line = manifest.read_manifest(grouped)
     check("a line of random-init stages is independent", independent_stages(line[0]))
     check("it splits into one job per stage", len(split_independent(line)) == 2)

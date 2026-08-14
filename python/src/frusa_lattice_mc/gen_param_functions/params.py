@@ -20,8 +20,7 @@ from .paths import (
     energy_av_dir,
     energy_records_dir,
 )
-# Legacy import
-from .manifest import write_stages as write_manifest
+from .manifest import Stage
 
 
 # ── Dataclasses ─────────────────────────────────────────────────────
@@ -294,8 +293,8 @@ def write_run(
     label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
     continue_from_step: int | None = None,
-) -> tuple[Path, Path]:
-    """Build and write parameter files for a single run. Returns (model_file, mc_file)."""
+) -> Stage:
+    """Build and write parameter files for a single run."""
     model, mc, model_file, mc_file = build_params(
         root,
         run_name,
@@ -312,7 +311,7 @@ def write_run(
     write_json(model.to_dict(), model_file)
     write_json(mc.to_dict(), mc_file)
 
-    return model_file, mc_file
+    return Stage(model_file, mc_file)
 
 
 def write_run_series(
@@ -326,7 +325,7 @@ def write_run_series(
     label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
     continue_from_step: int | None = None,
-) -> list[tuple[Path, Path]]:
+) -> list[Stage]:
     """Write parameter files for a series of independent runs sharing one model/mc template."""
     return [
         write_run(

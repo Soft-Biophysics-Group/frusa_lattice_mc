@@ -7,6 +7,7 @@ from textwrap import dedent
 from typing import Sequence
 
 from .manifest import Stage, read_manifest, write_manifest
+from .paths import rel_path
 
 
 def generate_array_script(
@@ -22,6 +23,7 @@ def generate_array_script(
     log_dir: str = "./logs",
     file_list_path: Path | None = None,
     nodelist: str = "1-4",
+    root: Path,
 ) -> str:
     """Write a model_mc_files.txt manifest and return the array script.
 
@@ -32,7 +34,7 @@ def generate_array_script(
     if file_list_path is None:
         file_list_path = input_root / "model_mc_files.txt"
 
-    write_manifest(file_list_path, [[stage] for stage in stages])
+    write_manifest(file_list_path, [[stage] for stage in stages], root)
 
     n = len(stages)
 
@@ -52,7 +54,7 @@ def generate_array_script(
         #SBATCH --output={log_dir}/{job_name}_%A_%a.log
         #SBATCH --nodelist=titan-node[{nodelist}]
 
-        FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {{print $1, $2}}' {file_list_path})
+        FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {{print $1, $2}}' {rel_path(file_list_path, root)})
 
         MODELFILE=$(echo $FILES | awk '{{print $1}}')
         MCFILE=$(echo $FILES | awk '{{print $2}}')
@@ -75,6 +77,7 @@ def generate_self_resuming_script(
     executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     nodelist: str = "1-4",
+    root: Path,
 ) -> str:
     """
     An array script that starts a campaign and continues it, unchanged.
@@ -86,7 +89,7 @@ def generate_self_resuming_script(
     generate_array_script_by_stages, the stage loop lives in the runner, so the
     script does not need regenerating when the number of stages changes.
     """
-    jobs = read_manifest(manifest_path)
+    jobs = read_manifest(manifest_path, root)
     if not jobs:
         raise ValueError(f"{manifest_path} is empty: there is nothing to submit")
     n_jobs = len(jobs)
@@ -110,7 +113,7 @@ set -euo pipefail
 # Resuming is the default: finished stages are skipped, an interrupted one
 # continues from its last checkpoint, anything untouched runs from scratch.
 srun {runner} \\
-    {Path(manifest_path).resolve()} \\
+    {rel_path(Path(manifest_path), root)} \\
     "$SLURM_ARRAY_TASK_ID" \\
     --executable {executable}
 """
@@ -127,9 +130,10 @@ def generate_array_script_by_stages(
     executable: str = "./src/frusa_lattice_mc/build/app/frusa_mc",
     log_dir: str = "./logs",
     nodelist: str = "1-4",
+    root: Path,
 ) -> str:
     srun_lines = []
-    jobs = read_manifest(manifest_path)
+    jobs = read_manifest(manifest_path, root)
     if not jobs:
         raise ValueError(f"{manifest_path} is empty: there is nothing to submit")
     n_jobs = len(jobs)
@@ -172,7 +176,7 @@ def generate_array_script_by_stages(
 
 set -euo pipefail
 
-FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {{print}}' {manifest_path})
+FILES=$(awk -v line="$SLURM_ARRAY_TASK_ID" 'NR==line {{print}}' {rel_path(Path(manifest_path), root)})
 
 {srun_block}
     """

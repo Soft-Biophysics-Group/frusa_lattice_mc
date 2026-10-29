@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 from typing import NamedTuple, Sequence
 
+from .paths import rel_path
+
 
 class Stage(NamedTuple):
     model_file: Path
@@ -26,11 +28,11 @@ def run_dir(stage: Stage) -> Path:
         raise ValueError(f"{stage.mc_file} has no final_structure_address")
     return Path(address).parent
 
-def write_manifest(path: Path, jobs: Sequence[Sequence[Stage]]) -> None:
+def write_manifest(path: Path, jobs: Sequence[Sequence[Stage]], root: Path) -> None:
     """Write one line per job, a job being the stages of one array task.
 
     The inverse of read_manifest. A run with nothing chained after it is a
-    one-stage job: [[stage], [stage], ...].
+    one-stage job: [[stage], [stage], ...]. Paths are relative to the project root `root`.
     """
     n_stages = len(jobs[0])
     for index, stages in enumerate(jobs):
@@ -43,7 +45,8 @@ def write_manifest(path: Path, jobs: Sequence[Sequence[Stage]]) -> None:
 
     text = "".join(
         " ".join(
-            f"{stage.model_file.resolve()} {stage.mc_file.resolve()}" for stage in stages
+            f"{rel_path(stage.model_file, root)} {rel_path(stage.mc_file, root)}"
+            for stage in stages
         )
         + "\n"
         for stages in jobs
@@ -57,11 +60,15 @@ def write_manifest(path: Path, jobs: Sequence[Sequence[Stage]]) -> None:
     os.replace(tmp, path)
 
 
-def read_manifest(path:Path) -> list[list[Stage]]:
-    """Read the manifest located at path, whether it is in several or single stage format"""
+def read_manifest(path: Path, root: Path = Path()) -> list[list[Stage]]:
+    """Read the manifest located at path, whether it is in several or single stage format.
+
+    Entries are relative to the project root `root`, by default the working directory
+    since runners are launched from it.
+    """
     jobs = []
     for line in path.read_text().splitlines():
-        fields = [Path(f) for f in line.split()]
+        fields = [root / f for f in line.split()]
         if not fields:
             continue
         if len(fields) % 2:

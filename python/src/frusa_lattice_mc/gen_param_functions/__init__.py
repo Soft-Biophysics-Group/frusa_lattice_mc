@@ -9,7 +9,7 @@ Typical use:
     mc = MCParams(mcs_eq=1000, Ti=0.0, Tf=2.0, Nt=200)
     stages = write_run_series(root, run_name, series_index=0,
                               model=model, mc=mc, n_runs=20)
-    script = slurm.generate_array_script(input_root, stages, job_name="my_run")
+    script = slurm.generate_array_script(input_root, stages, job_name="my_run", root=root)
 """
 
 from . import slurm, continuation, manifest

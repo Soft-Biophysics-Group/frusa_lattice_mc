@@ -70,7 +70,7 @@ def main() -> None:
         )
         jobs.append([stage_1, stage_2])
 
-    manifest.write_manifest(MANIFEST_FILE, jobs)
+    manifest.write_manifest(MANIFEST_FILE, jobs, ROOT)
     print(f"Wrote {len(jobs)} two-stage runs; manifest at {MANIFEST_FILE}")
 
 

@@ -71,7 +71,9 @@ def test_checkpoint_progress_counts_from_the_offset(tmp_path):
     assert checkpoint_progress(Path(structures), offset=4) == 5
 
 
-def test_continue_stage_resumes_from_the_last_checkpoint(tmp_path):
+def test_continue_stage_resumes_from_the_last_checkpoint(tmp_path, monkeypatch):
+    # Continuations record paths relative to the project root, the working directory.
+    monkeypatch.chdir(tmp_path)
     stage = make_run(tmp_path, n_checkpoints=10)
     attempt = tmp_path / "_continued" / "attempt_1"
 

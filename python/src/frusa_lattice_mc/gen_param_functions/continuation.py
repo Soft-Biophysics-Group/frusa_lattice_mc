@@ -23,6 +23,7 @@ import numpy as np
 
 from .manifest import Stage, read_manifest, write_manifest
 from .params import write_json, load_json
+from .paths import rel_path
 
 
 # ── Data returned by queries ────────────────────────────────────────
@@ -214,10 +215,11 @@ def write_continuation_inputs(
 
         # Write new files mirroring the relative structure under new_input_root
         new_mc_file = new_input_root / job.mc_file_relative
-        model_rel = old_model_file.relative_to(old_input_root)
+        model_rel = old_model_file.resolve().relative_to(old_input_root)
         new_model_file = new_input_root / model_rel
 
-        mc["model_params_file"] = str(new_model_file.resolve())
+        # Runners work from the project root, so it is the working directory here.
+        mc["model_params_file"] = rel_path(new_model_file, Path())
 
         write_json(model, new_model_file)
         write_json(mc, new_mc_file)
@@ -316,5 +318,5 @@ def prepare_continuation(manifest_path: Path, attempt_dir: Path) -> Path | None:
         return None
 
     new_manifest = attempt_dir / manifest_path.name
-    write_manifest(new_manifest, new_jobs)
+    write_manifest(new_manifest, new_jobs, Path())
     return new_manifest

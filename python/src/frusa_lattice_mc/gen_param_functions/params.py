@@ -13,6 +13,7 @@ from .. import contact_utils as cu
 from ..json_dump import make_json_file as write_json, load_json
 from .paths import (
     c_path,
+    rel_path,
     run_slug,
     input_file_paths,
     data_dir,
@@ -243,7 +244,8 @@ def build_params(
 
     `model` and `mc` act as templates: the function returns copies with the
     path-dependent fields filled in. `model.couplings` must be set. `label`
-    tags the output slug, e.g. to record explicit parameters.
+    tags the output slug, e.g. to record explicit parameters. Recorded paths are
+    relative to `root`, so runs must be launched from it.
 
     Returns (model_params, mc_params, model_file, mc_file).
     """
@@ -262,12 +264,12 @@ def build_params(
     if model.e_av_option:
         d = energy_av_dir(data)
         d.mkdir(parents=True, exist_ok=True)
-        model.e_av_output = c_path(d)
+        model.e_av_output = c_path(d, root)
 
     if model.e_record_option:
         d = energy_records_dir(data)
         d.mkdir(parents=True, exist_ok=True)
-        model.e_record_output = c_path(d)
+        model.e_record_output = c_path(d, root)
 
     if continue_from_mc_file is not None:
         model.get_input_from_prev_mc(continue_from_mc_file, continue_from_step)
@@ -275,9 +277,9 @@ def build_params(
     # -- mc output dirs --
     structs = structures_dir(data)
     structs.mkdir(parents=True, exist_ok=True)
-    mc.checkpoint_address = c_path(structs)
-    mc.final_structure_address = c_path(structs)
-    mc.model_params_file = str(model_file.resolve())
+    mc.checkpoint_address = c_path(structs, root)
+    mc.final_structure_address = c_path(structs, root)
+    mc.model_params_file = rel_path(model_file, root)
 
     return model, mc, model_file, mc_file
 

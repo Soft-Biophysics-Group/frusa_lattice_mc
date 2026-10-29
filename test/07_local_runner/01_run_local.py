@@ -6,6 +6,7 @@ Run 00_generate_inputs.py first.
 """
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -57,6 +58,8 @@ def interrupt(mc_file: Path, keep: int) -> None:
 
 
 def main() -> None:
+    # Recorded paths are relative to the project root, which runners work from.
+    os.chdir(ROOT)
     jobs = manifest.read_manifest(MANIFEST_FILE)
     n_stages = sum(len(stages) for stages in jobs)
     n_t = json.loads(jobs[0][0].mc_file.read_text())["Nt"]
@@ -179,7 +182,7 @@ def main() -> None:
     )
 
     print("7. the generated array script")
-    script = slurm.generate_self_resuming_script(MANIFEST_FILE, job_name="t7")
+    script = slurm.generate_self_resuming_script(MANIFEST_FILE, job_name="t7", root=ROOT)
     check("one srun per array task, not per stage", script.count("srun") == 1)
     check("array covers every manifest line", f"--array=1-{len(jobs)}" in script)
     check("passes the task id through", '"$SLURM_ARRAY_TASK_ID"' in script)
@@ -195,7 +198,7 @@ def main() -> None:
     # Both first stages initialise at random, so a line holding the two of them
     # is a grouping rather than an ordering: the shape campaign 04's manifest has.
     grouped = ROOT / "input" / "staged" / "grouped.txt"
-    manifest.write_manifest(grouped, [[jobs[0][0], jobs[1][0]]])
+    manifest.write_manifest(grouped, [[jobs[0][0], jobs[1][0]]], ROOT)
     line = manifest.read_manifest(grouped)
     check("a line of random-init stages is independent", independent_stages(line[0]))
     check("it splits into one job per stage", len(split_independent(line)) == 2)

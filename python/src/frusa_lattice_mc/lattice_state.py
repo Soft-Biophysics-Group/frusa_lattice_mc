@@ -2,15 +2,16 @@
 Unified utilities to load and manipulate lattice states. Useful for plotting, data analysis
 """
 import io
-from frusa_lattice_mc.archive import read_member, archive_for
-
+from functools import cached_property
 from pathlib import Path
+from typing import IO
+
 import numpy as np
 from numpy.typing import NDArray
-from functools import cached_property
-from typing import IO
-from .geometry import LatticeGeometry
-from .geometry import ParticleGeometry
+
+from .archive import archive_for, read_member
+from .gen_param_functions import Stage, run_dir
+from .geometry import LatticeGeometry, ParticleGeometry
 
 
 class LatticeState:
@@ -48,6 +49,21 @@ class LatticeState:
         new_state.lattice = lattice
         new_state.particle = particle
         return new_state
+
+    @classmethod
+    def from_stage(
+        cls,
+        stage: Stage,
+        struct_index: int | None = None,
+        root: Path = Path(),
+    ) -> "LatticeState":
+        """Pull a structure from a stage, be it a run directory or archive.
+
+        `stage` must come from read_manifest(path, root) with the same `root`: its files
+        are then already anchored there, and only the run directory recorded inside the
+        MC file still needs it.
+        """
+        return cls.from_run(run_dir(stage, root), stage.model_file, struct_index)
 
     @classmethod
     def from_dir(

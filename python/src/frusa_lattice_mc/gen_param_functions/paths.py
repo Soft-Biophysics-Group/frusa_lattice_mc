@@ -21,7 +21,7 @@ def rel_path(p: Path, root: Path) -> str:
     Every recorded path is relative to the project root, so a campaign generated on one
     machine runs on another; simulations and analysis are launched from that root.
     """
-    return str(p.resolve().relative_to(root.resolve()))
+    return str((root / p).resolve().relative_to(root.resolve()))
 
 
 def c_path(p: Path, root: Path) -> str:
@@ -33,6 +33,22 @@ def run_slug(series_index: int, label: str | None = None) -> str:
     if label is not None:
         return f"series_{series_index:02}_{label}"
     return f"series_{series_index:02}"
+
+
+def parse_run_slug(slug: str) -> tuple[int, str | None]:
+    """Inverse of run_slug: (series_index, label)."""
+    prefix, index, *label = slug.split("_", 2) + [""]
+    if prefix != "series" or not index.isdigit():
+        raise ValueError(f"{slug!r} is not a run slug (series_NN[_label])")
+    return int(index), (label[0] or None)
+
+
+def parse_run_index(param_file: Path) -> int:
+    """Run index i of a model_params_{i}.json or mc_params_{i}.json file."""
+    index = param_file.stem.rsplit("_", 1)[-1]
+    if not index.isdigit():
+        raise ValueError(f"{param_file.name!r} is not named *_params_{{i}}.json")
+    return int(index)
 
 
 # ── directory builders ──────────────────────────────────────────────

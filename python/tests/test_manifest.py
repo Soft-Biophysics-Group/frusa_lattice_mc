@@ -83,3 +83,26 @@ def test_a_failed_write_leaves_the_previous_manifest_intact(tmp_path):
         write_manifest(manifest, [[stages[0], stages[1]], [stages[2]]], tmp_path)
 
     assert manifest.read_bytes() == good
+
+
+def test_stage_names_are_read_off_the_layout(tmp_path):
+    """Stages read from a manifest recover the series label and run index they were
+    written with, although the manifest stores only paths."""
+    labelled = tmp_path / "input" / "00_run" / "series_04_Q2_m090_T_0.6"
+    unlabelled = tmp_path / "input" / "00_run" / "series_11"
+    stages = []
+    for directory in (labelled, unlabelled):
+        directory.mkdir(parents=True)
+        model_file = directory / "model_params_3.json"
+        mc_file = directory / "mc_params_3.json"
+        model_file.write_text(json.dumps({"lx": 4}))
+        mc_file.write_text(json.dumps({"mcs_eq": 10}))
+        stages.append(Stage(model_file, mc_file))
+    manifest = tmp_path / "manifest.txt"
+    write_manifest(manifest, [[stage] for stage in stages], tmp_path)
+
+    (first,), (second,) = read_manifest(manifest, tmp_path)
+
+    assert (first.series_index, first.label, first.run_index) == (4, "Q2_m090_T_0.6", 3)
+    assert first.name == "series_04_Q2_m090_T_0.6_run_3"
+    assert (second.series_index, second.label, second.name) == (11, None, "series_11_run_3")

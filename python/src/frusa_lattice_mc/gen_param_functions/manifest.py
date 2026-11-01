@@ -9,16 +9,49 @@ import os
 from pathlib import Path
 from typing import NamedTuple, Sequence
 
-from .paths import rel_path
+from .paths import parse_run_index, parse_run_slug, rel_path
 
 
 class Stage(NamedTuple):
+    """The two parameter files of one run.
+
+    Names are read off the input layout, input/{prefix}/{slug}/mc_params_{i}.json,
+    rather than stored, so every Stage carries them however it was built (written,
+    read from a manifest, or continued).
+    """
+
     model_file: Path
     mc_file: Path
 
+    @property
+    def slug(self) -> str:
+        return self.mc_file.parent.name
 
-def run_dir(stage: Stage) -> Path:
-    """The directory this stage writes into: the parent of its structures/ folder."""
+    @property
+    def series_index(self) -> int:
+        return parse_run_slug(self.slug)[0]
+
+    @property
+    def label(self) -> str | None:
+        return parse_run_slug(self.slug)[1]
+
+    @property
+    def run_index(self) -> int:
+        return parse_run_index(self.mc_file)
+
+    @property
+    def name(self) -> str:
+        """Unique within a campaign, e.g. series_04_<label>_run_0, mirroring the
+        data/{prefix}/{slug}/run_{i} directory."""
+        return f"{self.slug}_run_{self.run_index}"
+
+
+def run_dir(stage: Stage, root: Path = Path()) -> Path:
+    """The directory this stage writes into: the parent of its structures/ folder.
+
+    The MC file records it relative to the project root `root`, by default the working
+    directory, as in read_manifest.
+    """
     mc = json.loads(stage.mc_file.read_text())
     address = mc.get("final_structure_address")
     if address is None:
@@ -26,7 +59,7 @@ def run_dir(stage: Stage) -> Path:
         # final structure has no such key at all. Name the file that is missing
         # it: a bare KeyError says nothing about which of hundreds it was.
         raise ValueError(f"{stage.mc_file} has no final_structure_address")
-    return Path(address).parent
+    return root / Path(address).parent
 
 def write_manifest(path: Path, jobs: Sequence[Sequence[Stage]], root: Path) -> None:
     """Write one line per job, a job being the stages of one array task.

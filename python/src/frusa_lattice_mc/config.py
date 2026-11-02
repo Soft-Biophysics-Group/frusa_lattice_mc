@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import numpy as np
 from numpy.typing import NDArray
+from .checkpoints import structure_path
 from .json_dump import load_json
 import os
 
@@ -113,11 +114,7 @@ def load_structure(
     else:
         if struct_folder is None:
             struct_folder = structures_path
-        struct_folder = Path(struct_folder)
-        if struct_index is not None:
-            file_path = struct_folder / f"structure_{struct_index}.dat"
-        else:
-            file_path = struct_folder / "final_structure.dat"
+        file_path = structure_path(struct_folder, struct_index)
 
     return np.loadtxt(file_path, dtype=int)
 

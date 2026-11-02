@@ -1,6 +1,7 @@
 """Vincent Ouazan-Reboul, 2026-07-17
 Unified utilities to load and manipulate lattice states. Useful for plotting, data analysis
 """
+import gzip
 import io
 from functools import cached_property
 from pathlib import Path
@@ -10,6 +11,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .archive import archive_for, read_member
+from .checkpoints import GZ_SUFFIX, structure_path
 from .gen_param_functions import Stage, run_dir
 from .geometry import LatticeGeometry, ParticleGeometry
 
@@ -74,13 +76,7 @@ class LatticeState:
     ):
         """Pull a structure directly from a folder. If struct_index is not specified, pulls the
         final structure of the run"""
-        struct_path = Path(struct_folder)
-        if struct_index is not None:
-            file_path = struct_path / f"structure_{struct_index}.dat"
-        else:
-            file_path = struct_path / "final_structure.dat"
-
-        return cls(file_path, model_file)
+        return cls(structure_path(struct_folder, struct_index), model_file)
 
     @classmethod
     def from_run(
@@ -102,9 +98,13 @@ class LatticeState:
         relpath = f"structures/{name}"
 
         if run_dir.is_dir():
-            return cls(run_dir / relpath, model_file)
+            return cls(structure_path(run_dir / "structures", struct_index), model_file)
 
-        raw = read_member(archive_for(run_dir), relpath)
+        archive = archive_for(run_dir)
+        raw = read_member(archive, relpath)
+        if raw is None:
+            compressed = read_member(archive, relpath + GZ_SUFFIX)
+            raw = None if compressed is None else gzip.decompress(compressed)
         if raw is None:
             raise FileNotFoundError(
                 f"{relpath} is in neither {run_dir} nor {archive_for(run_dir)}"

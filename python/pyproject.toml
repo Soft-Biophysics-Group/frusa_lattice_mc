@@ -128,6 +128,7 @@ blender = ["bpy==4.3.0; python_version < '3.12'"]
 frusa-mc-local = "frusa_lattice_mc.runners.local:main"
 frusa-mc-task = "frusa_lattice_mc.runners.task:main"
 frusa-mc-archive = "frusa_lattice_mc.runners.archive:main"
+frusa-mc-compress = "frusa_lattice_mc.runners.compress:main"
 
 # Everything lives in the single `frusa_lattice_mc` package under src/ (src layout):
 #   from frusa_lattice_mc import config

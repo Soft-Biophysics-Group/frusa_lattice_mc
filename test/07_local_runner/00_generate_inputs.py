@@ -57,15 +57,15 @@ def main() -> None:
 
     jobs = []
     for run_index in range(N_RUNS):
-        stage_1 = write_run(ROOT, "short", 0, run_index, model, mc_params(), label="lbl")
+        stage_1 = write_run(
+            ROOT, "short/series_00_lbl", run_index, model, mc_params()
+        )
         stage_2 = write_run(
             ROOT,
-            "long",
-            0,
+            "long/series_00_lbl",
             run_index,
             model,
             mc_params(),
-            label="lbl",
             continue_from_mc_file=stage_1.mc_file,
         )
         jobs.append([stage_1, stage_2])

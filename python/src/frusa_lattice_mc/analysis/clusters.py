@@ -46,39 +46,55 @@ class Cluster:
         )
 
     @cached_property
+    def outer_inner_perimeter(self) -> int:
+        return self.count_outer_perimeter(include_other_clusters=True)
+
+    @cached_property
     def outer_perimeter(self) -> int:
-        """Bonds from the cluster to the outside, not counting bonds towards holes."""
+        return self.count_outer_perimeter(include_other_clusters=False)
+
+    def count_outer_perimeter(self, include_other_clusters: bool) -> int:
+        """Bonds from the cluster to sites outside it. Bonds into regions the cluster
+        encloses (holes, and any particles inside them) are never counted.
+        include_other_clusters: also count bonds to particles outside this cluster, e.g. a
+        crystalline domain's contacts with neighbouring domains."""
         if self.percolates:
             raise ValueError("percolating cluster: it has no outside")
         latt = self.state.lattice
-        full = self.state.full_sites_set
+        full = self.sites
 
+        # ---- OUTSIDE DETECTION -----
         # Walk out of the cluster's lowest-x face: nothing of it lies below, so the first
         # empty site met on the way down cannot be one of its holes
         coords = self.particle_coords_no_pbc
-        seed = min(coords, key=lambda site: coords[site][0])
+        # Start from particle at lowest x
+        leftest_particle = min(coords, key=lambda site: coords[site][0])
+        # Pick a bond going into the -x direction, which is certain to land you to the
+        # outside
         i_out = next(i for i, bond in enumerate(latt.bonds) if bond[0] < 0)
-        for _ in range(latt.lx):
-            seed = latt.get_neighbour_sites(seed)[i_out]
-            if seed not in full:
-                break
-        else:
-            raise ValueError("cluster is buried: no exterior to seed the fill from")
+        outside_seed = latt.get_neighbour_sites(leftest_particle)[i_out]
+        # In case lattice or particle geometry is messed up: make sure the seed is not
+        # inside of the cluster
+        assert outside_seed not in full
 
-        # Flood fill the exterior. Occupied sites block it, so holes are never reached
-        outside = {seed}
-        stack = [seed]
+        # Flood the outside of the cluster site-by-site. The cluster blocks the flood, so
+        # holes in the cluster are not counted as being outside.
+        outside = {outside_seed}
+        stack = [outside_seed]
         while stack:
             for nb in latt.get_neighbour_sites(stack.pop()):
                 if nb not in outside and nb not in full:
                     outside.add(nb)
                     stack.append(nb)
 
+        counted = (
+            outside if include_other_clusters else outside - self.state.full_sites_set
+        )
         return sum(
             1
             for site in self.sites
             for nb in latt.get_neighbour_sites(site)
-            if nb in outside
+            if nb in counted
         )
 
     @cached_property

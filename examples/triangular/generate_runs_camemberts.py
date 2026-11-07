@@ -24,16 +24,17 @@ mc = MCParams(mcs_eq=int(1e4), Ti=0.0, Tf=2.0, Nt=200)
 
 jobs = []
 for series_index, radius in enumerate(TARGET_RADII):
-    couplings = camembert_couplings(e_crystal=-18.7, crystal_to_defect_ratio=calc_ec_ed_ratio(radius))
+    couplings = camembert_couplings(
+        e_crystal=-18.7, crystal_to_defect_ratio=calc_ec_ed_ratio(radius)
+    )
     model = ModelParams(couplings=couplings, n_particles=[500], lx=40, ly=40)
+    series_name = f"{RUN_NAME}/series_{series_index:02}_r_{radius:g}"
     jobs += write_run_series(
         ROOT,
-        RUN_NAME,
-        series_index=series_index,
+        series_name,
         model=model,
         mc=mc,
         n_runs=4,
-        label=f"r_{radius:g}",
     )
 
 input_path = ROOT / "input" / RUN_NAME

@@ -6,7 +6,12 @@ coupling map, built with `contact_utils.ContactMapWrapper`.
 from pathlib import Path
 
 from frusa_lattice_mc.contact_utils import ContactMapWrapper
-from frusa_lattice_mc.gen_param_functions import ModelParams, MCParams, write_run_series, slurm
+from frusa_lattice_mc.gen_param_functions import (
+    MCParams,
+    ModelParams,
+    slurm,
+    write_run_series,
+)
 
 ROOT = Path(__file__).parent.resolve()
 RUN_NAME = "01_custom_couplings_demo"
@@ -28,10 +33,14 @@ model = ModelParams(
 )
 mc = MCParams(mcs_eq=int(1e4), Ti=0.0, Tf=2.0, Nt=200)
 
-jobs = write_run_series(ROOT, RUN_NAME, series_index=0, model=model, mc=mc, n_runs=4)
+jobs = write_run_series(
+    ROOT, f"{RUN_NAME}/series_00", model=model, mc=mc, n_runs=4
+)
 print(f"Wrote {len(jobs)} runs under {ROOT / 'input' / RUN_NAME}")
 
-script = slurm.generate_script_for_prefix(ROOT, RUN_NAME, job_name=RUN_NAME)
+script = slurm.generate_array_script(
+    ROOT / "input" / RUN_NAME, jobs, job_name=RUN_NAME
+)
 script_path = ROOT / f"{RUN_NAME}.slurm"
 script_path.write_text(script)
 print(f"Wrote SLURM script to {script_path}")

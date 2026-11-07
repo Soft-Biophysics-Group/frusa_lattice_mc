@@ -1,6 +1,7 @@
 """
 Simulation parameter dataclasses with JSON serialization.
 """
+
 from frusa_lattice_mc.contact_utils import ContactMapWrapper
 
 import numpy as np
@@ -13,7 +14,6 @@ from .. import contact_utils as cu
 from ..json_dump import make_json_file as write_json, load_json
 from .paths import (
     c_path,
-    run_slug,
     input_file_paths,
     data_dir,
     structures_dir,
@@ -90,7 +90,6 @@ class ModelParams:
                 + f" couplings of length {len(cu.get_formatted_couplings())}"
                 + f" but was instead provided couplings of length {len(self.couplings)}"
             )
-
 
     def to_dict(self) -> dict:
         """Produce the dict that gets written to JSON for the C++ reader."""
@@ -189,7 +188,7 @@ class MCParams:
         elif self.cooling_schedule == CoolingSchedules.EXPONENTIAL:
             return np.logspace(self.Ti, self.Tf, self.Nt)
         elif self.cooling_schedule == CoolingSchedules.INVERSE:
-            return 1 / np.linspace(self.Ti,  self.Tf, self.Nt)
+            return 1 / np.linspace(self.Ti, self.Tf, self.Nt)
         elif self.cooling_schedule == CoolingSchedules.ARBITRARY:
             return np.asarray(self.T_array, dtype=float)
 
@@ -227,32 +226,41 @@ def camembert_couplings(
 
 def build_params(
     root: Path,
-    run_name: str,
-    series_index: int,
+    series_name: str,
     run_index: int,
     model: ModelParams,
     mc: MCParams,
     *,
-    label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
     continue_from_step: int | None = None,
+    stage_index: int | None = None,
+    n_stages: int | None = None,
 ) -> tuple[ModelParams, MCParams, Path, Path]:
     """
     Wire a (ModelParams, MCParams) pair to its on-disk locations for a single
     run, creating output directories as needed.
 
     `model` and `mc` act as templates: the function returns copies with the
-    path-dependent fields filled in. `model.couplings` must be set. `label`
-    tags the output slug, e.g. to record explicit parameters.
-
+    path-dependent fields filled in. `model.couplings` must be set.
     Returns (model_params, mc_params, model_file, mc_file).
     """
     if model.couplings is None:
         raise ValueError("model.couplings must be set.")
 
-    slug = run_slug(series_index, label)
-    model_file, mc_file = input_file_paths(root, run_name, slug, run_index)
-    data = data_dir(root, run_name, slug, run_index)
+    model_file, mc_file = input_file_paths(
+        root,
+        series_name,
+        run_index,
+        stage_index=stage_index,
+        n_stages=n_stages,
+    )
+    data = data_dir(
+        root,
+        series_name,
+        run_index,
+        stage_index=stage_index,
+        n_stages=n_stages,
+    )
 
     # Copy the templates so per-run path wiring never leaks back to the caller.
     model = replace(model)
@@ -284,27 +292,27 @@ def build_params(
 
 def write_run(
     root: Path,
-    run_name: str,
-    series_index: int,
+    series_name: str,
     run_index: int,
     model: ModelParams,
     mc: MCParams,
     *,
-    label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
     continue_from_step: int | None = None,
+    stage_index: int | None = None,
+    n_stages: int | None = None,
 ) -> Stage:
     """Build and write parameter files for a single run."""
     model, mc, model_file, mc_file = build_params(
         root,
-        run_name,
-        series_index,
+        series_name,
         run_index,
         model,
         mc,
-        label=label,
         continue_from_mc_file=continue_from_mc_file,
         continue_from_step=continue_from_step,
+        stage_index=stage_index,
+        n_stages=n_stages,
     )
 
     # write_json creates parent directories as needed.
@@ -316,26 +324,105 @@ def write_run(
 
 def write_run_series(
     root: Path,
-    run_name: str,
-    series_index: int,
+    series_name: str,
     model: ModelParams,
     mc: MCParams,
     n_runs: int = 20,
     *,
-    label: str | None = None,
     continue_from_mc_file: str | Path | None = None,
     continue_from_step: int | None = None,
+    stage_index: int | None = None,
+    n_stages: int | None = None,
 ) -> list[Stage]:
     """Write parameter files for a series of independent runs sharing one model/mc template."""
     return [
         write_run(
             root,
-            run_name,
-            series_index,
+            series_name,
             i,
             model,
             mc,
-            label=label,
+            continue_from_mc_file=continue_from_mc_file,
+            continue_from_step=continue_from_step,
+            stage_index=stage_index,
+            n_stages=n_stages,
+        )
+        for i in range(n_runs)
+    ]
+
+
+# Multi-stage runs
+
+
+def write_multi_stage_run(
+    root: Path,
+    series_name: str,
+    run_index: int,
+    models: list[ModelParams],
+    mcs: list[MCParams],
+    *,
+    continue_from_mc_file: str | Path | None = None,
+    continue_from_step: int | None = None,
+) -> list[Stage]:
+    """Build a multi-stage run from a list of model and mc templates"""
+    if len(models) != len(mcs):
+        raise ValueError("Length of Monte-Carlo and model parameters list do not match")
+    if len(models) < 2:
+        raise ValueError("A multi-stage run requires at least two stages")
+
+    stages: list[Stage] = []
+    n_stages = len(models)
+
+    # First stage
+    current_stage = write_run(
+        root,
+        series_name,
+        run_index,
+        models[0],
+        mcs[0],
+        continue_from_mc_file=continue_from_mc_file,
+        continue_from_step=continue_from_step,
+        stage_index=0,
+        n_stages=n_stages,
+    )
+    stages.append(current_stage)
+
+    model_mc_iter = zip(models[1:], mcs[1:])
+    for stage_index, (model, mc) in enumerate(model_mc_iter, start=1):
+        prev_mc_file = current_stage.mc_file
+        current_stage = write_run(
+            root,
+            series_name,
+            run_index,
+            model,
+            mc,
+            continue_from_mc_file=prev_mc_file,
+            stage_index=stage_index,
+            n_stages=n_stages,
+        )
+        stages.append(current_stage)
+
+    return stages
+
+
+def write_multi_stage_run_series(
+    root: Path,
+    series_name: str,
+    models: list[ModelParams],
+    mcs: list[MCParams],
+    n_runs: int = 20,
+    *,
+    continue_from_mc_file: str | Path | None = None,
+    continue_from_step: int | None = None,
+) -> list[list[Stage]]:
+    """Write parameter files for a series of independent runs sharing one model/mc template."""
+    return [
+        write_multi_stage_run(
+            root,
+            series_name,
+            i,
+            models,
+            mcs,
             continue_from_mc_file=continue_from_mc_file,
             continue_from_step=continue_from_step,
         )

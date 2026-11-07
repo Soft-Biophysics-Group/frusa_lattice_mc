@@ -7,46 +7,48 @@ Typical use:
     run_name = "00_my_run"
     model = ModelParams(couplings=couplings, n_particles=[500], lx=40, ly=40)
     mc = MCParams(mcs_eq=1000, Ti=0.0, Tf=2.0, Nt=200)
-    stages = write_run_series(root, run_name, series_index=0,
+    stages = write_run_series(root, run_name,
                               model=model, mc=mc, n_runs=20)
     script = slurm.generate_array_script(input_root, stages, job_name="my_run")
 """
 
-from . import slurm, continuation, manifest
+from . import continuation, manifest, slurm
+from .manifest import Stage, read_manifest, run_dir, write_manifest
 from .params import (
-    ModelParams,
-    MCParams,
-    InitializeOptions,
     CoolingSchedules,
+    InitializeOptions,
+    MCParams,
+    ModelParams,
+    build_params,
     calc_ec_ed_ratio,
     camembert_couplings,
-    build_params,
-    write_run,
-    write_run_series,
     load_json,
     write_json,
+    write_multi_stage_run,
+    write_multi_stage_run_series,
+    write_run,
+    write_run_series,
 )
-from .paths import run_slug
-from .manifest import Stage, read_manifest, run_dir, write_manifest
 
 __all__ = [
-    "slurm",
-    "manifest",
-    "continuation",
-    "ModelParams",
-    "MCParams",
-    "InitializeOptions",
     "CoolingSchedules",
+    "InitializeOptions",
+    "MCParams",
+    "ModelParams",
+    "Stage",
+    "build_params",
     "calc_ec_ed_ratio",
     "camembert_couplings",
-    "build_params",
-    "write_run",
-    "write_run_series",
-    "write_manifest",
+    "continuation",
     "load_json",
-    "write_json",
-    "run_slug",
+    "manifest",
     "read_manifest",
     "run_dir",
-    "Stage",
+    "slurm",
+    "write_json",
+    "write_manifest",
+    "write_multi_stage_run",
+    "write_multi_stage_run_series",
+    "write_run",
+    "write_run_series",
 ]

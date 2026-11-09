@@ -88,7 +88,7 @@ class LatticeState:
         if run_dir.is_dir():
             return cls(run_dir / relpath, model_file)
 
-        raw = read_member(archive_for(run_dir), relpath)
+        raw = read_member(archive_for(run_dir), f"{run_dir.name}/{relpath}")
         if raw is None:
             raise FileNotFoundError(
                 f"{relpath} is in neither {run_dir} nor {archive_for(run_dir)}"

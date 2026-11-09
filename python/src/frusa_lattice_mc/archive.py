@@ -2,8 +2,11 @@
 
 Reading and writing run data whether it sits on disk or inside a .tar.zst archive.
 
-Runs are archived one directory per archive, `<run_dir>.tar.zst`, holding a
-single top-level `<run_dir.name>/` entry. Analysis scripts should not care which
+Runs are archived one per archive, `<run>.tar.zst`, next to the run directory.
+A single-stage run's archive holds one top-level `<run>/` entry; a multi-stage
+run's holds its stage directories `<run>_stage_NNN/` side by side, so a whole
+run is one file however many stages it has. Member names are always relative to
+the series directory, exactly as on disk. Analysis scripts should not care which
 of the two forms a run happens to be in on the machine they run on:
 
     with run_data(run_dir) as data_dir:
@@ -22,6 +25,7 @@ modules) cannot be imported. The CLI that drives it over a campaign lives in
 """
 
 import os
+import re
 import shutil
 import tarfile
 import tempfile
@@ -32,16 +36,27 @@ from pathlib import Path
 from backports.zstd import ZstdFile
 
 ARCHIVE_SUFFIX = ".tar.zst"
+# @ AGENT: What motivated this value? Is it the standard for zstd?
 DEFAULT_LEVEL = 19
+# Mirrors gen_param_functions.paths._stage_name; the two must change together.
+_STAGE_SUFFIX = re.compile(r"_stage_\d+$")
+
+# The directories of one run, all in one series directory: its stage directories
+# in stage order, or just the run directory of a single-stage run.
+RunDirs = list[Path]
 
 
 def archive_for(run_dir: Path) -> Path:
-    """The archive that holds (or would hold) this run: <run_dir>.tar.zst."""
-    return run_dir.with_name(run_dir.name + ARCHIVE_SUFFIX)
+    """The archive that holds (or would hold) this run: <run>.tar.zst.
+
+    `run_dir` may be a stage directory: every stage of a run maps to one archive.
+    """
+    run_name = _STAGE_SUFFIX.sub("", run_dir.name)
+    return run_dir.with_name(run_name + ARCHIVE_SUFFIX)
 
 
-def extract_into(archive: Path, dest: Path) -> Path:
-    """Unpack `archive` under `dest`. Returns the run directory it wrote.
+def extract_into(archive: Path, dest: Path) -> list[Path]:
+    """Unpack `archive` under `dest`. Returns the top-level directories it wrote.
 
     Streams the tar through the decompressor rather than holding it in memory,
     the mirror of how the archive was written.
@@ -57,36 +72,26 @@ def extract_into(archive: Path, dest: Path) -> Path:
             # damaged archive cannot write outside dest.
             tar.extract(member, dest, filter="data")
             tops.add(Path(member.name).parts[0])
-
-    if len(tops) != 1:
-        raise FileNotFoundError(
-            f"{archive} should hold exactly one top-level directory, found {sorted(tops)}"
-        )
-    return dest / tops.pop()
+    return sorted(dest / top for top in tops)
 
 
 def read_member(archive: Path, relpath: str) -> bytes | None:
     """Stream one file out of the archive without unpacking the rest.
-    `relpath` is the path to the wanted file relative to the archive root.
+
+    `relpath` is the member's full name, starting with its run or stage
+    directory: `run_5/structures/final_structure.dat`. Compared whole rather
+    than by suffix, so the same file name in two stages is never confused.
     """
     with (
         ZstdFile(archive, "rb") as compressed,
+        # @ AGENT What does r| mean?
         tarfile.open(fileobj=compressed, mode="r|") as tar,
     ):
         for member in tar:
-            # Members carry the <run_dir>/ prefix; callers think run-relative.
-            # Compared whole rather than by suffix: a run holding a nested
-            # structures/ would otherwise hand back whichever copy the tar
-            # happens to list first.
-            _, _, rel = member.name.partition("/")
-            if member.isfile() and rel == str(relpath):
+            if member.isfile() and member.name == str(relpath):
                 extracted = tar.extractfile(member)
                 return None if extracted is None else extracted.read()
     return None
-
-def read_final(archive: Path) -> bytes | None:
-    """The run's final structure, straight out of the archive."""
-    return read_member(archive, "structures/final_structure.dat")
 
 
 @contextmanager
@@ -112,26 +117,27 @@ def run_data(run_dir: Path, tmp_root: Path | None = None) -> Iterator[Path | Non
         return
 
     with tempfile.TemporaryDirectory(dir=tmp_root, prefix="run_data_") as tmp:
-        yield extract_into(archive, Path(tmp))
+        extract_into(archive, Path(tmp))
+        yield Path(tmp) / run_dir.name
 
 
-def source_files(run_dir: Path) -> list[Path]:
-    """Every file under `run_dir`, in a stable order."""
-    return sorted(p for p in run_dir.rglob("*") if p.is_file())
+def source_files(run_dirs: RunDirs) -> list[Path]:
+    """Every file under the `run_dirs`, in a stable order."""
+    return sorted(p for d in run_dirs for p in d.rglob("*") if p.is_file())
 
 
 def dir_size(paths: list[Path]) -> int:
     return sum(p.stat().st_size for p in paths)
 
 
-def compress_run(run_dir: Path, level: int = DEFAULT_LEVEL) -> Path:
-    """Write <run_dir>.tar.zst. Returns the archive path.
+def compress_run(run_dirs: RunDirs, level: int = DEFAULT_LEVEL) -> Path:
+    """Write one run's directories into <run>.tar.zst. Returns the archive path.
 
     Streams through the compressor rather than building the tar in memory, and
     lands on the final name with a rename, so a cancelled task never leaves
     something a later pass would mistake for a finished archive.
     """
-    archive = archive_for(run_dir)
+    archive = archive_for(run_dirs[0])
     partial = archive.with_name(archive.name + ".tmp")
     partial.unlink(missing_ok=True)
 
@@ -139,18 +145,17 @@ def compress_run(run_dir: Path, level: int = DEFAULT_LEVEL) -> Path:
         ZstdFile(partial, "wb", level=level) as compressed,
         tarfile.open(fileobj=compressed, mode="w|") as tar,
     ):
-        tar.add(run_dir, arcname=run_dir.name)
+        for run_dir in run_dirs:
+            tar.add(run_dir, arcname=run_dir.name)
 
     os.replace(partial, archive)
     return archive
 
 
-def verify_archive(archive: Path, run_dir: Path, expected: list[Path]) -> list[str]:
+def verify_archive(archive: Path, expected: list[Path]) -> list[str]:
     """Read the archive back. Returns a list of problems, empty when sound."""
-    want = {
-        str(Path(run_dir.name) / p.relative_to(run_dir)): p.stat().st_size
-        for p in expected
-    }
+    # The archive sits in the series directory, which members are relative to.
+    want = {str(p.relative_to(archive.parent)): p.stat().st_size for p in expected}
     found: dict[str, int] = {}
     with (
         ZstdFile(archive, "rb") as compressed,
@@ -171,23 +176,30 @@ def verify_archive(archive: Path, run_dir: Path, expected: list[Path]) -> list[s
     return problems
 
 
-def extract_run(archive: Path, run_dir: Path) -> list[Path]:
-    """Unpack `archive` into `run_dir`. Returns the files written.
+def extract_run(archive: Path, dest_dir: Path) -> list[Path]:
+    """Unpack `archive`'s run or stage directories into `dest_dir`, usually the
+    series directory. Returns the files written.
 
-    Unpacks into a staging directory next to the destination and renames it into
-    place, so an interrupted task never leaves a partial run directory that a
-    later pass — or an analysis script — would take for the real thing.
+    Unpacks into a staging directory next to the destination and renames each
+    directory into place, so an interrupted task never leaves a partial run or
+    stage directory that a later pass — or an analysis script — would take for
+    the real thing.
     """
-    staging = run_dir.with_name(run_dir.name + ".extracting")
+    staging = dest_dir / (archive.name + ".extracting")
     shutil.rmtree(staging, ignore_errors=True)
 
     try:
-        run_dir.parent.mkdir(parents=True, exist_ok=True)
-        os.replace(extract_into(archive, staging), run_dir)
+        tops = extract_into(archive, staging)
+        targets = [dest_dir / top.name for top in tops]
+        for top, target in zip(tops, targets):
+            # Never overwrite: a directory already there is either the live copy
+            # or was moved in whole by an earlier, interrupted pass.
+            if not target.exists():
+                os.replace(top, target)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
 
-    return source_files(run_dir)
+    return source_files(targets)
 
 
 def relocate(path: Path, run_dir: Path, data_dir: Path) -> Path:

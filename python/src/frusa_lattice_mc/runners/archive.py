@@ -1,7 +1,8 @@
 """Vincent Ouazan-Reboul, 2026-08-11. Co-written by Claude Opus 5.
 
 Compress a campaign's run directories into .tar.zst archives — one archive per
-run — and unpack them again when the data is needed on disk.
+run, holding all its stage directories — and unpack them again when the data is
+needed on disk.
 
 One run per SLURM array task, the same shape as `frusa-mc-task`: line N of the
 manifest is array task N.
@@ -33,6 +34,7 @@ from pathlib import Path
 
 from ..archive import (
     DEFAULT_LEVEL,
+    RunDirs,
     archive_for,
     compress_run,
     dir_size,
@@ -43,13 +45,13 @@ from ..archive import (
 from ..gen_param_functions.manifest import read_manifest, run_dir
 
 
-def run_directories(manifest_file: Path) -> list[Path]:
-    """Every run directory of the campaign, in manifest order.
+def run_directories(manifest_file: Path) -> list[RunDirs]:
+    """The directories of every run of the campaign, one entry per manifest line.
 
     Input files are regenerated on each machine, so the addresses inside the MC
     params are the right ones for wherever this is running.
     """
-    return [run_dir(job[0]) for job in read_manifest(manifest_file)]
+    return [[run_dir(stage) for stage in job] for job in read_manifest(manifest_file)]
 
 
 def array_spec(indices: list[int]) -> str:
@@ -65,35 +67,50 @@ def array_spec(indices: list[int]) -> str:
     return ",".join(str(a) if a == b else f"{a}-{b}" for a, b in runs)
 
 
-def compress_one(run_dir: Path, level: int, delete_source: bool, dry_run: bool) -> int:
-    """Compress a single run. Returns a process exit code."""
-    archive = archive_for(run_dir)
+def compress_one(
+    run_dirs: RunDirs, level: int, delete_source: bool, dry_run: bool
+) -> int:
+    """Compress one run, every stage of it, into one archive. Returns a process exit code."""
+    archive = archive_for(run_dirs[0])
 
     if archive.is_file():
         print(f"already compressed, nothing to do: {archive}")
         return 0
-    if not run_dir.is_dir():
+    present = [d for d in run_dirs if d.is_dir()]
+    if not present:
         # Most runs of a campaign do not exist on any one machine, and some may
         # never have run. That is not a failure of this job.
-        print(f"no such run directory, skipping: {run_dir}")
+        print(f"no such run directory, skipping: {run_dirs[0]}")
         return 0
+    # An unfinished run may still be running or be resumed: its archive would go
+    # stale, and --delete-source would pull its checkpoints out from under it.
+    # final_structure.dat marks a finished stage, as in continuation.is_finished.
+    unfinished = [d for d in run_dirs if not (d / "structures/final_structure.dat").is_file()]
+    if unfinished:
+        print(
+            f"REFUSED: {len(unfinished)} of {len(run_dirs)} stage(s) unfinished,"
+            f" first {unfinished[0]}",
+            file=sys.stderr,
+        )
+        return 1
 
-    files = source_files(run_dir)
+    files = source_files(present)
     if not files:
-        print(f"run directory is empty, skipping: {run_dir}")
+        print(f"run directory is empty, skipping: {run_dirs[0]}")
         return 0
 
     before = dir_size(files)
+    summary = f"{len(files)} files, {before / 1e6:.1f} MB"
     if dry_run:
-        print(f"would compress {run_dir} ({len(files)} files, {before / 1e6:.1f} MB)")
+        print(f"would compress into {archive} ({summary})")
         if delete_source:
-            print(f"would then delete {run_dir}")
+            print(f"would then delete the source directories of {archive}")
         return 0
 
-    print(f"compressing {run_dir} ({len(files)} files, {before / 1e6:.1f} MB)")
-    archive = compress_run(run_dir, level)
+    print(f"compressing into {archive} ({summary})")
+    archive = compress_run(present, level)
 
-    problems = verify_archive(archive, run_dir, files)
+    problems = verify_archive(archive, files)
     if problems:
         print(f"ARCHIVE FAILED VERIFICATION: {archive}", file=sys.stderr)
         for problem in problems[:10]:
@@ -107,26 +124,28 @@ def compress_one(run_dir: Path, level: int, delete_source: bool, dry_run: bool) 
     )
 
     if delete_source:
-        shutil.rmtree(run_dir)
-        print(f"deleted {run_dir}")
+        for directory in present:
+            shutil.rmtree(directory)
+        print(f"deleted the source directories of {archive}")
     return 0
 
 
 def decompress_one(
-    run_dir: Path, delete_archive: bool, dry_run: bool, dest: Path | None = None
+    run_dirs: RunDirs, delete_archive: bool, dry_run: bool, dest: Path | None = None
 ) -> int:
-    """Restore a single run from its archive. Returns a process exit code.
+    """Restore one run, every stage of it, from its archive. Returns a process exit code.
 
-    With `dest`, the run lands in `dest/<series>/<run name>` and the canonical
-    location is left alone — the way to get at archived data without disturbing
-    data/. The series directory is kept in the path because run names repeat
-    across series, and two `run_5`s would otherwise collide in one destination.
+    With `dest`, the run lands in `dest/<series>/` and the canonical location is
+    left alone — the way to get at archived data without disturbing data/. The
+    series directory is kept in the path because run names repeat across
+    series, and two `run_5`s would otherwise collide in one destination.
     """
-    archive = archive_for(run_dir)
-    target = run_dir if dest is None else dest / run_dir.parent.name / run_dir.name
+    archive = archive_for(run_dirs[0])
+    series_dir = run_dirs[0].parent
+    target = series_dir if dest is None else dest / series_dir.name
 
-    if target.is_dir():
-        print(f"already on disk, nothing to do: {target}")
+    if all((target / d.name).is_dir() for d in run_dirs):
+        print(f"already on disk, nothing to do: {target / run_dirs[0].name}")
         return 0
     if not archive.is_file():
         # Same story as compression: most runs live on some other machine.
@@ -162,39 +181,52 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path, help="Manifest naming the runs.")
     parser.add_argument(
-        "index", type=int, nargs="?",
+        "index",
+        type=int,
+        nargs="?",
         help="1-based manifest line, e.g. $SLURM_ARRAY_TASK_ID",
     )
     parser.add_argument(
-        "-d", "--decompress", action="store_true",
+        "-d",
+        "--decompress",
+        action="store_true",
         help="Unpack the run back out of its archive instead of compressing it.",
     )
     parser.add_argument(
-        "--list", action="store_true",
+        "--list",
+        action="store_true",
         help="Print every run this would cover, then exit.",
     )
     parser.add_argument(
-        "--todo", action="store_true",
+        "--todo",
+        action="store_true",
         help="Print the --array spec of the runs still to do, then exit.",
     )
     parser.add_argument(
-        "-n", "--dry-run", action="store_true",
+        "-n",
+        "--dry-run",
+        action="store_true",
         help="Say what would happen without writing or deleting anything.",
     )
     parser.add_argument(
-        "--level", type=int, default=DEFAULT_LEVEL,
+        "--level",
+        type=int,
+        default=DEFAULT_LEVEL,
         help=f"zstd compression level (default {DEFAULT_LEVEL}).",
     )
     parser.add_argument(
-        "--delete-source", action="store_true",
+        "--delete-source",
+        action="store_true",
         help="Delete the run directory once its archive verifies. Off by default.",
     )
     parser.add_argument(
-        "--delete-archive", action="store_true",
+        "--delete-archive",
+        action="store_true",
         help="With --decompress: delete the archive once extracted. Off by default.",
     )
     parser.add_argument(
-        "--dest", type=Path,
+        "--dest",
+        type=Path,
         help="With --decompress: unpack under DEST instead of back into data/.",
     )
     args = parser.parse_args()
@@ -210,7 +242,10 @@ def main() -> None:
         # leave the campaign with no copy of the run at all.
         parser.error("--delete-archive with --dest would destroy the only copy")
 
-    runs = run_directories(args.manifest)
+    run_dirs = run_directories(args.manifest)
+    # A run's first directory stands for the whole run in the overviews below:
+    # its stages are archived, and deleted, together.
+    runs = [dirs[0] for dirs in run_dirs]
 
     if args.list:
         for i, run in enumerate(runs, start=1):
@@ -236,12 +271,14 @@ def main() -> None:
         # in both forms is nobody's work to do.
         if args.decompress:
             todo = [
-                i for i, run in enumerate(runs, start=1)
+                i
+                for i, run in enumerate(runs, start=1)
                 if archive_for(run).is_file() and not run.is_dir()
             ]
         else:
             todo = [
-                i for i, run in enumerate(runs, start=1)
+                i
+                for i, run in enumerate(runs, start=1)
                 if run.is_dir() and not archive_for(run).is_file()
             ]
         print(array_spec(todo))
@@ -256,12 +293,12 @@ def main() -> None:
             f"Line {args.index} is out of range: {args.manifest} has {len(runs)} line(s)."
         )
 
-    run = runs[args.index - 1]
+    dirs = run_dirs[args.index - 1]
     if args.decompress:
         raise SystemExit(
-            decompress_one(run, args.delete_archive, args.dry_run, args.dest)
+            decompress_one(dirs, args.delete_archive, args.dry_run, args.dest)
         )
-    raise SystemExit(compress_one(run, args.level, args.delete_source, args.dry_run))
+    raise SystemExit(compress_one(dirs, args.level, args.delete_source, args.dry_run))
 
 
 if __name__ == "__main__":
